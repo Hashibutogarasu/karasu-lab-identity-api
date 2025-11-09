@@ -5,6 +5,7 @@ import { passkey } from "better-auth/plugins/passkey";
 import { nextCookies } from "better-auth/next-js";
 import dotenv from "dotenv";
 import { sendEmail } from "./resend.js";
+import { getFrontendUrl } from "./utils.js";
 
 dotenv.config();
 
@@ -65,8 +66,8 @@ export const auth: ReturnType<typeof betterAuth> = betterAuth({
     organization(),
     emailOTP({
       sendVerificationOTP: async ({ email, otp, type }) => {
-        const frontendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.FRONTEND_ORIGIN || "http://localhost:3000";
-        const link = `${frontendUrl.replace(/\/$/, '')}/auth/email-verify?type=${encodeURIComponent(
+        const frontendUrl = getFrontendUrl();
+        const link = `${frontendUrl}/auth/email-verify?type=${encodeURIComponent(
           String(type ?? '')
         )}&email=${encodeURIComponent(email)}&otp=${encodeURIComponent(otp)}`;
 
@@ -80,8 +81,8 @@ export const auth: ReturnType<typeof betterAuth> = betterAuth({
     }),
     magicLink({
       sendMagicLink: async ({ email, token }) => {
-        const frontendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.FRONTEND_ORIGIN || "http://localhost:3000";
-        const link = `${frontendUrl.replace(/\/$/, '')}/auth/email-verify?type=${encodeURIComponent(
+        const frontendUrl = getFrontendUrl();
+        const link = `${frontendUrl}/auth/email-verify?type=${encodeURIComponent(
           'magic-link'
         )}&email=${encodeURIComponent(email)}&otp=${encodeURIComponent(token)}`;
 
