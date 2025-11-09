@@ -1,0 +1,122 @@
+import { betterAuth } from "better-auth";
+import { Pool } from "pg";
+import { emailOTP, jwt, magicLink, oidcProvider, openAPI, organization, twoFactor } from "better-auth/plugins";
+import { passkey } from "better-auth/plugins/passkey";
+import { nextCookies } from "better-auth/next-js";
+import dotenv from "dotenv";
+import { sendEmail } from "./resend.js";
+
+dotenv.config();
+
+export const auth: ReturnType<typeof betterAuth> = betterAuth({
+  trustedOrigins: [
+    process.env.FRONTEND_ORIGIN || "https://karasu256.com",
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+  ],
+  appName: "Karasu Lab",
+  socialProviders: {
+    discord: {
+      clientId: process.env.DISCORD_CLIENT_ID,
+      clientSecret: process.env.DISCORD_CLIENT_SECRET,
+    },
+    google: {
+      clientId: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    },
+    twitter: {
+      clientId: process.env.X_CLIENT_ID,
+      clientSecret: process.env.X_CLIENT_SECRET,
+    },
+  },
+  emailAndPassword: {
+    enabled: true,
+    requireEmailVerification: true,
+  },
+  emailVerification: {
+    sendVerificationEmail: async ({ user, url }) => {
+      await sendEmail({
+        to: user.email,
+        subject: "Verify your email address",
+        html: `Click the link to verify your email: <a href="${url}">${url}</a>`,
+      });
+    },
+    sendOnSignUp: true,
+    sendOnSignIn: true,
+  },
+  disabledPaths: [
+    "/oauth/token",
+  ],
+  plugins: [
+    nextCookies(),
+    openAPI(),
+    jwt(),
+    oidcProvider({
+      loginPage: "/login",
+      consentPage: "/oauth/authorize",
+      useJWTPlugin: true,
+    }),
+    passkey({
+      rpID: process.env.PASSKEY_RP_ID || (process.env.NODE_ENV === "production" ? "karasu256.com" : "localhost"),
+      rpName: process.env.PASSKEY_RP_NAME || "Karasu Lab",
+      origin: process.env.PASSKEY_ORIGIN || (process.env.NODE_ENV === "production" ? "https://karasu256.com" : "http://localhost:3000"),
+    }),
+    twoFactor(),
+    organization(),
+    emailOTP({
+      sendVerificationOTP: async ({ email, otp, type }) => {
+        const frontendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.FRONTEND_ORIGIN || "http://localhost:3000";
+        const link = `${frontendUrl.replace(/\/$/, '')}/auth/email-verify?type=${encodeURIComponent(
+          String(type ?? '')
+        )}&email=${encodeURIComponent(email)}&otp=${encodeURIComponent(otp)}`;
+
+        await sendEmail({
+          to: email,
+          subject: "Your verification code",
+          html: `Your verification code is: <strong>${otp}</strong><br/><br/>Click to verify: <a href="${link}">${link}</a>`,
+        })
+      },
+      sendVerificationOnSignUp: true,
+    }),
+    magicLink({
+      sendMagicLink: async ({ email, token }) => {
+        const frontendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.FRONTEND_ORIGIN || "http://localhost:3000";
+        const link = `${frontendUrl.replace(/\/$/, '')}/auth/email-verify?type=${encodeURIComponent(
+          'magic-link'
+        )}&email=${encodeURIComponent(email)}&otp=${encodeURIComponent(token)}`;
+
+        await sendEmail({
+          to: email,
+          subject: "Your magic link",
+          html: `Click the link to sign in: <a href="${link}">${link}</a>`,
+        });
+      },
+    })
+  ],
+  user: {
+    changeEmail: {
+      enabled: true,
+      sendChangeEmailVerification: async ({ newEmail, url }) => {
+        await sendEmail({
+          to: newEmail,
+          subject: "Confirm your new email address",
+          html: `Click the link to confirm your new email address: <a href="${url}">${url}</a>`,
+        });
+      }
+    }
+  },
+  account: {
+    accountLinking: {
+      allowDifferentEmails: true
+    },
+    updateAccountOnSignIn: true,
+  },
+  database: new Pool({
+    connectionString: process.env.DATABASE_URL,
+  }),
+  rateLimit: {
+    enabled: true,
+    window: 60,
+    max: 100,
+  },
+});
