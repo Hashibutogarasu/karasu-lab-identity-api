@@ -77,7 +77,7 @@ export const auth: ReturnType<typeof betterAuth> = betterAuth({
           html: `Your verification code is: <strong>${otp}</strong><br/><br/>Click to verify: <a href="${link}">${link}</a>`,
         })
       },
-      sendVerificationOnSignUp: true,
+      sendVerificationOnSignUp: false,
     }),
     magicLink({
       sendMagicLink: async ({ email, token }) => {
