@@ -1,6 +1,6 @@
 import { betterAuth } from "better-auth";
 import { Pool } from "pg";
-import { emailOTP, jwt, magicLink, oidcProvider, openAPI, organization, twoFactor } from "better-auth/plugins";
+import { emailOTP, magicLink, oidcProvider, openAPI, organization, twoFactor } from "better-auth/plugins";
 import { passkey } from "better-auth/plugins/passkey";
 import { nextCookies } from "better-auth/next-js";
 import dotenv from "dotenv";
@@ -51,11 +51,9 @@ export const auth: ReturnType<typeof betterAuth> = betterAuth({
   plugins: [
     nextCookies(),
     openAPI(),
-    jwt(),
     oidcProvider({
       loginPage: "/login",
       consentPage: "/oauth/authorize",
-      useJWTPlugin: true,
     }),
     passkey({
       rpID: process.env.PASSKEY_RP_ID || (process.env.NODE_ENV === "production" ? "karasu256.com" : "localhost"),
