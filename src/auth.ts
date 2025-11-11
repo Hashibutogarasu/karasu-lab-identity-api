@@ -66,9 +66,9 @@ export const auth: ReturnType<typeof betterAuth> = betterAuth({
       consentPage: "/oauth/authorize",
     }),
     passkey({
-      rpID: process.env.PASSKEY_RP_ID || (process.env.NODE_ENV === "production" ? "karasu256.com" : "localhost"),
-      rpName: process.env.PASSKEY_RP_NAME || "Karasu Lab",
-      origin: process.env.PASSKEY_ORIGIN || (process.env.NODE_ENV === "production" ? "https://karasu256.com" : "http://localhost:3000"),
+      rpID: process.env.PASSKEY_RP_ID,
+      rpName: process.env.PASSKEY_RP_NAME,
+      origin: process.env.PASSKEY_ORIGIN,
     }),
     twoFactor(),
     organization(),
