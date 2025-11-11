@@ -10,10 +10,19 @@ import { getFrontendUrl } from "./utils.js";
 dotenv.config();
 
 export const auth: ReturnType<typeof betterAuth> = betterAuth({
+  advanced: {
+    crossSubDomainCookies: {
+      enabled: true,
+      domain: "karasu256.com",
+    },
+  },
   trustedOrigins: [
     process.env.FRONTEND_ORIGIN || "https://karasu256.com",
     "http://localhost:3000",
     "http://127.0.0.1:3000",
+    'https://karasu256.com',
+    'https://id.karasu256.com',
+    'https://sso.karasu256.com',
   ],
   appName: "Karasu Lab",
   socialProviders: {
