@@ -19,6 +19,7 @@ export const auth: ReturnType<typeof betterAuth> = betterAuth({
   trustedOrigins: [
     process.env.FRONTEND_ORIGIN || "https://karasu256.com",
     "http://localhost:3000",
+    "http://localhost:3001",
     "http://127.0.0.1:3000",
     'https://karasu256.com',
     'https://id.karasu256.com',
