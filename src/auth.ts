@@ -68,7 +68,12 @@ export const auth: ReturnType<typeof betterAuth> = betterAuth({
     passkey({
       rpID: process.env.PASSKEY_RP_ID,
       rpName: process.env.PASSKEY_RP_NAME,
-      origin: process.env.PASSKEY_ORIGIN,
+      origin: [
+        process.env.PASSKEY_ORIGIN,
+        "http://localhost:3000",
+        "http://localhost:3001",
+        "http://karasu256.com",
+      ],
     }),
     twoFactor(),
     organization(),
