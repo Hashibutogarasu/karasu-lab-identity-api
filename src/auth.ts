@@ -9,6 +9,9 @@ import { getFrontendUrl } from "./utils.js";
 
 dotenv.config();
 
+const safe = <T>(arr: Array<T | undefined | null>) =>
+  arr.filter((v): v is T => v != null);
+
 export const auth: ReturnType<typeof betterAuth> = betterAuth({
   baseURL: process.env.BETTER_AUTH_URL,
   advanced: {
@@ -18,14 +21,16 @@ export const auth: ReturnType<typeof betterAuth> = betterAuth({
     },
   },
   trustedOrigins: [
-    process.env.FRONTEND_ORIGIN,
-    ...process.env.NODE_ENV !== "production" ? [
-      "http://localhost:3000",
-      "http://localhost:3001",
-    ] : [],
-    'https://karasu256.com',
-    'https://id.karasu256.com',
-    'https://sso.karasu256.com',
+    ...safe([
+      process.env.FRONTEND_ORIGIN,
+      ...process.env.NODE_ENV !== "production" ? [
+        "http://localhost:3000",
+        "http://localhost:3001",
+      ] : [],
+      'https://karasu256.com',
+      'https://id.karasu256.com',
+      'https://sso.karasu256.com',
+    ]),
   ],
   logger: {
     level: process.env.NODE_ENV === "production" ? "info" : "debug",
@@ -72,12 +77,12 @@ export const auth: ReturnType<typeof betterAuth> = betterAuth({
     passkey({
       rpID: process.env.PASSKEY_RP_ID,
       rpName: process.env.PASSKEY_RP_NAME,
-      origin: [
+      origin: safe([
         process.env.PASSKEY_ORIGIN,
         "http://localhost:3000",
         "http://localhost:3001",
         "https://karasu256.com",
-      ],
+      ]),
     }),
     twoFactor(),
     organization(),
