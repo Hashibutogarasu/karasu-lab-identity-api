@@ -62,9 +62,6 @@ export const auth: ReturnType<typeof betterAuth> = betterAuth({
     sendOnSignUp: true,
     sendOnSignIn: true,
   },
-  disabledPaths: [
-    "/oauth/token",
-  ],
   plugins: [
     nextCookies(),
     openAPI(),
