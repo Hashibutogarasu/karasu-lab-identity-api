@@ -10,6 +10,7 @@ import { getFrontendUrl } from "./utils.js";
 dotenv.config();
 
 export const auth: ReturnType<typeof betterAuth> = betterAuth({
+  baseURL: process.env.BETTER_AUTH_URL,
   advanced: {
     crossSubDomainCookies: {
       enabled: true,
