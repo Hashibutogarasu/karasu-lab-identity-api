@@ -17,15 +17,19 @@ export const auth: ReturnType<typeof betterAuth> = betterAuth({
     },
   },
   trustedOrigins: [
-    process.env.FRONTEND_ORIGIN || "https://karasu256.com",
-    "http://localhost:3000",
+    process.env.FRONTEND_ORIGIN,
     "http://localhost:3001",
     "http://127.0.0.1:3000",
     'https://karasu256.com',
     'https://id.karasu256.com',
     'https://sso.karasu256.com',
   ],
+  logger: {
+    level: process.env.NODE_ENV === "production" ? "info" : "debug",
+    disabled: false,
+  },
   appName: "Karasu Lab",
+  secret: process.env.BETTER_AUTH_SECRET,
   socialProviders: {
     discord: {
       clientId: process.env.DISCORD_CLIENT_ID,
