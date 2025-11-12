@@ -7,9 +7,16 @@ async function bootstrap() {
     bodyParser: false,
   });
 
+  const allowedOrigins = [
+    'https://sso.karasu256.com',
+    'https://karasu256.com',
+    'http://localhost:3000',
+    'http://localhost:3001',
+  ];
+
   app.enableCors({
-    origin: '*',
-    allowedHeaders: 'Origin, X-Requested-With, Content-Type, Accept',
+    origin: allowedOrigins,
+    allowedHeaders: 'Origin, X-Requested-With, Content-Type, Accept, Authorization',
     credentials: true,
   });
 
