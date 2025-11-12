@@ -10,8 +10,10 @@ async function bootstrap() {
   const allowedOrigins = [
     'https://sso.karasu256.com',
     'https://karasu256.com',
-    'http://localhost:3000',
-    'http://localhost:3001',
+    ...process.env.NODE_ENV === 'development' ? [
+      'http://localhost:3001',
+      'http://localhost:3000',
+    ] : [],
   ];
 
   app.enableCors({
