@@ -12,14 +12,19 @@ dotenv.config();
 const safe = <T>(arr: Array<T | undefined | null>) =>
   arr.filter((v): v is T => v != null);
 
+const advancedConfig =
+  process.env.NODE_ENV === 'production'
+    ? {
+      crossSubDomainCookies: {
+        enabled: true,
+        domain: process.env.COOKIE_DOMAIN ?? 'karasu256.com',
+      },
+    }
+    : undefined;
+
 export const auth: ReturnType<typeof betterAuth> = betterAuth({
   baseURL: process.env.BETTER_AUTH_URL,
-  advanced: {
-    crossSubDomainCookies: {
-      enabled: true,
-      domain: "karasu256.com",
-    },
-  },
+  advanced: advancedConfig,
   trustedOrigins: [
     ...safe([
       process.env.FRONTEND_ORIGIN,
