@@ -6,6 +6,8 @@ import { nextCookies } from "better-auth/next-js";
 import dotenv from "dotenv";
 import { sendEmail } from "./resend.js";
 import { getFrontendUrl } from "./utils.js";
+import { verifyPasswordPlugin } from "./plugins/verify-password-plugin.js";
+import prisma from "./prisma.js";
 
 dotenv.config();
 
@@ -73,6 +75,20 @@ export const auth: ReturnType<typeof betterAuth> = betterAuth({
     sendOnSignIn: true,
   },
   plugins: [
+    verifyPasswordPlugin({
+      onGetAccount: async ({ userId }) => {
+        const account = await prisma.account.findFirst({
+          where: {
+            userId: userId,
+          },
+          select: {
+            password: true,
+          },
+        });
+
+        return account;
+      }
+    }),
     nextCookies(),
     openAPI(),
     oidcProvider({
@@ -122,6 +138,9 @@ export const auth: ReturnType<typeof betterAuth> = betterAuth({
     })
   ],
   user: {
+    deleteUser: {
+      enabled: true,
+    },
     changeEmail: {
       enabled: true,
       sendChangeEmailVerification: async ({ newEmail, url }) => {
