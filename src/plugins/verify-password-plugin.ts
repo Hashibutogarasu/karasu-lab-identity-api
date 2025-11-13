@@ -24,10 +24,8 @@ export const verifyPasswordPlugin = () => {
           });
         }
 
-        const account = await ctx.context.adapter.findOne({
-          model: 'account',
-          where: [{ field: 'userId', value: user.id }, { field: 'providerId', value: 'credentials' }],
-        }) as any as { password: string | null } | null;
+        const account = (await ctx.context.internalAdapter.findAccountByUserId(user.id))
+          .filter(acc => acc.providerId === 'credentials')[0];
 
         if (!account || !account.password) {
           throw new APIError('BAD_REQUEST', {
