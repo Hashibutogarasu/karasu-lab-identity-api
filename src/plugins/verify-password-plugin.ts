@@ -3,17 +3,7 @@ import { APIError, createAuthEndpoint, sessionMiddleware } from "better-auth/api
 import { verifyPassword as verifyPasswordCrypto } from "better-auth/crypto";
 import z4 from "zod/v4";
 
-export const verifyPasswordPlugin = (
-  {
-    onGetAccount,
-  }: {
-    onGetAccount?: (ctx: {
-      userId: string;
-    }) => Promise<{
-      password: string | null;
-    }>;
-  }
-) => {
+export const verifyPasswordPlugin = () => {
   return {
     id: "password-verify",
     endpoints: {
@@ -34,7 +24,10 @@ export const verifyPasswordPlugin = (
           });
         }
 
-        const account = await onGetAccount?.({ userId: user.id });
+        const account = await ctx.context.adapter.findOne({
+          model: 'account',
+          where: [{ field: 'userId', value: user.id }, { field: 'providerId', value: 'credentials' }],
+        }) as any as { password: string | null } | null;
 
         if (!account || !account.password) {
           throw new APIError('BAD_REQUEST', {

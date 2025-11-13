@@ -7,7 +7,6 @@ import dotenv from "dotenv";
 import { sendEmail } from "./resend.js";
 import { getFrontendUrl } from "./utils.js";
 import { verifyPasswordPlugin } from "./plugins/verify-password-plugin.js";
-import prisma from "./prisma.js";
 
 dotenv.config();
 
@@ -75,20 +74,7 @@ export const auth: ReturnType<typeof betterAuth> = betterAuth({
     sendOnSignIn: true,
   },
   plugins: [
-    verifyPasswordPlugin({
-      onGetAccount: async ({ userId }) => {
-        const account = await prisma.account.findFirst({
-          where: {
-            userId: userId,
-          },
-          select: {
-            password: true,
-          },
-        });
-
-        return account;
-      }
-    }),
+    verifyPasswordPlugin(),
     nextCookies(),
     openAPI(),
     oidcProvider({
