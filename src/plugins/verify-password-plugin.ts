@@ -19,13 +19,10 @@ export const verifyPasswordPlugin = () => {
         const { password } = ctx.body;
 
         if (!session || !user) {
-          throw new APIError('UNAUTHORIZED', {
-            message: 'User is not authenticated',
-          });
+          throw new APIError('UNAUTHORIZED');
         }
 
-        const account = (await ctx.context.internalAdapter.findAccountByUserId(user.id))
-          .filter(acc => acc.providerId === 'credentials')[0];
+        const account = (await ctx.context.internalAdapter.findAccountByUserId(user.id))[0];
 
         if (!account || !account.password) {
           throw new APIError('BAD_REQUEST', {
