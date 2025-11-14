@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { BetterAuthPlugin } from "better-auth"
 import { APIError, createAuthEndpoint, sessionMiddleware } from "better-auth/api"
 import { oauthApplicationModel } from "../generated/models.js";
@@ -27,7 +28,13 @@ export const oauthApplicationPlugin = () => {
           ]
         }) as unknown as oauthApplicationModel[];
 
-        return applications;
+        const apps = applications.map((app) => {
+          const { clientSecret, ...oAuthapp } = app;
+
+          return oAuthapp;
+        })
+
+        return apps;
       })
     }
   } satisfies BetterAuthPlugin
