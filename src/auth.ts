@@ -1,16 +1,17 @@
 import { betterAuth } from "better-auth";
 import { Pool } from "pg";
-import { emailOTP, magicLink, oidcProvider, openAPI, organization, twoFactor } from "better-auth/plugins";
+import { emailOTP, jwt, magicLink, oidcProvider, openAPI, organization, twoFactor } from "better-auth/plugins";
 import { passkey } from "better-auth/plugins/passkey";
 import { nextCookies } from "better-auth/next-js";
 import dotenv from "dotenv";
 import { sendEmail } from "./resend.js";
 import { getFrontendUrl } from "./utils.js";
 import { verifyPasswordPlugin } from "./plugins/verify-password-plugin.js";
+import { oauthApplicationPlugin } from "./plugins/oauth-application-plugin.js";
 
 dotenv.config();
 
-const safe = <T>(arr: Array<T | undefined | null>) =>
+const safeArray = <T>(arr: Array<T | undefined | null>) =>
   arr.filter((v): v is T => v != null);
 
 const advancedConfig =
@@ -27,7 +28,7 @@ export const auth: ReturnType<typeof betterAuth> = betterAuth({
   baseURL: process.env.BETTER_AUTH_URL,
   advanced: advancedConfig,
   trustedOrigins: [
-    ...safe([
+    ...safeArray([
       process.env.FRONTEND_ORIGIN,
       ...process.env.NODE_ENV !== "production" ? [
         "http://localhost:3000",
@@ -75,16 +76,20 @@ export const auth: ReturnType<typeof betterAuth> = betterAuth({
   },
   plugins: [
     verifyPasswordPlugin(),
+    oauthApplicationPlugin(),
     nextCookies(),
     openAPI(),
+    jwt(),
     oidcProvider({
       loginPage: "/login",
       consentPage: "/oauth/authorize",
+      useJWTPlugin: true,
+      allowDynamicClientRegistration: true,
     }),
     passkey({
       rpID: process.env.PASSKEY_RP_ID,
       rpName: process.env.PASSKEY_RP_NAME,
-      origin: safe([
+      origin: safeArray([
         process.env.PASSKEY_ORIGIN,
         "http://localhost:3000",
         "http://localhost:3001",
