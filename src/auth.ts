@@ -1,6 +1,7 @@
+/* eslint-disable @typescript-eslint/require-await */
 import { betterAuth } from "better-auth";
 import { Pool } from "pg";
-import { emailOTP, jwt, magicLink, oidcProvider, openAPI, organization, twoFactor } from "better-auth/plugins";
+import { createAuthMiddleware, emailOTP, jwt, magicLink, oidcProvider, openAPI, organization, twoFactor } from "better-auth/plugins";
 import { passkey } from "better-auth/plugins/passkey";
 import { nextCookies } from "better-auth/next-js";
 import dotenv from "dotenv";
@@ -74,6 +75,19 @@ export const auth: ReturnType<typeof betterAuth> = betterAuth({
     sendOnSignUp: true,
     sendOnSignIn: true,
   },
+  hooks: {
+    after: createAuthMiddleware(async (context) => {
+      if (context.path === "/oauth2/consent" || context.path === "/sign-out") {
+        const expiredDate = new Date(0).toUTCString();
+        const oidcCookies = ["oidc_login_prompt", "oidc_consent_prompt"];
+
+        oidcCookies.forEach((cookieName) => {
+          const setCookie = `${cookieName}=; Expires=${expiredDate}; Max-Age=0; Path=/; SameSite=lax`;
+          context.setHeader("Set-Cookie", setCookie);
+        });
+      }
+    }),
+  },
   plugins: [
     verifyPasswordPlugin(),
     oauthApplicationPlugin(),
@@ -81,8 +95,9 @@ export const auth: ReturnType<typeof betterAuth> = betterAuth({
     openAPI(),
     jwt(),
     oidcProvider({
-      loginPage: "/login",
-      consentPage: "/oauth/authorize",
+      loginPage: `${process.env.FRONTEND_ORIGIN}/login`,
+      consentPage: `${process.env.FRONTEND_ORIGIN}/oauth/authorize`,
+      scopes: ['openid', 'profile', 'email'],
       useJWTPlugin: true,
       allowDynamicClientRegistration: true,
     }),
