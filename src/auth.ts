@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/require-await */
 import { betterAuth } from "better-auth";
 import { Pool } from "pg";
-import { createAuthMiddleware, emailOTP, jwt, magicLink, oidcProvider, openAPI, organization, twoFactor } from "better-auth/plugins";
+import { createAuthMiddleware, deviceAuthorization, emailOTP, jwt, magicLink, oidcProvider, openAPI, organization, twoFactor } from "better-auth/plugins";
 import { passkey } from "better-auth/plugins/passkey";
 import { nextCookies } from "better-auth/next-js";
 import dotenv from "dotenv";
@@ -91,6 +91,10 @@ export const auth: ReturnType<typeof betterAuth> = betterAuth({
   plugins: [
     verifyPasswordPlugin(),
     oauthApplicationPlugin(),
+    deviceAuthorization({
+      expiresIn: "30m",
+      interval: "5s",
+    }),
     nextCookies(),
     openAPI(),
     jwt(),
