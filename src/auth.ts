@@ -7,7 +7,7 @@ import { nextCookies } from "better-auth/next-js";
 import dotenv from "dotenv";
 import { sendEmail } from "./resend.js";
 import { getFrontendUrl } from "./utils.js";
-import { verifyPasswordPlugin } from "./plugins/verify-password-plugin.js";
+import { passwordPlugin } from "./plugins/password-plugin.js";
 import { oauthApplicationPlugin } from "./plugins/oauth-application-plugin.js";
 
 dotenv.config();
@@ -89,7 +89,7 @@ export const auth: ReturnType<typeof betterAuth> = betterAuth({
     }),
   },
   plugins: [
-    verifyPasswordPlugin(),
+    passwordPlugin(),
     oauthApplicationPlugin(),
     deviceAuthorization({
       expiresIn: "30m",
