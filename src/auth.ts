@@ -20,7 +20,7 @@ const advancedConfig =
     ? {
       crossSubDomainCookies: {
         enabled: true,
-        domain: process.env.COOKIE_DOMAIN ?? 'karasu256.com',
+        domain: process.env.COOKIE_DOMAIN ?? '.karasu256.com',
       },
     }
     : undefined;
