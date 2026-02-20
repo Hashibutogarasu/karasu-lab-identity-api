@@ -45,7 +45,7 @@ COPY --from=builder /app/prisma ./prisma/
 
 # 3. エントリーポイントスクリプトのコピーと権限設定
 COPY scripts/docker-entrypoint.sh ./
-RUN chmod +x docker-entrypoint.sh
+RUN sed -i 's/\r$//' docker-entrypoint.sh && chmod +x docker-entrypoint.sh
 
 # 4. 起動設定
 ENTRYPOINT ["./docker-entrypoint.sh"]
