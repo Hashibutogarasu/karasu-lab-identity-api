@@ -107,7 +107,7 @@ export const auth: ReturnType<typeof betterAuth> = betterAuth({
       allowDynamicClientRegistration: true,
     }),
     passkey({
-      rpID: process.env.PASSKEY_RP_ID,
+      rpID: process.env.PASSKEY_RP_ID ?? "karasu256.com",
       rpName: process.env.PASSKEY_RP_NAME,
       origin: safeArray([
         process.env.PASSKEY_ORIGIN,
