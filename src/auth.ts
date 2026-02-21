@@ -115,6 +115,7 @@ export const auth: ReturnType<typeof betterAuth> = betterAuth({
         "http://localhost:3001",
         "https://karasu256.com",
         "https://www.karasu256.com",
+        "https://sso.karasu256.com",
       ]),
     }),
     twoFactor(),
