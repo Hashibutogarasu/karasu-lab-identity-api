@@ -1,4 +1,5 @@
 import { defineConfig } from 'vitest/config';
+import swc from 'unplugin-swc';
 
 export default defineConfig({
   test: {
@@ -7,4 +8,5 @@ export default defineConfig({
     include: ['**/*.spec.ts', '**/*.e2e-spec.ts'],
     setupFiles: ['./test/auth/auth.setup.ts'],
   },
+  plugins: [swc.vite()],
 });

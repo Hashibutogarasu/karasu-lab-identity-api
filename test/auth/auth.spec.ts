@@ -37,7 +37,6 @@ describe('Better Auth Integration Tests', () => {
     await ctx.adapter.create({
       model: "user",
       data: {
-        id: 'oauth_user_1',
         name: 'OAuth User',
         email: 'oauth@example.com',
         emailVerified: true,

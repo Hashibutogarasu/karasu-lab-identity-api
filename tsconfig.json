@@ -21,7 +21,6 @@
 		"resolveJsonModule": true,
 		"isolatedModules": true
 	},
-	"include": ["src/**/*", "./jest.config.ts", "**/*/*.spec.ts", "test/**/*.ts", "vitest.config.ts"],
+	"include": ["src/**/*", "**/*/*.spec.ts", "test/**/*.ts", "vitest.config.ts"],
 	"exclude": ["./dist", "./node_modules"],
-	"allowDefaultProject": ["./jest.config.ts"]
 }

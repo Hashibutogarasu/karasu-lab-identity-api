@@ -5,18 +5,13 @@ import request from 'supertest';
 import { AppController } from '../src/app.controller.js';
 import { AppService } from '../src/app.service.js';
 
-@Module({
-  controllers: [AppController],
-  providers: [AppService],
-})
-class TestAppModule { }
-
 describe('AppController (e2e)', () => {
   let app: INestApplication<App>;
 
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [TestAppModule],
+      controllers: [AppController],
+      providers: [AppService],
     }).compile();
 
     app = moduleFixture.createNestApplication();

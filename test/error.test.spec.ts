@@ -22,26 +22,7 @@ import { I18nService } from '../src/shared/i18n/i18n.service.js';
 import { II18nService } from '../src/shared/i18n/i18n.service.interface.js';
 import { describe, it, expect, beforeEach, afterAll } from 'vitest';
 import { NextFunction, Request, Response } from 'express';
-
-interface APIErrorLike {
-    status: string | number;
-    body: {
-        message?: string;
-    };
-}
-
-function isAPIErrorLike(err: unknown): err is APIErrorLike {
-    if (typeof err !== 'object' || err === null) {
-        return false;
-    }
-    const candidate = err as Record<string, unknown>;
-    return (
-        'status' in candidate &&
-        'body' in candidate &&
-        typeof candidate.body === 'object' &&
-        candidate.body !== null
-    );
-}
+import { APIError } from "better-auth/api";
 
 const statusMap: Record<string, number> = {
     'BAD_REQUEST': 400,
@@ -63,7 +44,7 @@ class APIStringStatusExceptionFilter implements ExceptionFilter {
         return;
     }
 
-    if (isAPIErrorLike(exception)) {
+    if (exception instanceof APIError) {
         const statusStr = String(exception.status);
         const status = statusMap[statusStr] || 500;
         response.status(status).json({

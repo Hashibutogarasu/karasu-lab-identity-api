@@ -1,119 +1,36 @@
-/* eslint-disable @typescript-eslint/no-unnecessary-type-assertion */
-/* eslint-disable @typescript-eslint/no-unused-vars */
+ 
+ 
 import { BetterAuthPlugin } from "better-auth"
 import { createAuthEndpoint, sessionMiddleware } from "better-auth/api"
-import { oauthApplicationModel } from "../generated/models.js";
-import { generateRandomString } from "better-auth/crypto";
 import z4 from "zod/v4";
-import { createAPIError, ErrorCodes } from "../shared/errors/error.codes.js";
+import { OAuth } from "./oauth/oauth.js";
 
-export const oauthApplicationPlugin = (): BetterAuthPlugin => {
+export const oauthApplicationPlugin = (oauth?: OAuth): BetterAuthPlugin => {
+  if (!oauth) {
+    oauth = new OAuth();
+  }
+
   return {
     id: "oauth-application",
     endpoints: {
       oauthApplications: createAuthEndpoint('/oauth-applications/all', {
         method: 'GET',
         use: [sessionMiddleware],
-      }, async (ctx) => {
-        const session = ctx.context.session;
-        const user = ctx.context.session.user;
-
-        if (!session || !user) {
-          throw createAPIError(ErrorCodes.AUTH.UNAUTHORIZED);
-        }
-
-        const applications = await ctx.context.adapter.findMany({
-          model: 'oauthApplication',
-          where: [
-            {
-              field: 'userId',
-              value: user.id,
-            }
-          ]
-        }) as unknown as oauthApplicationModel[];
-
-        const apps = applications.map((app) => {
-          const { clientSecret, ...oAuthapp } = app;
-
-          return oAuthapp;
-        })
-
-        return apps;
-      }),
+      }, async (ctx) => oauth.manage.listAllApplications(ctx)),
       getOAuthApplication: createAuthEndpoint('/oauth-applications', {
         method: 'GET',
         body: z4.object({
           id: z4.string(),
         }),
         use: [sessionMiddleware],
-      }, async (ctx) => {
-        const session = ctx.context.session;
-        const user = ctx.context.session.user;
-
-        if (!session || !user) {
-          throw createAPIError(ErrorCodes.AUTH.UNAUTHORIZED);
-        }
-
-        const applications = await ctx.context.adapter.findMany({
-          model: 'oauthApplication',
-          where: [
-            {
-              field: 'id',
-              value: ctx.body.id,
-            },
-            {
-              field: 'userId',
-              value: user.id,
-            }
-          ]
-        }) as unknown as oauthApplicationModel[];
-        const application = applications[0];
-
-        if (!application) {
-          throw createAPIError(ErrorCodes.OAUTH.APPLICATION_NOT_FOUND);
-        }
-
-        const { clientSecret, ...oAuthapp } = application;
-
-        return oAuthapp;
-      }),
+      }, async (ctx) => oauth.manage.getApplicationById(ctx)),
       getOAuthApplicationByClientId: createAuthEndpoint('/oauth-applications/by-client-id', {
         method: 'GET',
         query: z4.object({
           client_id: z4.string(),
         }),
         use: [sessionMiddleware],
-      }, async (ctx) => {
-        const session = ctx.context.session;
-        const user = ctx.context.session.user;
-
-        if (!session || !user) {
-          throw createAPIError(ErrorCodes.AUTH.UNAUTHORIZED);
-        }
-
-        const applications = await ctx.context.adapter.findMany({
-          model: 'oauthApplication',
-          where: [
-            {
-              field: 'clientId',
-              value: ctx.query.client_id,
-            },
-            {
-              field: 'userId',
-              value: user.id,
-            }
-          ]
-        }) as unknown as oauthApplicationModel[];
-        const application = applications[0];
-
-        if (!application) {
-          throw createAPIError(ErrorCodes.OAUTH.APPLICATION_NOT_FOUND);
-        }
-
-        const { clientSecret, ...oAuthapp } = application;
-
-        return oAuthapp;
-      }),
+      }, async (ctx) => oauth.manage.getApplicationByClientId(ctx)),
       updateDisabled: createAuthEndpoint('/oauth-applications/update-disabled', {
         method: 'POST',
         use: [sessionMiddleware],
@@ -121,68 +38,7 @@ export const oauthApplicationPlugin = (): BetterAuthPlugin => {
           id: z4.string(),
           disabled: z4.boolean(),
         })
-      }, async (ctx) => {
-        const session = ctx.context.session;
-        const user = ctx.context.session.user;
-
-        if (!session || !user) {
-          throw createAPIError(ErrorCodes.AUTH.UNAUTHORIZED);
-        }
-
-        const application = await ctx.context.adapter.findOne({
-          model: 'oauthApplication',
-          where: [
-            {
-              field: 'id',
-              value: ctx.body.id,
-            },
-            {
-              field: 'userId',
-              value: user.id,
-            }
-          ]
-        }) as unknown as oauthApplicationModel;
-
-        if (!application) {
-          throw createAPIError(ErrorCodes.OAUTH.APPLICATION_NOT_FOUND);
-        }
-
-        await ctx.context.adapter.update({
-          model: 'oauthApplication',
-          where: [
-            {
-              operator: 'eq',
-              field: 'id',
-              value: application.id,
-            },
-            {
-              field: 'userId',
-              value: user.id,
-            }
-          ],
-          update: {
-            disabled: ctx.body.disabled,
-          },
-        });
-
-        const updated = await ctx.context.adapter.findOne({
-          model: 'oauthApplication',
-          where: [
-            {
-              field: 'id',
-              value: application.id,
-            },
-            {
-              field: 'userId',
-              value: user.id,
-            }
-          ]
-        });
-
-        const { clientSecret, ...oAuthapp } = updated as oauthApplicationModel;
-
-        return oAuthapp;
-      }),
+      }, async (ctx) => oauth.manage.updateApplicationDisabledStatus(ctx)),
       updateOAuthApplication: createAuthEndpoint('/oauth-applications/update', {
         method: 'POST',
         body: z4.object({
@@ -192,137 +48,14 @@ export const oauthApplicationPlugin = (): BetterAuthPlugin => {
           description: z4.string().optional(),
         }),
         use: [sessionMiddleware],
-      }, async (ctx) => {
-        const session = ctx.context.session;
-        const user = ctx.context.session.user;
-
-        if (!session || !user) {
-          throw createAPIError(ErrorCodes.AUTH.UNAUTHORIZED);
-        }
-
-        const applications = await ctx.context.adapter.findMany({
-          model: 'oauthApplication',
-          where: [
-            {
-              field: 'id',
-              value: ctx.body.id,
-            },
-            {
-              field: 'userId',
-              value: user.id,
-            }
-          ]
-        }) as unknown as oauthApplicationModel[];
-        const application = applications[0];
-
-        if (!application) {
-          throw createAPIError(ErrorCodes.OAUTH.APPLICATION_NOT_FOUND);
-        }
-
-        const redirectUris = ctx.body.redirectUris.join(',');
-
-        await ctx.context.adapter.update({
-          model: 'oauthApplication',
-          where: [
-            {
-              operator: 'eq',
-              field: 'id',
-              value: application.id,
-            },
-            {
-              field: 'userId',
-              value: user.id,
-            }
-          ],
-          update: {
-            name: ctx.body.name,
-            redirectURLs: redirectUris,
-          },
-        });
-
-        const updated = await ctx.context.adapter.findOne({
-          model: 'oauthApplication',
-          where: [
-            {
-              field: 'id',
-              value: application.id,
-            },
-            {
-              field: 'userId',
-              value: user.id,
-            }
-          ]
-        });
-
-        const { clientSecret, ...oAuthapp } = updated as oauthApplicationModel;
-
-        return oAuthapp;
-      }),
+      }, async (ctx) => oauth.manage.updateApplicationDetails(ctx)),
       regenerateSecret: createAuthEndpoint('/oauth-applications/regenerate-secret', {
         method: 'POST',
         body: z4.object({
           id: z4.string(),
         }),
         use: [sessionMiddleware],
-      }, async (ctx) => {
-        const session = ctx.context.session;
-        const user = ctx.context.session.user;
-
-        if (!session || !user) {
-          throw createAPIError(ErrorCodes.AUTH.UNAUTHORIZED);
-        }
-
-        const applications = await ctx.context.adapter.findMany({
-          model: 'oauthApplication',
-          where: [
-            {
-              field: 'id',
-              value: ctx.body.id,
-            },
-            {
-              field: 'userId',
-              value: user.id,
-            }
-          ]
-        }) as unknown as oauthApplicationModel[];
-        const application = applications[0];
-
-        if (!application) {
-          throw createAPIError(ErrorCodes.OAUTH.APPLICATION_NOT_FOUND);
-        }
-
-        const newSecret = generateRandomString(32);
-
-        await ctx.context.adapter.update({
-          model: 'oauthApplication',
-          where: [
-            {
-              operator: 'eq',
-              field: 'id',
-              value: application.id,
-            },
-            {
-              field: 'userId',
-              value: user.id,
-            }
-          ],
-          update: {
-            clientSecret: newSecret,
-          },
-        });
-
-        const updated = await ctx.context.adapter.findOne({
-          model: 'oauthApplication',
-          where: [
-            {
-              field: 'id',
-              value: application.id,
-            }
-          ]
-        });
-
-        return updated as oauthApplicationModel;
-      }),
+      }, async (ctx) => oauth.manage.regenerateApplicationSecret(ctx)),
       deleteOAuthApplication: createAuthEndpoint('/oauth-applications/delete', {
         method: 'POST',
         metadata: {
@@ -351,49 +84,7 @@ export const oauthApplicationPlugin = (): BetterAuthPlugin => {
           id: z4.string(),
         }),
         use: [sessionMiddleware],
-      }, async (ctx) => {
-        const session = ctx.context.session;
-        const user = ctx.context.session.user;
-
-        if (!session || !user) {
-          throw createAPIError(ErrorCodes.AUTH.UNAUTHORIZED);
-        }
-
-        const applications = await ctx.context.adapter.findMany({
-          model: 'oauthApplication',
-          where: [
-            {
-              field: 'id',
-              value: ctx.body.id,
-            },
-            {
-              field: 'userId',
-              value: user.id,
-            }
-          ]
-        }) as unknown as oauthApplicationModel[];
-        const application = applications[0];
-
-        if (!application) {
-          throw createAPIError(ErrorCodes.OAUTH.APPLICATION_NOT_FOUND);
-        }
-
-        await ctx.context.adapter.delete({
-          model: 'oauthApplication',
-          where: [
-            {
-              field: 'id',
-              value: application.id,
-            },
-            {
-              field: 'userId',
-              value: user.id,
-            }
-          ]
-        });
-
-        return { success: true };
-      }),
+      }, async (ctx) => oauth.manage.deleteApplication(ctx)),
     }
   } satisfies BetterAuthPlugin
 }

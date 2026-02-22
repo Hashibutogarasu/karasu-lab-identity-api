@@ -38,6 +38,27 @@ export function createAuth(
       }
       : undefined;
 
+  const socialProviders: Record<string, { clientId: string; clientSecret: string }> = {};
+
+  if (env.DISCORD_CLIENT_ID && env.DISCORD_CLIENT_SECRET) {
+    socialProviders.discord = {
+      clientId: env.DISCORD_CLIENT_ID,
+      clientSecret: env.DISCORD_CLIENT_SECRET,
+    };
+  }
+  if (env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET) {
+    socialProviders.google = {
+      clientId: env.GOOGLE_CLIENT_ID,
+      clientSecret: env.GOOGLE_CLIENT_SECRET,
+    };
+  }
+  if (env.X_CLIENT_ID && env.X_CLIENT_SECRET) {
+    socialProviders.twitter = {
+      clientId: env.X_CLIENT_ID,
+      clientSecret: env.X_CLIENT_SECRET,
+    };
+  }
+
   const options: BetterAuthOptions = {
     baseURL: env.BETTER_AUTH_URL,
     advanced: advancedConfig,
@@ -60,20 +81,7 @@ export function createAuth(
     },
     appName: "Karasu Lab",
     secret: env.BETTER_AUTH_SECRET,
-    socialProviders: {
-      discord: {
-        clientId: env.DISCORD_CLIENT_ID || "",
-        clientSecret: env.DISCORD_CLIENT_SECRET || "",
-      },
-      google: {
-        clientId: env.GOOGLE_CLIENT_ID || "",
-        clientSecret: env.GOOGLE_CLIENT_SECRET || "",
-      },
-      twitter: {
-        clientId: env.X_CLIENT_ID || "",
-        clientSecret: env.X_CLIENT_SECRET || "",
-      },
-    },
+    socialProviders,
     emailAndPassword: {
       enabled: true,
       requireEmailVerification: true,
@@ -196,7 +204,7 @@ export function createAuth(
     ...options,
     ...overrides,
     plugins: [...(options.plugins || []), ...(overrides.plugins || [])],
-    socialProviders: { ...options.socialProviders, ...overrides.socialProviders }
+    socialProviders: { ...socialProviders, ...overrides.socialProviders }
   };
 
   return betterAuth(finalOptions);
