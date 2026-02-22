@@ -1,6 +1,17 @@
 import i18next from 'i18next';
-const en = require('../../i18n/locales/en.json');
-const ja = require('../../i18n/locales/ja.json');
+import { readFileSync } from 'fs';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+const loadLocale = (lang: string) => {
+    return JSON.parse(readFileSync(join(__dirname, `../../i18n/locales/${lang}.json`), 'utf-8'));
+};
+
+const en = loadLocale('en');
+const ja = loadLocale('ja');
 
 let initPromise: Promise<any> | null = null;
 
