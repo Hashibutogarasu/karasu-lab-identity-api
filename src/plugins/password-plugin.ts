@@ -11,7 +11,7 @@ export const passwordPlugin = (): BetterAuthPlugin => {
   return {
     id: "password",
     endpoints: {
-      verify: createAuthEndpoint(interfacePlugin.endpoints.verify.options, async (ctx) => {
+      verify: createAuthEndpoint(interfacePlugin.endpoints.verify.path, interfacePlugin.endpoints.verify.options, async (ctx) => {
         const session = ctx.context.session;
         const user = ctx.context.session.user;
         const { password } = ctx.body;
@@ -33,7 +33,7 @@ export const passwordPlugin = (): BetterAuthPlugin => {
 
         return valid;
       }),
-      set: createAuthEndpoint(interfacePlugin.endpoints.set.options, async (ctx) => {
+      set: createAuthEndpoint(interfacePlugin.endpoints.set.path, interfacePlugin.endpoints.set.options, async (ctx) => {
         const session = ctx.context.session;
         const user = ctx.context.session.user;
         const { newPassword } = ctx.body;

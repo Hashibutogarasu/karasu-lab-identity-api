@@ -1,41 +1,18 @@
-/* eslint-disable @typescript-eslint/unbound-method */
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { BetterAuthPlugin, Session, User, AuthContext } from "better-auth";
 import { oauthApplicationPlugin } from "../src/plugins/oauth-application-plugin.js";
 import { OAuthContext } from "../src/plugins/oauth/oauth.interface.js";
-import { OAuth } from "../src/plugins/oauth/oauth.js";
-import { OAuthManage } from "../src/plugins/oauth/oauth.manage.js";
-
-vi.mock("../src/plugins/oauth/oauth.manage.js", () => {
-	return {
-		OAuthManage: vi.fn().mockImplementation(() => ({
-			listAllApplications: vi.fn(),
-			getApplicationById: vi.fn(),
-			getApplicationByClientId: vi.fn(),
-			updateApplicationDisabledStatus: vi.fn(),
-			updateApplicationDetails: vi.fn(),
-			regenerateApplicationSecret: vi.fn(),
-			deleteApplication: vi.fn(),
-		})),
-	};
-});
-
-vi.mock("../src/plugins/oauth/oauth.js", () => {
-	return {
-		OAuth: vi.fn().mockImplementation(() => ({
-			manage: new OAuthManage(),
-		})),
-	};
-});
+import { MockOAuth } from "./mocks/oauth.mock.js";
+import { MockOAuthManage } from "./mocks/oauth-manage.mock.js";
 
 describe("oauthApplicationPlugin", () => {
 	let plugin: BetterAuthPlugin;
-	let mockOAuth: OAuth;
+	let mockOAuth: MockOAuth;
 
 	beforeEach(() => {
 		vi.clearAllMocks();
 		
-		mockOAuth = new OAuth();
+		mockOAuth = new MockOAuth();
 		
 		plugin = oauthApplicationPlugin(mockOAuth);
 	});
@@ -48,6 +25,7 @@ describe("oauthApplicationPlugin", () => {
 			disabled: true,
 		},
 		query: {
+			id: "test-app-id",
 			client_id: "test-client-id",
 		},
 		params: {},
@@ -66,48 +44,48 @@ describe("oauthApplicationPlugin", () => {
 	});
 
 	it("should have the correct plugin id", () => {
-		expect(plugin.id).toBe("oauth-application");
+		expect(plugin.id).toBe("oauthApplications");
 	});
 
-	it("should call listAllApplications when oauthApplications endpoint is called", async () => {
-		const endpoint = plugin.endpoints?.oauthApplications as any;
+	it("should call listAllApplications when all endpoint is called", async () => {
+		const endpoint = plugin.endpoints?.all as any;
 		await endpoint(getMockCtx());
-		expect(mockOAuth.manage.listAllApplications).toHaveBeenCalled();
+		expect((mockOAuth.manage as MockOAuthManage).listAllApplications).toHaveBeenCalled();
 	});
 
-	it("should call getApplicationById when getOAuthApplication endpoint is called", async () => {
-		const endpoint = plugin.endpoints?.getOAuthApplication as any;
+	it("should call getApplicationById when getApp endpoint is called", async () => {
+		const endpoint = plugin.endpoints?.getApp as any;
 		await endpoint(getMockCtx());
-		expect(mockOAuth.manage.getApplicationById).toHaveBeenCalled();
+		expect((mockOAuth.manage as MockOAuthManage).getApplicationById).toHaveBeenCalled();
 	});
 
-	it("should call getApplicationByClientId when getOAuthApplicationByClientId endpoint is called", async () => {
-		const endpoint = plugin.endpoints?.getOAuthApplicationByClientId as any;
+	it("should call getApplicationByClientId when byClientId endpoint is called", async () => {
+		const endpoint = plugin.endpoints?.byClientId as any;
 		await endpoint(getMockCtx());
-		expect(mockOAuth.manage.getApplicationByClientId).toHaveBeenCalled();
+		expect((mockOAuth.manage as MockOAuthManage).getApplicationByClientId).toHaveBeenCalled();
 	});
 
 	it("should call updateApplicationDisabledStatus when updateDisabled endpoint is called", async () => {
 		const endpoint = plugin.endpoints?.updateDisabled as any;
 		await endpoint(getMockCtx());
-		expect(mockOAuth.manage.updateApplicationDisabledStatus).toHaveBeenCalled();
+		expect((mockOAuth.manage as MockOAuthManage).updateApplicationDisabledStatus).toHaveBeenCalled();
 	});
 
-	it("should call updateApplicationDetails when updateOAuthApplication endpoint is called", async () => {
-		const endpoint = plugin.endpoints?.updateOAuthApplication as any;
+	it("should call updateApplicationDetails when update endpoint is called", async () => {
+		const endpoint = plugin.endpoints?.update as any;
 		await endpoint(getMockCtx());
-		expect(mockOAuth.manage.updateApplicationDetails).toHaveBeenCalled();
+		expect((mockOAuth.manage as MockOAuthManage).updateApplicationDetails).toHaveBeenCalled();
 	});
 
 	it("should call regenerateApplicationSecret when regenerateSecret endpoint is called", async () => {
 		const endpoint = plugin.endpoints?.regenerateSecret as any;
 		await endpoint(getMockCtx());
-		expect(mockOAuth.manage.regenerateApplicationSecret).toHaveBeenCalled();
+		expect((mockOAuth.manage as MockOAuthManage).regenerateApplicationSecret).toHaveBeenCalled();
 	});
 
-	it("should call deleteApplication when deleteOAuthApplication endpoint is called", async () => {
-		const endpoint = plugin.endpoints?.deleteOAuthApplication as any;
+	it("should call deleteApplication when delete endpoint is called", async () => {
+		const endpoint = plugin.endpoints?.delete as any;
 		await endpoint(getMockCtx());
-		expect(mockOAuth.manage.deleteApplication).toHaveBeenCalled();
+		expect((mockOAuth.manage as MockOAuthManage).deleteApplication).toHaveBeenCalled();
 	});
 });
