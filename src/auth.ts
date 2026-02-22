@@ -8,7 +8,6 @@ import { passwordPlugin } from "./plugins/password-plugin.js";
 import { oauthApplicationPlugin } from "./plugins/oauth-application-plugin.js";
 import { authConfig } from "./config/auth.env.js";
 import { emailConfig } from "./config/email.env.js";
-import { safeArray } from "./utils/array.util.js";
 import { IConfigService } from "./shared/config/config.service.interface.js";
 import { IMailService } from "./shared/mail/mail.service.interface.js";
 import { IDataBaseService } from "./shared/database/database.service.interface.js";
@@ -17,26 +16,19 @@ import { MailService } from "./shared/mail/mail.service.js";
 import { PostgresDatabaseService } from "./shared/database/postgres-database.service.js";
 import { Environment } from "./types/environment.js";
 import { setupI18n } from "./shared/i18n/i18n.setup.js";
+import { PasskeyAuth } from "./plugins/passkey/passkey.service.js";
+import { IPasskeyAuth } from "./plugins/passkey/passkey.interface.js";
 import { createAPIError, ErrorCodes } from "./shared/errors/error.codes.js";
 
 export function createAuth(
   configService: IConfigService,
   dbService: IDataBaseService,
   mailService: IMailService,
+  passkeyAuth: IPasskeyAuth,
   overrides: Partial<BetterAuthOptions> = {}
 ): ReturnType<typeof betterAuth> {
   const env = configService.getAll();
   const environment = env.NODE_ENV as Environment;
-
-  const advancedConfig =
-    environment === Environment.PRODUCTION
-      ? {
-        crossSubDomainCookies: {
-          enabled: true,
-          domain: env.COOKIE_DOMAIN ?? '.karasu256.com',
-        },
-      }
-      : undefined;
 
   const socialProviders: Record<string, { clientId: string; clientSecret: string }> = {};
 
@@ -61,19 +53,15 @@ export function createAuth(
 
   const options: BetterAuthOptions = {
     baseURL: env.BETTER_AUTH_URL,
-    advanced: advancedConfig,
+    advanced: {
+      crossSubDomainCookies: {
+        enabled: true,
+        domain: env.COOKIE_DOMAIN ?? '.karasu256.com',
+      },
+    },
     trustedOrigins: [
-      ...safeArray([
-        env.FRONTEND_ORIGIN,
-        ...environment !== Environment.PRODUCTION ? [
-          "http://localhost:3000",
-          "http://localhost:3001",
-        ] : [],
-        'https://karasu256.com',
-        'https://www.karasu256.com',
-        'https://id.karasu256.com',
-        'https://sso.karasu256.com',
-      ]),
+      "http://localhost:3000",
+      "https://sso.karasu256.com",
     ],
     logger: {
       level: environment === Environment.PRODUCTION ? "info" : "debug",
@@ -128,16 +116,9 @@ export function createAuth(
         allowDynamicClientRegistration: true,
       }),
       passkey({
-        rpID: env.PASSKEY_RP_ID ?? "karasu256.com",
-        rpName: env.PASSKEY_RP_NAME,
-        origin: safeArray([
-          env.PASSKEY_ORIGIN,
-          "http://localhost:3000",
-          "http://localhost:3001",
-          "https://karasu256.com",
-          "https://www.karasu256.com",
-          "https://sso.karasu256.com",
-        ]),
+        rpID: passkeyAuth.getRPID(),
+        rpName: passkeyAuth.getRPName(),
+        origin: passkeyAuth.getOrigin(),
       }),
       twoFactor(),
       organization(),
@@ -231,10 +212,12 @@ export const auth: ReturnType<typeof betterAuth> = await (async () => {
     `${emailConfig.EMAIL_FROM_NAME} <${emailConfig.EMAIL_FROM_ADDRESS}>`
   );
   const prodDbService = new PostgresDatabaseService(environment, authConfig.DATABASE_URL || "");
+  const prodPasskeyAuth = new PasskeyAuth(prodConfigService);
 
   return createAuth(
     prodConfigService,
     prodDbService,
-    prodMailService
+    prodMailService,
+    prodPasskeyAuth
   );
 })();
