@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 
 import { BetterAuthPlugin } from "better-auth"
 import { createAuthEndpoint } from "better-auth/api"
