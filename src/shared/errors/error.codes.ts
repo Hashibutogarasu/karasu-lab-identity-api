@@ -24,8 +24,8 @@ export const ErrorCodes = {
 	},
 } as const satisfies Record<string, Record<string, ErrorDefinition>>;
 
-export const createAPIError = (error: ErrorDefinition, options?: any): APIError => {
-	return new APIError(error.status as any, {
-		message: i18next.t(error.key, options) as any as string,
+export const createAPIError = (error: ErrorDefinition, options?: Record<string, unknown>): APIError => {
+	return new APIError(error.status as ConstructorParameters<typeof APIError>[0], {
+		message: i18next.t(error.key, options),
 	});
 };

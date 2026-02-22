@@ -1,6 +1,6 @@
 
 export interface II18nService {
-	translate(key: string, options?: any): string;
+	translate(key: string, options?: Record<string, unknown>): string;
 	setLanguage(lang: string): Promise<void>;
 	getCurrentLanguage(): string;
 }

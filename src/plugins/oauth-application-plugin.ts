@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unnecessary-type-assertion */
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { BetterAuthPlugin, Where } from "better-auth"
+import { BetterAuthPlugin } from "better-auth"
 import { createAuthEndpoint, sessionMiddleware } from "better-auth/api"
 import { oauthApplicationModel } from "../generated/models.js";
 import { generateRandomString } from "better-auth/crypto";

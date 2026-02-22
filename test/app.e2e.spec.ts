@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, Module } from '@nestjs/common';
 import { App } from 'supertest/types.js';
+import request from 'supertest';
 import { AppController } from '../src/app.controller.js';
 import { AppService } from '../src/app.service.js';
 
@@ -24,5 +25,11 @@ describe('AppController (e2e)', () => {
 
   it('should be defined', () => {
     expect(app).toBeDefined();
+  });
+
+  it('/ (GET)', () => {
+    return request(app.getHttpServer())
+      .get('/')
+      .expect(200);
   });
 });

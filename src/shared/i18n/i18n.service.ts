@@ -12,8 +12,8 @@ export class I18nService implements II18nService {
 		await setupI18n();
 	}
 
-	translate(key: string, options?: any): string {
-		return i18next.t(key, options) as any as string;
+	translate(key: string, options?: Record<string, unknown>): string {
+		return i18next.t(key, options);
 	}
 
 	async setLanguage(lang: string): Promise<void> {
