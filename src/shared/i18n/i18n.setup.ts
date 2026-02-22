@@ -7,7 +7,20 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 const loadLocale = (lang: string) => {
-    return JSON.parse(readFileSync(join(__dirname, `../../i18n/locales/${lang}.json`), 'utf-8'));
+    const paths = [
+        join(__dirname, `../../i18n/locales/${lang}.json`),
+        join(__dirname, `../../../i18n/locales/${lang}.json`),
+    ];
+
+    for (const path of paths) {
+        try {
+            const content = readFileSync(path, 'utf-8');
+            return JSON.parse(content);
+        } catch (e) {
+            // continue
+        }
+    }
+    throw new Error(`Locale file for ${lang} not found`);
 };
 
 const en = loadLocale('en');
