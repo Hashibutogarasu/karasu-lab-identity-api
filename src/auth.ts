@@ -62,6 +62,8 @@ export function createAuth(
     trustedOrigins: [
       "http://localhost:3000",
       "https://sso.karasu256.com",
+      "https://karasu256.com",
+      "https://www.karasu256.com",
     ],
     logger: {
       level: environment === Environment.PRODUCTION ? "info" : "debug",
