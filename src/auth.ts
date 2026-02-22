@@ -1,21 +1,32 @@
 /* eslint-disable @typescript-eslint/require-await */
 import { betterAuth, BetterAuthOptions } from "better-auth";
-import { Pool } from "pg";
 import { createAuthMiddleware, deviceAuthorization, emailOTP, jwt, magicLink, oidcProvider, openAPI, organization, twoFactor } from "better-auth/plugins";
 import { passkey } from "better-auth/plugins/passkey";
 import { nextCookies } from "better-auth/next-js";
-import { sendEmail } from "./resend.js";
 import { getFrontendUrl } from "./utils.js";
 import { passwordPlugin } from "./plugins/password-plugin.js";
 import { oauthApplicationPlugin } from "./plugins/oauth-application-plugin.js";
-import { AuthEnv, authConfig } from "./config/auth.env.js";
+import { authConfig } from "./config/auth.env.js";
+import { safeArray } from "./utils/array.util.js";
+import { IConfigService } from "./shared/config/config.service.interface.js";
+import { IMailService } from "./shared/mail/mail.service.interface.js";
+import { IDataBaseService } from "./shared/database/database.service.interface.js";
+import { ConfigService } from "./shared/config/config.service.js";
+import { MailService } from "./shared/mail/mail.service.js";
+import { PostgresDatabaseService } from "./shared/database/postgres-database.service.js";
+import { Environment } from "./types/environment.js";
 
-const safeArray = <T>(arr: Array<T | undefined | null>) =>
-  arr.filter((v): v is T => v != null);
+export function createAuth(
+  configService: IConfigService,
+  dbService: IDataBaseService,
+  mailService: IMailService,
+  overrides: Partial<BetterAuthOptions> = {}
+): ReturnType<typeof betterAuth> {
+  const env = configService.getAll();
+  const environment = env.NODE_ENV as Environment;
 
-export function createAuth(env: AuthEnv, overrides: Partial<BetterAuthOptions> = {}): ReturnType<typeof betterAuth> {
   const advancedConfig =
-    env.NODE_ENV === 'production'
+    environment === Environment.PRODUCTION
       ? {
         crossSubDomainCookies: {
           enabled: true,
@@ -30,7 +41,7 @@ export function createAuth(env: AuthEnv, overrides: Partial<BetterAuthOptions> =
     trustedOrigins: [
       ...safeArray([
         env.FRONTEND_ORIGIN,
-        ...env.NODE_ENV !== "production" ? [
+        ...environment !== Environment.PRODUCTION ? [
           "http://localhost:3000",
           "http://localhost:3001",
         ] : [],
@@ -41,7 +52,7 @@ export function createAuth(env: AuthEnv, overrides: Partial<BetterAuthOptions> =
       ]),
     ],
     logger: {
-      level: env.NODE_ENV === "production" ? "info" : "debug",
+      level: environment === Environment.PRODUCTION ? "info" : "debug",
       disabled: false,
     },
     appName: "Karasu Lab",
@@ -66,7 +77,7 @@ export function createAuth(env: AuthEnv, overrides: Partial<BetterAuthOptions> =
     },
     emailVerification: {
       sendVerificationEmail: async ({ user, url }) => {
-        await sendEmail({
+        await mailService.sendEmail({
           to: user.email,
           subject: "Verify your email address",
           html: `Click the link to verify your email: <a href="${url}">${url}</a>`,
@@ -126,7 +137,7 @@ export function createAuth(env: AuthEnv, overrides: Partial<BetterAuthOptions> =
             String(type ?? '')
           )}&email=${encodeURIComponent(email)}&otp=${encodeURIComponent(otp)}`;
 
-          await sendEmail({
+          await mailService.sendEmail({
             to: email,
             subject: "Your verification code",
             html: `Your verification code is: <strong>${otp}</strong><br/><br/>Click to verify: <a href="${link}">${link}</a>`,
@@ -141,7 +152,7 @@ export function createAuth(env: AuthEnv, overrides: Partial<BetterAuthOptions> =
             'magic-link'
           )}&email=${encodeURIComponent(email)}&otp=${encodeURIComponent(token)}`;
 
-          await sendEmail({
+          await mailService.sendEmail({
             to: email,
             subject: "Your magic link",
             html: `Click the link to sign in: <a href="${link}">${link}</a>`,
@@ -156,7 +167,7 @@ export function createAuth(env: AuthEnv, overrides: Partial<BetterAuthOptions> =
       changeEmail: {
         enabled: true,
         sendChangeEmailVerification: async ({ newEmail, url }) => {
-          await sendEmail({
+          await mailService.sendEmail({
             to: newEmail,
             subject: "Confirm your new email address",
             html: `Click the link to confirm your new email address: <a href="${url}">${url}</a>`,
@@ -170,9 +181,7 @@ export function createAuth(env: AuthEnv, overrides: Partial<BetterAuthOptions> =
       },
       updateAccountOnSignIn: true,
     },
-    database: new Pool({
-      connectionString: env.DATABASE_URL,
-    }),
+    database: dbService.getHandler(),
     rateLimit: {
       enabled: true,
       window: 60,
@@ -190,4 +199,24 @@ export function createAuth(env: AuthEnv, overrides: Partial<BetterAuthOptions> =
   return betterAuth(finalOptions);
 }
 
-export const auth: ReturnType<typeof betterAuth> = createAuth(authConfig);
+const environment = authConfig.NODE_ENV as Environment;
+
+export const auth: ReturnType<typeof betterAuth> = (() => {
+  if (environment === Environment.TEST) {
+    return {} as unknown as ReturnType<typeof betterAuth>;
+  }
+
+  const prodConfigService = new ConfigService(environment);
+  const prodMailService = new MailService(
+    environment,
+    process.env.RESEND_API_KEY || "",
+    `${process.env.EMAIL_FROM_NAME} <${process.env.EMAIL_FROM_ADDRESS}>`
+  );
+  const prodDbService = new PostgresDatabaseService(environment, authConfig.DATABASE_URL || "");
+
+  return createAuth(
+    prodConfigService,
+    prodDbService,
+    prodMailService
+  );
+})();

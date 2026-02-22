@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { testAuth } from './auth.setup.js';
-import { sendEmail } from '../../src/resend.js';
+import { testAuth, testMailService } from './auth.setup.js';
 
 const BASE_URL = 'http://localhost:3000/api/auth';
 
@@ -170,8 +169,8 @@ describe('Better Auth Integration Tests', () => {
 
     expect(res.status).toBe(200);
     
-    expect(sendEmail).toHaveBeenCalled();
-    const mockCallArgs = vi.mocked(sendEmail).mock.calls[0][0] as { to: string; subject: string; html: string };
+    expect(testMailService.sendEmail).toHaveBeenCalled();
+    const mockCallArgs = vi.mocked(testMailService.sendEmail).mock.calls[0][0] as { to: string; subject: string; html: string };
     
     expect(mockCallArgs.to).toBe('otpuser@example.com');
     expect(mockCallArgs.subject).toBe('Your verification code');

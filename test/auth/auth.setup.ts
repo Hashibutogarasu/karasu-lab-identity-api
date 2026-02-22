@@ -1,27 +1,26 @@
-import { vi, beforeAll, afterAll } from 'vitest';
-import Database from 'better-sqlite3';
-import { AuthEnv } from '../../src/config/auth.env.js';
+import { beforeAll, afterAll } from 'vitest';
 import { createAuth } from '../../src/auth.js';
 import { genericOAuth } from "better-auth/plugins";
+import { MockConfigService } from '../mocks/config.service.mock.js';
+import { MockMailService } from '../mocks/mail.service.mock.js';
+import { MemoryDatabaseService } from '../mocks/memory-database.service.js';
+import { Environment } from '../../src/types/environment.js';
 
-vi.mock('../../src/resend.js', () => ({
-  sendEmail: vi.fn().mockResolvedValue({ id: 'test_email_id' })
-}));
-
-export let testDb: ReturnType<typeof Database>;
+export let testDbService: MemoryDatabaseService;
+export let testMailService: MockMailService;
 export let testAuth: ReturnType<typeof createAuth>;
 
 beforeAll(async () => {
-  testDb = new Database(':memory:');
-  
-  const testEnv: AuthEnv = {
-    NODE_ENV: 'test',
+  const configService = new MockConfigService({
     BETTER_AUTH_URL: 'http://localhost:3000/api/auth',
     BETTER_AUTH_SECRET: 'super-secret-test-key',
     FRONTEND_ORIGIN: 'http://localhost:3000',
-  };
-  testAuth = createAuth(testEnv, {
-    database: testDb,
+  }, Environment.TEST);
+
+  testMailService = new MockMailService(Environment.TEST);
+  testDbService = new MemoryDatabaseService(Environment.TEST);
+  
+  testAuth = createAuth(configService, testDbService, testMailService, {
     plugins: [
       genericOAuth({
         config: [
@@ -40,11 +39,10 @@ beforeAll(async () => {
 
   const ctx = await testAuth.$context;
   await ctx.runMigrations();
-
 });
 
-afterAll(() => {
-  if (testDb) {
-    testDb.close();
+afterAll(async () => {
+  if (testDbService) {
+    await testDbService.close();
   }
 });
