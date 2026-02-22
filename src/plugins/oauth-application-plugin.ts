@@ -1,12 +1,13 @@
 /* eslint-disable @typescript-eslint/no-unnecessary-type-assertion */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { BetterAuthPlugin, Where } from "better-auth"
-import { APIError, createAuthEndpoint, sessionMiddleware } from "better-auth/api"
+import { createAuthEndpoint, sessionMiddleware } from "better-auth/api"
 import { oauthApplicationModel } from "../generated/models.js";
 import { generateRandomString } from "better-auth/crypto";
 import z4 from "zod/v4";
+import { createAPIError, ErrorCodes } from "../shared/errors/error.codes.js";
 
-export const oauthApplicationPlugin = () => {
+export const oauthApplicationPlugin = (): BetterAuthPlugin => {
   return {
     id: "oauth-application",
     endpoints: {
@@ -18,7 +19,7 @@ export const oauthApplicationPlugin = () => {
         const user = ctx.context.session.user;
 
         if (!session || !user) {
-          throw new APIError('UNAUTHORIZED');
+          throw createAPIError(ErrorCodes.AUTH.UNAUTHORIZED);
         }
 
         const applications = await ctx.context.adapter.findMany({
@@ -50,7 +51,7 @@ export const oauthApplicationPlugin = () => {
         const user = ctx.context.session.user;
 
         if (!session || !user) {
-          throw new APIError('UNAUTHORIZED');
+          throw createAPIError(ErrorCodes.AUTH.UNAUTHORIZED);
         }
 
         const applications = await ctx.context.adapter.findMany({
@@ -69,9 +70,7 @@ export const oauthApplicationPlugin = () => {
         const application = applications[0];
 
         if (!application) {
-          throw new APIError('NOT_FOUND', {
-            message: 'OAuth Application not found',
-          });
+          throw createAPIError(ErrorCodes.OAUTH.APPLICATION_NOT_FOUND);
         }
 
         const { clientSecret, ...oAuthapp } = application;
@@ -89,7 +88,7 @@ export const oauthApplicationPlugin = () => {
         const user = ctx.context.session.user;
 
         if (!session || !user) {
-          throw new APIError('UNAUTHORIZED');
+          throw createAPIError(ErrorCodes.AUTH.UNAUTHORIZED);
         }
 
         const applications = await ctx.context.adapter.findMany({
@@ -108,9 +107,7 @@ export const oauthApplicationPlugin = () => {
         const application = applications[0];
 
         if (!application) {
-          throw new APIError('NOT_FOUND', {
-            message: 'OAuth Application not found',
-          });
+          throw createAPIError(ErrorCodes.OAUTH.APPLICATION_NOT_FOUND);
         }
 
         const { clientSecret, ...oAuthapp } = application;
@@ -129,7 +126,7 @@ export const oauthApplicationPlugin = () => {
         const user = ctx.context.session.user;
 
         if (!session || !user) {
-          throw new APIError('UNAUTHORIZED');
+          throw createAPIError(ErrorCodes.AUTH.UNAUTHORIZED);
         }
 
         const application = await ctx.context.adapter.findOne({
@@ -147,9 +144,7 @@ export const oauthApplicationPlugin = () => {
         }) as unknown as oauthApplicationModel;
 
         if (!application) {
-          throw new APIError('NOT_FOUND', {
-            message: 'OAuth Application not found',
-          });
+          throw createAPIError(ErrorCodes.OAUTH.APPLICATION_NOT_FOUND);
         }
 
         await ctx.context.adapter.update({
@@ -202,7 +197,7 @@ export const oauthApplicationPlugin = () => {
         const user = ctx.context.session.user;
 
         if (!session || !user) {
-          throw new APIError('UNAUTHORIZED');
+          throw createAPIError(ErrorCodes.AUTH.UNAUTHORIZED);
         }
 
         const applications = await ctx.context.adapter.findMany({
@@ -221,9 +216,7 @@ export const oauthApplicationPlugin = () => {
         const application = applications[0];
 
         if (!application) {
-          throw new APIError('NOT_FOUND', {
-            message: 'OAuth Application not found',
-          });
+          throw createAPIError(ErrorCodes.OAUTH.APPLICATION_NOT_FOUND);
         }
 
         const redirectUris = ctx.body.redirectUris.join(',');
@@ -276,7 +269,7 @@ export const oauthApplicationPlugin = () => {
         const user = ctx.context.session.user;
 
         if (!session || !user) {
-          throw new APIError('UNAUTHORIZED');
+          throw createAPIError(ErrorCodes.AUTH.UNAUTHORIZED);
         }
 
         const applications = await ctx.context.adapter.findMany({
@@ -295,9 +288,7 @@ export const oauthApplicationPlugin = () => {
         const application = applications[0];
 
         if (!application) {
-          throw new APIError('NOT_FOUND', {
-            message: 'OAuth Application not found',
-          });
+          throw createAPIError(ErrorCodes.OAUTH.APPLICATION_NOT_FOUND);
         }
 
         const newSecret = generateRandomString(32);
@@ -365,7 +356,7 @@ export const oauthApplicationPlugin = () => {
         const user = ctx.context.session.user;
 
         if (!session || !user) {
-          throw new APIError('UNAUTHORIZED');
+          throw createAPIError(ErrorCodes.AUTH.UNAUTHORIZED);
         }
 
         const applications = await ctx.context.adapter.findMany({
@@ -384,9 +375,7 @@ export const oauthApplicationPlugin = () => {
         const application = applications[0];
 
         if (!application) {
-          throw new APIError('NOT_FOUND', {
-            message: 'OAuth Application not found',
-          });
+          throw createAPIError(ErrorCodes.OAUTH.APPLICATION_NOT_FOUND);
         }
 
         await ctx.context.adapter.delete({

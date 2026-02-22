@@ -16,6 +16,8 @@ import { ConfigService } from "./shared/config/config.service.js";
 import { MailService } from "./shared/mail/mail.service.js";
 import { PostgresDatabaseService } from "./shared/database/postgres-database.service.js";
 import { Environment } from "./types/environment.js";
+import { setupI18n } from "./shared/i18n/i18n.setup.js";
+import { createAPIError, ErrorCodes } from "./shared/errors/error.codes.js";
 
 export function createAuth(
   configService: IConfigService,
@@ -202,15 +204,17 @@ export function createAuth(
 
 const environment = authConfig.NODE_ENV as Environment;
 
-export const auth: ReturnType<typeof betterAuth> = (() => {
+export const auth: ReturnType<typeof betterAuth> = await (async () => {
   if (environment === Environment.TEST) {
     return {} as unknown as ReturnType<typeof betterAuth>;
   }
 
+  await setupI18n();
+
   const prodConfigService = new ConfigService(environment);
 
   if (!emailConfig.RESEND_API_KEY) {
-    throw new Error("RESEND_API_KEY is required in production environment.");
+    throw createAPIError(ErrorCodes.SYSTEM.RESEND_API_KEY_REQUIRED);
   }
 
   const prodMailService = new MailService(

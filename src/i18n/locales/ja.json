@@ -1,0 +1,14 @@
+{
+	"auth": {
+		"unauthorized": "認証されていません",
+		"password_not_set": "パスワードが設定されていません",
+		"password_already_set": "パスワードは既に設定されています",
+		"not_found": "リソースが見つかりません"
+	},
+	"oauth": {
+		"application_not_found": "OAuthアプリケーションが見つかりません"
+	},
+	"system": {
+		"resend_api_key_required": "本番環境ではRESEND_API_KEYが必要です。"
+	}
+}

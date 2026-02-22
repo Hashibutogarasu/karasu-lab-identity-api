@@ -1,11 +1,12 @@
 
 import { BetterAuthPlugin } from "better-auth"
-import { APIError, createAuthEndpoint, sessionMiddleware } from "better-auth/api"
+import { createAuthEndpoint, sessionMiddleware } from "better-auth/api"
 import { hashPassword, verifyPassword as verifyPasswordCrypto } from "better-auth/crypto";
 import z4 from "zod/v4";
 import cuid from "cuid";
+import { createAPIError, ErrorCodes } from "../shared/errors/error.codes.js";
 
-export const passwordPlugin = () => {
+export const passwordPlugin = (): BetterAuthPlugin => {
   return {
     id: "password",
     endpoints: {
@@ -21,15 +22,13 @@ export const passwordPlugin = () => {
         const { password } = ctx.body;
 
         if (!session || !user) {
-          throw new APIError('UNAUTHORIZED');
+          throw createAPIError(ErrorCodes.AUTH.UNAUTHORIZED);
         }
 
         const account = (await ctx.context.internalAdapter.findAccountByUserId(user.id))[0];
 
         if (!account || !account.password) {
-          throw new APIError('BAD_REQUEST', {
-            message: 'User does not have a password set',
-          });
+          throw createAPIError(ErrorCodes.AUTH.PASSWORD_NOT_SET);
         }
 
         const valid = await verifyPasswordCrypto({
@@ -51,7 +50,7 @@ export const passwordPlugin = () => {
         const { newPassword } = ctx.body;
 
         if (!session || !user) {
-          throw new APIError('UNAUTHORIZED');
+          throw createAPIError(ErrorCodes.AUTH.UNAUTHORIZED);
         }
 
         const credentialAccounts = (await ctx.context.internalAdapter.findAccountByUserId(user.id)).filter((account) => {
@@ -72,9 +71,7 @@ export const passwordPlugin = () => {
           }
         }
         else {
-          throw new APIError('BAD_REQUEST', {
-            message: 'User already has a password set',
-          });
+          throw createAPIError(ErrorCodes.AUTH.PASSWORD_ALREADY_SET);
         }
       })
     }
