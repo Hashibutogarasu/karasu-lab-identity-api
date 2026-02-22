@@ -7,6 +7,7 @@ import { getFrontendUrl } from "./utils.js";
 import { passwordPlugin } from "./plugins/password-plugin.js";
 import { oauthApplicationPlugin } from "./plugins/oauth-application-plugin.js";
 import { authConfig } from "./config/auth.env.js";
+import { emailConfig } from "./config/email.env.js";
 import { safeArray } from "./utils/array.util.js";
 import { IConfigService } from "./shared/config/config.service.interface.js";
 import { IMailService } from "./shared/mail/mail.service.interface.js";
@@ -207,10 +208,15 @@ export const auth: ReturnType<typeof betterAuth> = (() => {
   }
 
   const prodConfigService = new ConfigService(environment);
+
+  if (!emailConfig.RESEND_API_KEY) {
+    throw new Error("RESEND_API_KEY is required in production environment.");
+  }
+
   const prodMailService = new MailService(
     environment,
-    process.env.RESEND_API_KEY || "",
-    `${process.env.EMAIL_FROM_NAME} <${process.env.EMAIL_FROM_ADDRESS}>`
+    emailConfig.RESEND_API_KEY,
+    `${emailConfig.EMAIL_FROM_NAME} <${emailConfig.EMAIL_FROM_ADDRESS}>`
   );
   const prodDbService = new PostgresDatabaseService(environment, authConfig.DATABASE_URL || "");
 
