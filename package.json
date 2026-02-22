@@ -25,7 +25,7 @@
     "prisma:pull": "npx prisma db pull"
   },
   "dependencies": {
-    "@karasu-lab/common": "workspace:*",
+    "@karasu-lab/common": "git+https://github.com/Hashibutogarasu/karasu-lab-api-common.git",
     "@nestjs/common": "^11.0.1",
     "@nestjs/core": "^11.0.1",
     "@nestjs/platform-express": "^11.0.1",
