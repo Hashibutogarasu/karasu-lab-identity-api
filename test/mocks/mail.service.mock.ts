@@ -9,8 +9,6 @@ export class MockMailService extends AbstractMailService {
   }
 
   sendEmail: Mock<(options: SendEmailOptions) => Promise<void>> = vi.fn().mockImplementation(async (options: SendEmailOptions) => {
-    const to = Array.isArray(options.to) ? options.to.join(", ") : options.to;
-    console.log(`[MockMailService] Sending email to ${to}: ${options.subject}`);
     return Promise.resolve();
   });
 }
