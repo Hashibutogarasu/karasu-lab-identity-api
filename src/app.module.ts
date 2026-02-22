@@ -15,6 +15,7 @@ import { I18nMiddleware } from "./shared/i18n/i18n.middleware.js";
       provide: II18nService,
       useClass: I18nService,
     },
+    I18nService,
   ],
 })
 export class AppModule implements NestModule {
