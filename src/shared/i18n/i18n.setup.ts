@@ -1,6 +1,6 @@
 import i18next from 'i18next';
-import en from '../../i18n/locales/en.json';
-import ja from '../../i18n/locales/ja.json';
+const en = require('../../i18n/locales/en.json');
+const ja = require('../../i18n/locales/ja.json');
 
 let initPromise: Promise<any> | null = null;
 
