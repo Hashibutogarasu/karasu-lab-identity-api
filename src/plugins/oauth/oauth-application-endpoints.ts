@@ -3,7 +3,7 @@ import { oauthApplicationPluginInterface } from "@karasu-lab/common";
 import { IOAuth } from "../oauth/oauth.interface.js";
 import { AuthContext, EndpointContext } from "better-auth";
 
-const interfacePlugin = oauthApplicationPluginInterface();
+const interfacePlugin: ReturnType<typeof oauthApplicationPluginInterface> = oauthApplicationPluginInterface();
 
 export class ListAllApplicationsEndpoint extends AbstractEndpoint<
     typeof interfacePlugin.endpoints.all.path,

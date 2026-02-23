@@ -16,7 +16,7 @@ type BetterAuthContext = AuthContext & {
     };
 };
 
-const interfacePlugin = passwordPluginInterface();
+const interfacePlugin: ReturnType<typeof passwordPluginInterface> = passwordPluginInterface();
 
 export class VerifyPasswordEndpoint extends AbstractEndpoint<
     typeof interfacePlugin.endpoints.verify.path,
