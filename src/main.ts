@@ -13,6 +13,7 @@ async function bootstrap() {
 
   const allowedOrigins = [
     'https://sso.karasu256.com',
+    'https://www.karasu256.com',
     'https://karasu256.com',
     'https://www.karasu256.com',
     'https://id.karasu256.com',

@@ -63,6 +63,7 @@ export function createAuth(
     trustedOrigins: [
       "http://localhost:3000",
       "https://sso.karasu256.com",
+      "https://www.karasu256.com",
       "https://karasu256.com",
       "https://www.karasu256.com",
     ],
