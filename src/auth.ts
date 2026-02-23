@@ -1,5 +1,5 @@
 import { betterAuth, BetterAuthOptions } from "better-auth";
-import { createAuthMiddleware, emailOTP, magicLink, organization, twoFactor } from "better-auth/plugins";
+import { createAuthMiddleware, emailOTP, magicLink, openAPI, organization, twoFactor } from "better-auth/plugins";
 import { getFrontendUrl } from "./utils.js";
 import { passwordPlugin } from "./plugins/password/password-plugin.js";
 import { oauthApplicationPlugin } from "./plugins/oauth/oauth-application-plugin.js";
@@ -102,6 +102,7 @@ export function createAuth(
       }),
     },
     plugins: [
+      openAPI(),
       passwordPlugin(),
       oauthApplicationPlugin(),
       passkeyPlugin(passkeyAuth),
