@@ -21,11 +21,11 @@ export class PasskeyAuth implements IPasskeyAuth {
 
     getRPID(): string {
         const env = this.configService.getAll();
-        return env.PASSKEY_RP_ID ?? "karasu256.com";
+        return env.PASSKEY_RP_ID;
     }
 
     getRPName(): string {
         const env = this.configService.getAll();
-        return env.PASSKEY_RP_NAME ?? "Karasu Lab";
+        return env.PASSKEY_RP_NAME;
     }
 }
