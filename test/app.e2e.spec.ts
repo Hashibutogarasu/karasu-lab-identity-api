@@ -23,9 +23,9 @@ describe('AppController (e2e)', () => {
     expect(app).toBeDefined();
   });
 
-  it('/ (GET)', () => {
+  it('/api (GET)', () => {
     return request(app.getHttpServer())
-      .get('/')
+      .get('/api')
       .expect(200);
   });
 });
