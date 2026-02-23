@@ -26,13 +26,13 @@ export type OAuthContext<
 };
 
 export interface IOAuthManage {
-  listAllApplications<Path extends string = string, Options extends Endpoint['options'] = Endpoint['options']>(ctx: OAuthContext<Path, Options>): Promise<Partial<OAuthApplication>[]>;
-  getApplicationById<Path extends string = string, Options extends Endpoint['options'] = Endpoint['options']>(ctx: OAuthContext<Path, Options>): Promise<Partial<OAuthApplication>>;
-  getApplicationByClientId<Path extends string = string, Options extends Endpoint['options'] = Endpoint['options']>(ctx: OAuthContext<Path, Options>): Promise<Partial<OAuthApplication>>;
-  updateApplicationDisabledStatus<Path extends string = string, Options extends Endpoint['options'] = Endpoint['options']>(ctx: OAuthContext<Path, Options>): Promise<Partial<OAuthApplication>>;
-  updateApplicationDetails<Path extends string = string, Options extends Endpoint['options'] = Endpoint['options']>(ctx: OAuthContext<Path, Options>): Promise<Partial<OAuthApplication>>;
-  regenerateApplicationSecret<Path extends string = string, Options extends Endpoint['options'] = Endpoint['options']>(ctx: OAuthContext<Path, Options>): Promise<OAuthApplication>;
-  deleteApplication<Path extends string = string, Options extends Endpoint['options'] = Endpoint['options']>(ctx: OAuthContext<Path, Options>): Promise<{ success: boolean }>;
+  listAllApplications(ctx: OAuthContext): Promise<Partial<OAuthApplication>[]>;
+  getApplicationById(ctx: OAuthContext): Promise<Partial<OAuthApplication>>;
+  getApplicationByClientId(ctx: OAuthContext): Promise<Partial<OAuthApplication>>;
+  updateApplicationDisabledStatus(ctx: OAuthContext): Promise<Partial<OAuthApplication>>;
+  updateApplicationDetails(ctx: OAuthContext): Promise<Partial<OAuthApplication>>;
+  regenerateApplicationSecret(ctx: OAuthContext): Promise<OAuthApplication>;
+  deleteApplication(ctx: OAuthContext): Promise<{ success: boolean }>;
 }
 
 export interface IOAuthConsent {
