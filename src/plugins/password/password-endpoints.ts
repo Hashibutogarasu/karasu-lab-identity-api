@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unnecessary-type-assertion */
 import { hashPassword, verifyPassword as verifyPasswordCrypto } from "better-auth/crypto";
 import cuid from "cuid";
 import { createAPIError, ErrorCodes } from "../../shared/errors/error.codes.js";
@@ -28,7 +29,7 @@ export class VerifyPasswordEndpoint extends AbstractEndpoint<
     }
 
     readonly path = interfacePlugin.endpoints.verify.path;
-    readonly options = interfacePlugin.endpoints.verify.options;
+    readonly options = interfacePlugin.endpoints.verify.options as typeof interfacePlugin.endpoints.verify.options;
 
     execute = async (ctx: EndpointContext<typeof this.path, typeof this.options> & { context: BetterAuthContext }): Promise<boolean> => {
         const context = ctx.context;
@@ -69,7 +70,7 @@ export class SetPasswordEndpoint extends AbstractEndpoint<
     }
 
     readonly path = interfacePlugin.endpoints.set.path;
-    readonly options = interfacePlugin.endpoints.set.options;
+    readonly options = interfacePlugin.endpoints.set.options as typeof interfacePlugin.endpoints.set.options;
 
     execute = async (ctx: EndpointContext<typeof this.path, typeof this.options> & { context: BetterAuthContext }): Promise<{ success: boolean }> => {
         const context = ctx.context;
