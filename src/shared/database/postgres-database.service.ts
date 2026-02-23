@@ -1,21 +1,20 @@
-import { Pool } from "pg";
+import { prismaAdapter } from "better-auth/adapters/prisma";
 import { AbstractDatabaseService } from "./abstract-database.service.js";
+import { PrismaClient } from "../../generated/client.js";
 
 export class PostgresDatabaseService extends AbstractDatabaseService {
-  private pool: Pool;
+  private prisma: PrismaClient;
 
-  constructor(environment: string, connectionString: string) {
+  constructor(environment: string) {
     super(environment);
-    this.pool = new Pool({
-      connectionString,
-    });
+    this.prisma = new PrismaClient();
   }
 
-  getHandler(): Pool {
-    return this.pool;
+  getHandler() {
+    return prismaAdapter(this.prisma, { provider: 'postgresql' });
   }
 
   async close(): Promise<void> {
-    await this.pool.end();
+    await this.prisma.$disconnect();
   }
 }

@@ -1,4 +1,4 @@
-import { betterAuth, BetterAuthOptions } from "better-auth";
+import { betterAuth, BetterAuthOptions } from "better-auth/minimal";
 import { createAuthMiddleware, emailOTP, magicLink, openAPI, organization, twoFactor } from "better-auth/plugins";
 import { getFrontendUrl } from "./utils.js";
 import { passwordPlugin } from "./plugins/password/password-plugin.js";
@@ -166,6 +166,12 @@ export function createAuth(
       window: 60,
       max: 100,
     },
+    session: {
+      cookieCache: {
+        enabled: true,
+        maxAge: 300
+      }
+    }
   };
 
   const finalOptions = {
@@ -198,7 +204,7 @@ export const auth: ReturnType<typeof betterAuth> = await (async () => {
     emailConfig.RESEND_API_KEY,
     `${emailConfig.EMAIL_FROM_NAME} <${emailConfig.EMAIL_FROM_ADDRESS}>`
   );
-  const prodDbService = new PostgresDatabaseService(authConfig.NODE_ENV, authConfig.DATABASE_URL || "");
+  const prodDbService = new PostgresDatabaseService(authConfig.NODE_ENV);
   const prodPasskeyAuth = new PasskeyAuth(prodConfigService);
 
   return createAuth(

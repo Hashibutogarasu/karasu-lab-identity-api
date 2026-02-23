@@ -37,9 +37,6 @@ beforeAll(async () => {
       })
     ]
   });
-
-  const ctx = await testAuth.$context;
-  await ctx.runMigrations();
 });
 
 afterAll(async () => {
