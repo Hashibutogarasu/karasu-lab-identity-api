@@ -11,13 +11,27 @@ export class PasskeyAuth extends BaseEnvironmentConfig implements IPasskeyAuth {
     }
 
     getOrigin(): string[] {
+        const env = this.configService.getAll();
+        
+        if (env.PASSKEY_ORIGIN) {
+            return [env.PASSKEY_ORIGIN];
+        }
+        
         if (this.isProduction()) {
-            return ['https://sso.karasu256.com'];
+            return [
+                'https://sso.karasu256.com',
+                'https://karasu256.com',
+                'https://www.karasu256.com'
+            ];
         }
         if (this.isTest()) {
             return ['http://localhost:3001'];
         }
-        return ['http://localhost:3000', 'https://sso.karasu256.com'];
+        return [
+            'http://localhost:3000',
+            'http://127.0.0.1:3000',
+            'https://sso.karasu256.com'
+        ];
     }
 
     getRPID(): string {
