@@ -204,7 +204,7 @@ export const auth: ReturnType<typeof betterAuth> = await (async () => {
     emailConfig.RESEND_API_KEY,
     `${emailConfig.EMAIL_FROM_NAME} <${emailConfig.EMAIL_FROM_ADDRESS}>`
   );
-  const prodDbService = new PostgresDatabaseService(authConfig.NODE_ENV);
+  const prodDbService = new PostgresDatabaseService(authConfig.NODE_ENV, authConfig.DATABASE_URL);
   const prodPasskeyAuth = new PasskeyAuth(prodConfigService);
 
   return createAuth(

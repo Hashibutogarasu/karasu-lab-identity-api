@@ -5,9 +5,11 @@ import { PrismaClient } from "../../generated/client.js";
 export class PostgresDatabaseService extends AbstractDatabaseService {
   private prisma: PrismaClient;
 
-  constructor(environment: string) {
+  constructor(environment: string, connectionString?: string) {
     super(environment);
-    this.prisma = new PrismaClient();
+    this.prisma = new PrismaClient(
+      connectionString ? { datasourceUrl: connectionString } : undefined
+    );
   }
 
   getHandler() {
