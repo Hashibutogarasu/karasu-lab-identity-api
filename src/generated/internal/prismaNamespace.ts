@@ -401,7 +401,9 @@ export const ModelName = {
   oauthConsent: 'oauthConsent',
   organization: 'organization',
   passkey: 'passkey',
-  twoFactor: 'twoFactor'
+  twoFactor: 'twoFactor',
+  deviceCode: 'deviceCode',
+  jwks: 'jwks'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -417,7 +419,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "account" | "session" | "user" | "verification" | "invitation" | "member" | "oauthAccessToken" | "oauthApplication" | "oauthConsent" | "organization" | "passkey" | "twoFactor"
+    modelProps: "account" | "session" | "user" | "verification" | "invitation" | "member" | "oauthAccessToken" | "oauthApplication" | "oauthConsent" | "organization" | "passkey" | "twoFactor" | "deviceCode" | "jwks"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1309,6 +1311,154 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    deviceCode: {
+      payload: Prisma.$deviceCodePayload<ExtArgs>
+      fields: Prisma.deviceCodeFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.deviceCodeFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$deviceCodePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.deviceCodeFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$deviceCodePayload>
+        }
+        findFirst: {
+          args: Prisma.deviceCodeFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$deviceCodePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.deviceCodeFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$deviceCodePayload>
+        }
+        findMany: {
+          args: Prisma.deviceCodeFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$deviceCodePayload>[]
+        }
+        create: {
+          args: Prisma.deviceCodeCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$deviceCodePayload>
+        }
+        createMany: {
+          args: Prisma.deviceCodeCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.deviceCodeCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$deviceCodePayload>[]
+        }
+        delete: {
+          args: Prisma.deviceCodeDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$deviceCodePayload>
+        }
+        update: {
+          args: Prisma.deviceCodeUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$deviceCodePayload>
+        }
+        deleteMany: {
+          args: Prisma.deviceCodeDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.deviceCodeUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.deviceCodeUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$deviceCodePayload>[]
+        }
+        upsert: {
+          args: Prisma.deviceCodeUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$deviceCodePayload>
+        }
+        aggregate: {
+          args: Prisma.DeviceCodeAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateDeviceCode>
+        }
+        groupBy: {
+          args: Prisma.deviceCodeGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DeviceCodeGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.deviceCodeCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DeviceCodeCountAggregateOutputType> | number
+        }
+      }
+    }
+    jwks: {
+      payload: Prisma.$jwksPayload<ExtArgs>
+      fields: Prisma.jwksFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.jwksFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$jwksPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.jwksFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$jwksPayload>
+        }
+        findFirst: {
+          args: Prisma.jwksFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$jwksPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.jwksFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$jwksPayload>
+        }
+        findMany: {
+          args: Prisma.jwksFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$jwksPayload>[]
+        }
+        create: {
+          args: Prisma.jwksCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$jwksPayload>
+        }
+        createMany: {
+          args: Prisma.jwksCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.jwksCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$jwksPayload>[]
+        }
+        delete: {
+          args: Prisma.jwksDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$jwksPayload>
+        }
+        update: {
+          args: Prisma.jwksUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$jwksPayload>
+        }
+        deleteMany: {
+          args: Prisma.jwksDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.jwksUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.jwksUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$jwksPayload>[]
+        }
+        upsert: {
+          args: Prisma.jwksUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$jwksPayload>
+        }
+        aggregate: {
+          args: Prisma.JwksAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateJwks>
+        }
+        groupBy: {
+          args: Prisma.jwksGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.JwksGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.jwksCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.JwksCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -1390,7 +1540,8 @@ export const UserScalarFieldEnum = {
   image: 'image',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
-  twoFactorEnabled: 'twoFactorEnabled'
+  twoFactorEnabled: 'twoFactorEnabled',
+  displayName: 'displayName'
 } as const
 
 export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
@@ -1516,6 +1667,32 @@ export const TwoFactorScalarFieldEnum = {
 } as const
 
 export type TwoFactorScalarFieldEnum = (typeof TwoFactorScalarFieldEnum)[keyof typeof TwoFactorScalarFieldEnum]
+
+
+export const DeviceCodeScalarFieldEnum = {
+  id: 'id',
+  deviceCode: 'deviceCode',
+  userCode: 'userCode',
+  userId: 'userId',
+  expiresAt: 'expiresAt',
+  status: 'status',
+  lastPolledAt: 'lastPolledAt',
+  pollingInterval: 'pollingInterval',
+  clientId: 'clientId',
+  scope: 'scope'
+} as const
+
+export type DeviceCodeScalarFieldEnum = (typeof DeviceCodeScalarFieldEnum)[keyof typeof DeviceCodeScalarFieldEnum]
+
+
+export const JwksScalarFieldEnum = {
+  id: 'id',
+  publicKey: 'publicKey',
+  privateKey: 'privateKey',
+  createdAt: 'createdAt'
+} as const
+
+export type JwksScalarFieldEnum = (typeof JwksScalarFieldEnum)[keyof typeof JwksScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -1709,6 +1886,8 @@ export type GlobalOmitConfig = {
   organization?: Prisma.organizationOmit
   passkey?: Prisma.passkeyOmit
   twoFactor?: Prisma.twoFactorOmit
+  deviceCode?: Prisma.deviceCodeOmit
+  jwks?: Prisma.jwksOmit
 }
 
 /* Types for Logging */

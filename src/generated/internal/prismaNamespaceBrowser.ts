@@ -60,7 +60,9 @@ export const ModelName = {
   oauthConsent: 'oauthConsent',
   organization: 'organization',
   passkey: 'passkey',
-  twoFactor: 'twoFactor'
+  twoFactor: 'twoFactor',
+  deviceCode: 'deviceCode',
+  jwks: 'jwks'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -121,7 +123,8 @@ export const UserScalarFieldEnum = {
   image: 'image',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
-  twoFactorEnabled: 'twoFactorEnabled'
+  twoFactorEnabled: 'twoFactorEnabled',
+  displayName: 'displayName'
 } as const
 
 export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
@@ -247,6 +250,32 @@ export const TwoFactorScalarFieldEnum = {
 } as const
 
 export type TwoFactorScalarFieldEnum = (typeof TwoFactorScalarFieldEnum)[keyof typeof TwoFactorScalarFieldEnum]
+
+
+export const DeviceCodeScalarFieldEnum = {
+  id: 'id',
+  deviceCode: 'deviceCode',
+  userCode: 'userCode',
+  userId: 'userId',
+  expiresAt: 'expiresAt',
+  status: 'status',
+  lastPolledAt: 'lastPolledAt',
+  pollingInterval: 'pollingInterval',
+  clientId: 'clientId',
+  scope: 'scope'
+} as const
+
+export type DeviceCodeScalarFieldEnum = (typeof DeviceCodeScalarFieldEnum)[keyof typeof DeviceCodeScalarFieldEnum]
+
+
+export const JwksScalarFieldEnum = {
+  id: 'id',
+  publicKey: 'publicKey',
+  privateKey: 'privateKey',
+  createdAt: 'createdAt'
+} as const
+
+export type JwksScalarFieldEnum = (typeof JwksScalarFieldEnum)[keyof typeof JwksScalarFieldEnum]
 
 
 export const SortOrder = {

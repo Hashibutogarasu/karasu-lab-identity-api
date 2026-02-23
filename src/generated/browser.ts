@@ -77,3 +77,13 @@ export type passkey = Prisma.passkeyModel
  * 
  */
 export type twoFactor = Prisma.twoFactorModel
+/**
+ * Model deviceCode
+ * 
+ */
+export type deviceCode = Prisma.deviceCodeModel
+/**
+ * Model jwks
+ * 
+ */
+export type jwks = Prisma.jwksModel

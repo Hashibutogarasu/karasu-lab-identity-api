@@ -4,7 +4,10 @@
 	"sourceRoot": "src",
 	"compilerOptions": {
 		"deleteOutDir": true,
-		"assets": [{"include": "i18n/locales/*.json", "watchAssets": true}],
+		"assets": [
+			{ "include": "i18n/locales/*.json", "watchAssets": true },
+			{ "include": "**/*.node", "outDir": "dist/src" }
+		],
 		"plugins": [
 			{
 				"name": "@nestjs/swagger",
