@@ -7,7 +7,7 @@ app = 'karasu-lab-identity-api'
 primary_region = 'nrt'
 
 [deploy]
-  release_command = "npx prisma db push --url $DATABASE_URL"
+  release_command = "npx prisma db push"
 
 [http_service]
   internal_port = 3001
