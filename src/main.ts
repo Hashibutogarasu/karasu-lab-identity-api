@@ -1,6 +1,10 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { NestFactory } from "@nestjs/core";
 import { AppModule } from "./app.module.js";
 import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
+import { toNodeHandler } from "better-auth/node";
+import { auth } from "./auth.js";
+import type { Request, Response, NextFunction } from "express";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -22,6 +26,14 @@ async function bootstrap() {
     origin: allowedOrigins,
     allowedHeaders: 'Origin, X-Requested-With, Content-Type, Accept, Authorization',
     credentials: true,
+  });
+
+  const expressApp = app.getHttpAdapter().getInstance();
+  expressApp.use((req: Request, res: Response, next: NextFunction) => {
+    if (req.url?.startsWith('/api/auth')) {
+      return toNodeHandler(auth)(req as any, res as any);
+    }
+    next();
   });
 
   const config = new DocumentBuilder()
