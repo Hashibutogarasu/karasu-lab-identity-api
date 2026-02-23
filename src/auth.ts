@@ -7,7 +7,7 @@ import { passkeyPlugin } from "./plugins/passkey/passkey-plugin.js";
 import { authConfig } from "./config/auth.env.js";
 import { emailConfig } from "./config/email.env.js";
 import { IPasskeyAuth } from "./plugins/passkey/passkey.interface.js";
-import { PasskeyAuth } from "./plugins/passkey/passkey.service.js";
+import { passkeyAuthFactory } from "./plugins/passkey/passkey.service.js";
 import { IConfigService } from "./shared/config/config.service.interface.js";
 import { ConfigService } from "./shared/config/config.service.js";
 import { IDataBaseService } from "./shared/database/database.service.interface.js";
@@ -206,7 +206,7 @@ export const auth: ReturnType<typeof betterAuth> = await (async () => {
     `${emailConfig.EMAIL_FROM_NAME} <${emailConfig.EMAIL_FROM_ADDRESS}>`
   );
   const prodDbService = new PostgresDatabaseService(authConfig.NODE_ENV, authConfig.DATABASE_URL);
-  const prodPasskeyAuth = new PasskeyAuth(prodConfigService);
+  const prodPasskeyAuth = passkeyAuthFactory(prodConfigService);
 
   return createAuth(
     prodConfigService,
