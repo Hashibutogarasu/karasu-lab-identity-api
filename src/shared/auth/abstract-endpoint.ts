@@ -13,12 +13,12 @@ export abstract class AbstractEndpoint<
 		ctx: EndpointContext<Path, Options> & { context: AuthContext },
 	) => Promise<Output>;
 
-	getEndpoint(): AuthEndpoint {
+	getEndpoint(): AuthEndpoint<Path, Options, Output> {
 		const handler = this.execute.bind(this);
 		return createAuthEndpoint(
 			this.path,
 			this.options,
 			handler as never
-		) as unknown as AuthEndpoint;
+		) as unknown as AuthEndpoint<Path, Options, Output>;
 	}
 }
