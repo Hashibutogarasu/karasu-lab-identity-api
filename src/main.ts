@@ -7,6 +7,8 @@ async function bootstrap() {
     bodyParser: false,
   });
 
+  app.setGlobalPrefix('api');
+
   const allowedOrigins = [
     'https://sso.karasu256.com',
     'https://karasu256.com',
@@ -31,7 +33,7 @@ async function bootstrap() {
     .build();
 
   const documentFactory = () => SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup("api", app, documentFactory);
+  SwaggerModule.setup("docs", app, documentFactory);
 
   await app.listen(process.env.PORT ?? 3001);
 }
