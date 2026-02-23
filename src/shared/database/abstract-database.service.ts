@@ -1,11 +1,9 @@
-import { Environment } from "../../types/environment.js";
+import { BaseEnvironmentConfig } from "../config/base-environment-config.js";
 import { IDataBaseService } from "./database.service.interface.js";
 
-export abstract class AbstractDatabaseService implements IDataBaseService {
-  protected environment: Environment;
-
-  constructor(environment: Environment) {
-    this.environment = environment;
+export abstract class AbstractDatabaseService extends BaseEnvironmentConfig implements IDataBaseService {
+  constructor(environment: string) {
+    super(environment);
   }
 
   abstract getHandler(): any;

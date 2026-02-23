@@ -15,8 +15,8 @@ export const authEnvSchema = z.object({
   GOOGLE_CLIENT_SECRET: z.string().optional(),
   X_CLIENT_ID: z.string().optional(),
   X_CLIENT_SECRET: z.string().optional(),
-  PASSKEY_RP_ID: z.string(),
-  PASSKEY_RP_NAME: z.string(),
+  PASSKEY_RP_ID: z.string().default("localhost"),
+  PASSKEY_RP_NAME: z.string().default("Karasu Lab"),
   PASSKEY_ORIGIN: z.string().url().optional(),
   DATABASE_URL: z.string().optional(),
 });

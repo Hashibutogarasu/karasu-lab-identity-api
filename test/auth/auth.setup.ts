@@ -4,7 +4,6 @@ import { genericOAuth } from "better-auth/plugins";
 import { MockConfigService } from '../mocks/config.service.mock.js';
 import { MockMailService } from '../mocks/mail.service.mock.js';
 import { MemoryDatabaseService } from '../mocks/memory-database.service.js';
-import { Environment } from '../../src/types/environment.js';
 import { PasskeyAuth } from '../../src/plugins/passkey/passkey.service.js';
 
 export let testDbService: MemoryDatabaseService;
@@ -16,10 +15,10 @@ beforeAll(async () => {
     BETTER_AUTH_URL: 'http://localhost:3000/api/auth',
     BETTER_AUTH_SECRET: 'super-secret-test-key',
     FRONTEND_ORIGIN: 'http://localhost:3000',
-  }, Environment.TEST);
+  }, "test");
 
-  testMailService = new MockMailService(Environment.TEST);
-  testDbService = new MemoryDatabaseService(Environment.TEST);
+  testMailService = new MockMailService("test");
+  testDbService = new MemoryDatabaseService("test");
   const passkeyAuth = new PasskeyAuth(configService);
   
   testAuth = createAuth(configService, testDbService, testMailService, passkeyAuth, {

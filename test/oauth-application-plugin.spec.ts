@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { BetterAuthPlugin, Session, User, AuthContext } from "better-auth";
-import { oauthApplicationPlugin } from "../src/plugins/oauth-application-plugin.js";
+import { oauthApplicationPlugin } from "../src/plugins/oauth/oauth-application-plugin.js";
 import { OAuthContext } from "../src/plugins/oauth/oauth.interface.js";
 import { MockOAuth } from "./mocks/oauth.mock.js";
 import { MockOAuthManage } from "./mocks/oauth-manage.mock.js";
@@ -29,6 +29,20 @@ describe("oauthApplicationPlugin", () => {
 			client_id: "test-client-id",
 		},
 		params: {},
+		method: "POST" as const,
+		path: "/test",
+		request: {} as Request,
+		headers: new Headers(),
+		setCookie: vi.fn(),
+		setHeaders: vi.fn(),
+		setStatus: vi.fn(),
+		getSignedCookie: vi.fn(),
+		setSignedCookie: vi.fn(),
+		setHeader: vi.fn(),
+		getHeader: vi.fn(),
+		getCookie: vi.fn(),
+		json: vi.fn(),
+		text: vi.fn(),
 		context: {
 			session: {
 				session: {} as unknown as Session,
@@ -41,7 +55,7 @@ describe("oauthApplicationPlugin", () => {
 				delete: vi.fn().mockResolvedValue({}),
 			} as unknown as AuthContext["adapter"],
 		} as unknown as AuthContext & { session: { session: Session; user: User } },
-	});
+	} as unknown as OAuthContext);
 
 	it("should have the correct plugin id", () => {
 		expect(plugin.id).toBe("oauthApplications");

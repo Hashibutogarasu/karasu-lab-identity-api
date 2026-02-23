@@ -146,15 +146,14 @@ describe('Better Auth Integration Tests', () => {
 
   it('Test 4: Requesting passkey authentication returns the correct challenge', async () => {
     const res = await makeRequest('/passkey/generate-authenticate-options', {
-      method: 'POST',
-      body: JSON.stringify({}),
+      method: 'GET',
     });
 
     expect(res.status).toBe(200);
-    const body = await res.json() as { challenge?: string; rpId?: string };
+    const body = await res.json();
     
     expect(body.challenge).toBeDefined();
-    expect(body.rpId).toBe('karasu256.com'); 
+    expect(body.rpId).toBe('localhost'); 
   });
 
   it('Test 5: Mocked email sending function correctly sends authentication and OTP emails', async () => {

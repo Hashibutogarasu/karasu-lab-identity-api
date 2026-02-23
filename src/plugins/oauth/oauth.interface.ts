@@ -1,5 +1,4 @@
-/* eslint-disable @typescript-eslint/no-empty-object-type */
-import { AuthContext, Session, User } from "better-auth";
+import { AuthContext, Session, User, EndpointContext, Endpoint } from "better-auth";
 
 export type OAuthApplication = {
 	id: string;
@@ -14,10 +13,10 @@ export type OAuthApplication = {
 	updatedAt: Date;
 };
 
-export type OAuthContext = {
-	body: Record<string, unknown>;
-	query: Record<string, unknown>;
-	params: Record<string, unknown>;
+export type OAuthContext<
+	Path extends string = string,
+	Options extends Endpoint['options'] = Endpoint['options']
+> = EndpointContext<Path, Options> & {
 	context: AuthContext & {
 		session?: {
 			session: Session;
@@ -27,13 +26,13 @@ export type OAuthContext = {
 };
 
 export interface IOAuthManage {
-  listAllApplications(ctx: OAuthContext): Promise<Partial<OAuthApplication>[]>;
-  getApplicationById(ctx: OAuthContext): Promise<Partial<OAuthApplication>>;
-  getApplicationByClientId(ctx: OAuthContext): Promise<Partial<OAuthApplication>>;
-  updateApplicationDisabledStatus(ctx: OAuthContext): Promise<Partial<OAuthApplication>>;
-  updateApplicationDetails(ctx: OAuthContext): Promise<Partial<OAuthApplication>>;
-  regenerateApplicationSecret(ctx: OAuthContext): Promise<OAuthApplication>;
-  deleteApplication(ctx: OAuthContext): Promise<{ success: boolean }>;
+  listAllApplications<Path extends string = string, Options extends Endpoint['options'] = Endpoint['options']>(ctx: OAuthContext<Path, Options>): Promise<Partial<OAuthApplication>[]>;
+  getApplicationById<Path extends string = string, Options extends Endpoint['options'] = Endpoint['options']>(ctx: OAuthContext<Path, Options>): Promise<Partial<OAuthApplication>>;
+  getApplicationByClientId<Path extends string = string, Options extends Endpoint['options'] = Endpoint['options']>(ctx: OAuthContext<Path, Options>): Promise<Partial<OAuthApplication>>;
+  updateApplicationDisabledStatus<Path extends string = string, Options extends Endpoint['options'] = Endpoint['options']>(ctx: OAuthContext<Path, Options>): Promise<Partial<OAuthApplication>>;
+  updateApplicationDetails<Path extends string = string, Options extends Endpoint['options'] = Endpoint['options']>(ctx: OAuthContext<Path, Options>): Promise<Partial<OAuthApplication>>;
+  regenerateApplicationSecret<Path extends string = string, Options extends Endpoint['options'] = Endpoint['options']>(ctx: OAuthContext<Path, Options>): Promise<OAuthApplication>;
+  deleteApplication<Path extends string = string, Options extends Endpoint['options'] = Endpoint['options']>(ctx: OAuthContext<Path, Options>): Promise<{ success: boolean }>;
 }
 
 export interface IOAuthConsent {
