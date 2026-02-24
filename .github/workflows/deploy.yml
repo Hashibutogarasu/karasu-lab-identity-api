@@ -36,10 +36,5 @@ jobs:
 
   trigger-webhook:
     needs: build-and-push
-    runs-on: ubuntu-latest
-    steps:
-      - name: Invoke deployment webhook
-        run: |
-          # Webhook URL is stored in GitHub Secrets
-          curl -H "Authorization: Bearer ${{ secrets.WEBHOOK_TOKEN }}" \
-               ${{ secrets.WEBHOOK_URL }}
+    uses: ./.github/workflows/trigger-webhook.yml
+    secrets: inherit

@@ -1,0 +1,16 @@
+name: Trigger Webhook
+
+on:
+  workflow_call:
+  workflow_dispatch:
+
+jobs:
+  webhook:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Invoke deployment webhook
+        run: |
+          # Webhook URL is stored in GitHub Secrets
+          # Watchtower might hold the connection open while the update runs, so we add a timeout
+          curl -sS --max-time 15 -H "Authorization: Bearer ${{ secrets.WEBHOOK_TOKEN }}" \
+               ${{ secrets.WEBHOOK_URL }} || echo "Webhook request finished or timed out."
