@@ -3,7 +3,20 @@ set -e
 
 # Load environment variables from .env.production if it exists
 if [ -f ".env.production" ]; then
-  export $(grep -v '^#' .env.production | xargs)
+  # Read while handling CRLF and comments
+  while IFS='=' read -r key value || [ -n "$key" ]; do
+    # Skip empty lines and comments
+    [[ "$key" =~ ^#.*$ ]] && continue
+    [ -z "$key" ] && continue
+    
+    # Remove CR from value and whitespace from key
+    key=$(echo "$key" | tr -d '\r ' )
+    value=$(echo "$value" | tr -d '\r' | sed 's/^ *//;s/ *$//')
+    
+    if [ -n "$key" ]; then
+      export "$key=$value"
+    fi
+  done < ".env.production"
 fi
 
 # Configuration/Defaults

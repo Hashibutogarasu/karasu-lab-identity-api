@@ -20,8 +20,8 @@
     "lint": "eslint --ignore-path .gitignore './**/*.{js,ts}'",
     "lint:fix": "eslint --ignore-path .gitignore './**/*.{js,ts}' --fix",
     "format": "prettier --write --ignore-path .gitignore './**/*.{js,ts,json}'",
-    "deploy": "bash scripts/deploy.sh",
-    "setup": "bash scripts/setup.sh",
+    "deploy": "sh scripts/deploy.sh",
+    "setup": "sh scripts/setup.sh",
     "prisma:generate": "npx @better-auth/cli@latest generate",
     "prisma:migrate": "npx @better-auth/cli@latest migrate",
     "prisma:pull": "npx prisma db pull"
