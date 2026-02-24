@@ -11,7 +11,7 @@ export function createPrisma(url: string = process.env.DATABASE_URL) {
     connectionString: url,
     max: 10,
     idleTimeoutMillis: 30000,
-    connectionTimeoutMillis: 2000,
+    connectionTimeoutMillis: 20000,
   });
   const adapter = new PrismaPg(pool);
   return new PrismaClient({ adapter });
