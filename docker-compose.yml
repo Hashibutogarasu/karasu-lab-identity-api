@@ -2,6 +2,7 @@ version: '3.8'
 
 services:
   app:
+    container_name: karasu-lab-identity-api
     image: hashibutogarasu/karasu-lab-identity-api:latest
     build:
       context: .
@@ -9,6 +10,7 @@ services:
       args:
         DATABASE_URL: ${DATABASE_URL}
     ports:
-      - "3000:3000"
+      - "8083:8083"
     env_file:
       - .env.production
+    restart: always
