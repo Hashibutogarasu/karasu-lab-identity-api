@@ -1,5 +1,6 @@
 import { betterAuth, BetterAuthOptions } from "better-auth/minimal";
 import { createAuthMiddleware, emailOTP, magicLink, organization, twoFactor } from "better-auth/plugins";
+import { EnvironmentUtils } from "./utils/enviroment.js";
 import { getFrontendUrl } from "./utils.js";
 import { passwordPlugin } from "./plugins/password/password-plugin.js";
 import { oauthApplicationPlugin } from "./plugins/oauth/oauth-application-plugin.js";
@@ -16,7 +17,7 @@ import { PostgresDatabaseService } from "./shared/database/postgres-database.ser
 import { createAPIError, ErrorCodes } from "./shared/errors/error.codes.js";
 import { setupI18n } from "./shared/i18n/i18n.setup.js";
 import { IMailService } from "./shared/mail/mail.service.interface.js";
-import { MailService } from "./shared/mail/mail.service.js";
+import { mailService } from "./shared/mail/mail.service.js";
 import { AbstractEnvironment } from "./shared/config/abstract-environment.js";
 
 class AuthEnvironment extends AbstractEnvironment {}
@@ -69,7 +70,7 @@ export function createAuth(
       "https://www.karasu256.com",
     ],
     logger: {
-      level: authEnv.isProduction() ? "info" : "debug",
+      level: EnvironmentUtils.isProduction(authEnv.environment) ? "info" : "debug",
       disabled: false,
     },
     appName: "Karasu Lab",
@@ -188,9 +189,9 @@ export function createAuth(
 
 export type Auth = ReturnType<typeof betterAuth>;
 
-export async function initAuth() {
+export async function initAuth(): Promise<Auth> {
   const authEnv = new AuthEnvironment(authConfig.NODE_ENV);
-  if (authEnv.isTest()) {
+  if (EnvironmentUtils.isTest(authEnv.environment)) {
     return {} as unknown as ReturnType<typeof betterAuth>;
   }
 
@@ -198,13 +199,12 @@ export async function initAuth() {
 
   const configService = new ConfigService(authConfig.NODE_ENV);
 
-  if (!emailConfig.RESEND_API_KEY) {
+  if (EnvironmentUtils.isProduction(authEnv.environment) && !emailConfig.RESEND_API_KEY) {
     throw createAPIError(ErrorCodes.SYSTEM.RESEND_API_KEY_REQUIRED);
   }
 
-  const mailService = new MailService(
-    authConfig.NODE_ENV,
-    emailConfig.RESEND_API_KEY,
+  const mailServiceInstance = mailService(
+    emailConfig.RESEND_API_KEY || "dummy",
     `${emailConfig.EMAIL_FROM_NAME} <${emailConfig.EMAIL_FROM_ADDRESS}>`
   );
   const dbService = new PostgresDatabaseService(authConfig.NODE_ENV, authConfig.DATABASE_URL);
@@ -213,7 +213,7 @@ export async function initAuth() {
   return createAuth(
     configService,
     dbService,
-    mailService,
+    mailServiceInstance,
     passkeyAuth
   );
 }

@@ -4,7 +4,7 @@ import { AbstractPluginEnvironment } from "../../shared/plugin/abstract-plugin-e
 import { Environment } from "../../types/environment.js";
 
 class ProductionOpenAPIEnvironment extends AbstractPluginEnvironment {
-  getPlugin(): BetterAuthPlugin {
+  resolve(): BetterAuthPlugin {
     return {
       id: "openapi",
       endpoints: {}
@@ -13,19 +13,19 @@ class ProductionOpenAPIEnvironment extends AbstractPluginEnvironment {
 }
 
 class DevelopmentOpenAPIEnvironment extends AbstractPluginEnvironment {
-  getPlugin(): BetterAuthPlugin {
+  resolve(): BetterAuthPlugin {
     return defaultOpenAPI();
   }
 }
 
 class TestOpenAPIEnvironment extends AbstractPluginEnvironment {
-  getPlugin(): BetterAuthPlugin {
+  resolve(): BetterAuthPlugin {
     return defaultOpenAPI();
   }
 }
 
 export const openAPIPlugin = (): BetterAuthPlugin => {
-  return AbstractPluginEnvironment.resolvePlugin({
+  return AbstractPluginEnvironment.resolve({
     [Environment.PRODUCTION]: ProductionOpenAPIEnvironment,
     [Environment.DEVELOPMENT]: DevelopmentOpenAPIEnvironment,
     [Environment.TEST]: TestOpenAPIEnvironment,

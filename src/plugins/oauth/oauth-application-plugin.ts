@@ -18,7 +18,7 @@ abstract class BaseOAuthApplicationPluginEnvironment extends AbstractPluginEnvir
     super();
   }
 
-  getPlugin(): BetterAuthPlugin {
+  resolve(): BetterAuthPlugin {
     return {
       id: "oauthApplications",
       endpoints: {
@@ -39,7 +39,7 @@ class DevelopmentOAuthApplicationPluginEnvironment extends BaseOAuthApplicationP
 class TestOAuthApplicationPluginEnvironment extends BaseOAuthApplicationPluginEnvironment {}
 
 export const oauthApplicationPlugin = (oauth: IOAuth = new OAuth()): BetterAuthPlugin => {
-  return AbstractPluginEnvironment.resolvePlugin({
+  return AbstractPluginEnvironment.resolve({
     [Environment.PRODUCTION]: ProductionOAuthApplicationPluginEnvironment,
     [Environment.DEVELOPMENT]: DevelopmentOAuthApplicationPluginEnvironment,
     [Environment.TEST]: TestOAuthApplicationPluginEnvironment,

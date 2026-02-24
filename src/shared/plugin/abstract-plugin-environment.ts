@@ -4,15 +4,15 @@ import { Environment } from "../../types/environment.js";
 
 class EnvironmentResolver extends AbstractEnvironment {}
 
-export abstract class AbstractPluginEnvironment extends AbstractEnvironment {
-  abstract getPlugin(): BetterAuthPlugin;
+export abstract class AbstractPluginEnvironment<T = BetterAuthPlugin> extends AbstractEnvironment {
+  abstract resolve(): T;
 
-  static resolvePlugin<T extends AbstractPluginEnvironment, TArgs extends any[]>(
-    classes: Record<Environment, new (...args: TArgs) => T>,
+  static resolve<T, E extends AbstractPluginEnvironment<T>, TArgs extends any[]>(
+    classes: Record<Environment, new (...args: TArgs) => E>,
     ...args: TArgs
-  ): BetterAuthPlugin {
+  ): T {
     const currentEnv = new EnvironmentResolver().environment;
-    const PluginClass = classes[currentEnv];
-    return new PluginClass(...args).getPlugin();
+    const EnvClass = classes[currentEnv];
+    return new EnvClass(...args).resolve();
   }
 }

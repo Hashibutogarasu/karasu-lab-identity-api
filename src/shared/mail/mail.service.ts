@@ -1,23 +1,37 @@
-import { Resend } from "resend";
-import { AbstractMailService } from "./abstract-mail.service.js";
-import { SendEmailOptions } from "./mail.service.interface.js";
+import { IMailService } from "./mail.service.interface.js";
+import { ResendMailService } from "./resend-mail.service.js";
+import { ConsoleMailService } from "./console-mail.service.js";
+import { Environment } from "../../types/environment.js";
+import { AbstractPluginEnvironment } from "../plugin/abstract-plugin-environment.js";
 
-export class MailService extends AbstractMailService {
-  private resend: Resend;
-  private defaultFrom: string;
-
-  constructor(environment: string, apiKey: string, defaultFrom: string) {
-    super(environment);
-    this.resend = new Resend(apiKey);
-    this.defaultFrom = defaultFrom;
-  }
-
-  async sendEmail(options: SendEmailOptions): Promise<void> {
-    await this.resend.emails.send({
-      from: options.from || this.defaultFrom,
-      to: options.to,
-      subject: options.subject,
-      html: options.html,
-    });
-  }
+abstract class BaseMailServiceEnvironment extends AbstractPluginEnvironment<IMailService> {
+	constructor(protected apiKey: string, protected defaultFrom: string) {
+		super();
+	}
 }
+
+class ProductionMailServiceEnvironment extends BaseMailServiceEnvironment {
+	resolve(): IMailService {
+		return new ResendMailService(this.environment, this.apiKey, this.defaultFrom);
+	}
+}
+
+class DevelopmentMailServiceEnvironment extends BaseMailServiceEnvironment {
+	resolve(): IMailService {
+		return new ConsoleMailService(this.environment);
+	}
+}
+
+class TestMailServiceEnvironment extends BaseMailServiceEnvironment {
+	resolve(): IMailService {
+		return new ConsoleMailService(this.environment);
+	}
+}
+
+export const mailService = (apiKey: string, defaultFrom: string): IMailService => {
+	return AbstractPluginEnvironment.resolve({
+		[Environment.PRODUCTION]: ProductionMailServiceEnvironment,
+		[Environment.DEVELOPMENT]: DevelopmentMailServiceEnvironment,
+		[Environment.TEST]: TestMailServiceEnvironment,
+	}, apiKey, defaultFrom);
+};

@@ -16,16 +16,4 @@ export abstract class AbstractEnvironment implements IEnvironment {
     }
     return Environment.DEVELOPMENT;
   }
-
-  isProduction(): boolean {
-    return this.environment === Environment.PRODUCTION;
-  }
-
-  isDevelopment(): boolean {
-    return this.environment === Environment.DEVELOPMENT;
-  }
-
-  isTest(): boolean {
-    return this.environment === Environment.TEST;
-  }
 }

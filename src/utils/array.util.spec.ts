@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { safeArray } from '../../src/utils/array.util.js';
+import { safeArray } from './array.util.js';
 
 describe('safeArray utility', () => {
   it('should filter out null and undefined values', () => {
