@@ -1,6 +1,6 @@
 import { Environment } from "../../types/environment.js";
 
-export interface IEnvironmentConfig {
+export interface IEnvironment {
   readonly environment: Environment;
   isProduction(): boolean;
   isDevelopment(): boolean;

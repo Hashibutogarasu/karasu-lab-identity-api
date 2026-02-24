@@ -1,7 +1,7 @@
 import { AuthEnv } from "../../config/auth.env.js";
-import { IEnvironmentConfig } from "./environment-config.interface.js";
+import { IEnvironment } from "./environment.interface.js";
 
-export interface IConfigService extends IEnvironmentConfig {
+export interface IConfigService extends IEnvironment {
   get<K extends keyof AuthEnv>(key: K): AuthEnv[K];
   getAll(): AuthEnv;
 }

@@ -1,9 +1,10 @@
 import { betterAuth, BetterAuthOptions } from "better-auth/minimal";
-import { createAuthMiddleware, emailOTP, magicLink, openAPI, organization, twoFactor } from "better-auth/plugins";
+import { createAuthMiddleware, emailOTP, magicLink, organization, twoFactor } from "better-auth/plugins";
 import { getFrontendUrl } from "./utils.js";
 import { passwordPlugin } from "./plugins/password/password-plugin.js";
 import { oauthApplicationPlugin } from "./plugins/oauth/oauth-application-plugin.js";
 import { passkeyPlugin } from "./plugins/passkey/passkey-plugin.js";
+import { openAPIPlugin } from "./plugins/openapi/openapi-plugin.js";
 import { authConfig } from "./config/auth.env.js";
 import { emailConfig } from "./config/email.env.js";
 import { IPasskeyAuth } from "./plugins/passkey/passkey.interface.js";
@@ -16,9 +17,9 @@ import { createAPIError, ErrorCodes } from "./shared/errors/error.codes.js";
 import { setupI18n } from "./shared/i18n/i18n.setup.js";
 import { IMailService } from "./shared/mail/mail.service.interface.js";
 import { MailService } from "./shared/mail/mail.service.js";
-import { BaseEnvironmentConfig } from "./shared/config/base-environment-config.js";
+import { AbstractEnvironment } from "./shared/config/abstract-environment.js";
 
-class AuthEnvironment extends BaseEnvironmentConfig {}
+class AuthEnvironment extends AbstractEnvironment {}
 
 export function createAuth(
   configService: IConfigService,
@@ -104,7 +105,7 @@ export function createAuth(
       }),
     },
     plugins: [
-      openAPI(),
+      openAPIPlugin(),
       passwordPlugin(),
       oauthApplicationPlugin(),
       passkeyPlugin(passkeyAuth),
@@ -185,33 +186,34 @@ export function createAuth(
   return betterAuth(finalOptions);
 }
 
-const authEnv = new AuthEnvironment(authConfig.NODE_ENV);
+export type Auth = ReturnType<typeof betterAuth>;
 
-export const auth: ReturnType<typeof betterAuth> = await (async () => {
+export async function initAuth() {
+  const authEnv = new AuthEnvironment(authConfig.NODE_ENV);
   if (authEnv.isTest()) {
     return {} as unknown as ReturnType<typeof betterAuth>;
   }
 
   await setupI18n();
 
-  const prodConfigService = new ConfigService(authConfig.NODE_ENV);
+  const configService = new ConfigService(authConfig.NODE_ENV);
 
   if (!emailConfig.RESEND_API_KEY) {
     throw createAPIError(ErrorCodes.SYSTEM.RESEND_API_KEY_REQUIRED);
   }
 
-  const prodMailService = new MailService(
+  const mailService = new MailService(
     authConfig.NODE_ENV,
     emailConfig.RESEND_API_KEY,
     `${emailConfig.EMAIL_FROM_NAME} <${emailConfig.EMAIL_FROM_ADDRESS}>`
   );
-  const prodDbService = new PostgresDatabaseService(authConfig.NODE_ENV, authConfig.DATABASE_URL);
-  const prodPasskeyAuth = passkeyAuthFactory(prodConfigService);
+  const dbService = new PostgresDatabaseService(authConfig.NODE_ENV, authConfig.DATABASE_URL);
+  const passkeyAuth = passkeyAuthFactory(configService);
 
   return createAuth(
-    prodConfigService,
-    prodDbService,
-    prodMailService,
-    prodPasskeyAuth
+    configService,
+    dbService,
+    mailService,
+    passkeyAuth
   );
-})();
+}

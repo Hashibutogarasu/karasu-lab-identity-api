@@ -26,3 +26,6 @@ primary_region = 'nrt'
 
 [[vm]]
   size = 'shared-cpu-1x'
+
+[env]
+  NODE_OPTIONS = "--max-old-space-size=384"

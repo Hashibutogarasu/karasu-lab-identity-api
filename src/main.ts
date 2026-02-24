@@ -3,8 +3,9 @@ import { NestFactory } from "@nestjs/core";
 import { AppModule } from "./app.module.js";
 import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
 import { toNodeHandler } from "better-auth/node";
-import { auth } from "./auth.js";
+import { AuthService } from "@thallesp/nestjs-better-auth";
 import type { Request, Response, NextFunction } from "express";
+import type { Auth } from "./auth.js";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -29,6 +30,9 @@ async function bootstrap() {
     credentials: true,
   });
 
+  const authService = app.get<AuthService<Auth>>(AuthService);
+  const auth = authService.instance;
+
   const expressApp = app.getHttpAdapter().getInstance();
   expressApp.use((req: Request, res: Response, next: NextFunction) => {
     if (req.url?.startsWith('/api/auth')) {
@@ -47,7 +51,10 @@ async function bootstrap() {
   SwaggerModule.setup("docs", app, documentFactory);
 
   const port = process.env.PORT ?? 3001;
-  await app.listen(port);
+  await app.listen(port, '0.0.0.0');
 }
 
-bootstrap();
+bootstrap().catch((err) => {
+  console.error(err);
+  process.exit(1);
+});

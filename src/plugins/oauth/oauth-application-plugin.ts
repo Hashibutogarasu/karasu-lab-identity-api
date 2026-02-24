@@ -1,4 +1,6 @@
 import { BetterAuthPlugin } from "better-auth";
+import { Environment } from "../../types/environment.js";
+import { AbstractPluginEnvironment } from "../../shared/plugin/abstract-plugin-environment.js";
 import { OAuth } from "./oauth.js";
 import { IOAuth } from "./oauth.interface.js";
 import {
@@ -11,17 +13,35 @@ import {
   UpdateApplicationDisabledStatusEndpoint,
 } from "./oauth-application-endpoints.js";
 
+abstract class BaseOAuthApplicationPluginEnvironment extends AbstractPluginEnvironment {
+  constructor(protected oauth: IOAuth) {
+    super();
+  }
+
+  getPlugin(): BetterAuthPlugin {
+    return {
+      id: "oauthApplications",
+      endpoints: {
+        all: new ListAllApplicationsEndpoint(this.oauth).getEndpoint(),
+        getApp: new GetApplicationByIdEndpoint(this.oauth).getEndpoint(),
+        byClientId: new GetApplicationByClientIdEndpoint(this.oauth).getEndpoint(),
+        updateDisabled: new UpdateApplicationDisabledStatusEndpoint(this.oauth).getEndpoint(),
+        update: new UpdateApplicationDetailsEndpoint(this.oauth).getEndpoint(),
+        regenerateSecret: new RegenerateApplicationSecretEndpoint(this.oauth).getEndpoint(),
+        delete: new DeleteApplicationEndpoint(this.oauth).getEndpoint(),
+      }
+    } satisfies BetterAuthPlugin;
+  }
+}
+
+class ProductionOAuthApplicationPluginEnvironment extends BaseOAuthApplicationPluginEnvironment {}
+class DevelopmentOAuthApplicationPluginEnvironment extends BaseOAuthApplicationPluginEnvironment {}
+class TestOAuthApplicationPluginEnvironment extends BaseOAuthApplicationPluginEnvironment {}
+
 export const oauthApplicationPlugin = (oauth: IOAuth = new OAuth()): BetterAuthPlugin => {
-  return {
-    id: "oauthApplications",
-    endpoints: {
-      all: new ListAllApplicationsEndpoint(oauth).getEndpoint(),
-      getApp: new GetApplicationByIdEndpoint(oauth).getEndpoint(),
-      byClientId: new GetApplicationByClientIdEndpoint(oauth).getEndpoint(),
-      updateDisabled: new UpdateApplicationDisabledStatusEndpoint(oauth).getEndpoint(),
-      update: new UpdateApplicationDetailsEndpoint(oauth).getEndpoint(),
-      regenerateSecret: new RegenerateApplicationSecretEndpoint(oauth).getEndpoint(),
-      delete: new DeleteApplicationEndpoint(oauth).getEndpoint(),
-    }
-  } satisfies BetterAuthPlugin;
+  return AbstractPluginEnvironment.resolvePlugin({
+    [Environment.PRODUCTION]: ProductionOAuthApplicationPluginEnvironment,
+    [Environment.DEVELOPMENT]: DevelopmentOAuthApplicationPluginEnvironment,
+    [Environment.TEST]: TestOAuthApplicationPluginEnvironment,
+  }, oauth);
 };
