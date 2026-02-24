@@ -2,6 +2,7 @@ version: '3.8'
 
 services:
   app:
+    image: hashibutogarasu/karasu-lab-identity-api:latest
     build:
       context: .
       dockerfile: Dockerfile
@@ -9,6 +10,5 @@ services:
         DATABASE_URL: ${DATABASE_URL}
     ports:
       - "3000:3000"
-    environment:
-      NODE_ENV: ${NODE_ENV:-development}
-      DATABASE_URL: ${DATABASE_URL}
+    env_file:
+      - .env.production
