@@ -1,12 +1,15 @@
-import { IMailService } from "./mail.service.interface.js";
+import { IEmailFormat, IMailService } from "./mail.service.interface.js";
 import { ResendMailService } from "./resend-mail.service.js";
 import { ConsoleMailService } from "./console-mail.service.js";
 import { Environment } from "../../types/environment.js";
 import { AbstractPluginEnvironment } from "../plugin/abstract-plugin-environment.js";
 
 abstract class BaseMailServiceEnvironment extends AbstractPluginEnvironment<IMailService> {
-	constructor(protected apiKey: string, protected defaultFrom: string) {
+	protected defaultFrom: string;
+
+	constructor(protected apiKey: string, emailFormat: IEmailFormat) {
 		super();
+		this.defaultFrom = `${emailFormat.name} <${emailFormat.address}>`;
 	}
 }
 
@@ -28,10 +31,10 @@ class TestMailServiceEnvironment extends BaseMailServiceEnvironment {
 	}
 }
 
-export const mailService = (apiKey: string, defaultFrom: string): IMailService => {
+export const mailService = (apiKey: string, emailFormat: IEmailFormat): IMailService => {
 	return AbstractPluginEnvironment.resolve({
 		[Environment.PRODUCTION]: ProductionMailServiceEnvironment,
 		[Environment.DEVELOPMENT]: DevelopmentMailServiceEnvironment,
 		[Environment.TEST]: TestMailServiceEnvironment,
-	}, apiKey, defaultFrom);
+	}, apiKey, emailFormat);
 };

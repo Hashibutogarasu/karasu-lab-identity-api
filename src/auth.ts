@@ -6,6 +6,8 @@ import { passwordPlugin } from "./plugins/password/password-plugin.js";
 import { oauthApplicationPlugin } from "./plugins/oauth/oauth-application-plugin.js";
 import { passkeyPlugin } from "./plugins/passkey/passkey-plugin.js";
 import { openAPIPlugin } from "./plugins/openapi/openapi-plugin.js";
+import { discoveryPlugin } from "./plugins/discovery/discovery-plugin.js";
+import { DatabaseSeedingService } from "./shared/database/database-seeding.service.js";
 import { authConfig } from "./config/auth.env.js";
 import { emailConfig } from "./config/email.env.js";
 import { IPasskeyAuth } from "./plugins/passkey/passkey.interface.js";
@@ -46,10 +48,10 @@ export function createAuth(
       clientSecret: env.GOOGLE_CLIENT_SECRET,
     };
   }
-  if (env.X_CLIENT_ID && env.X_CLIENT_SECRET) {
+  if ((env.X_CLIENT_ID && env.X_CLIENT_SECRET) || (env.TWITTER_CLIENT_ID && env.TWITTER_CLIENT_SECRET)) {
     socialProviders.twitter = {
-      clientId: env.X_CLIENT_ID,
-      clientSecret: env.X_CLIENT_SECRET,
+      clientId: env.X_CLIENT_ID || env.TWITTER_CLIENT_ID,
+      clientSecret: env.X_CLIENT_SECRET || env.TWITTER_CLIENT_SECRET,
     };
   }
 
@@ -107,6 +109,7 @@ export function createAuth(
     },
     plugins: [
       openAPIPlugin(),
+      discoveryPlugin(),
       passwordPlugin(),
       oauthApplicationPlugin(),
       passkeyPlugin(passkeyAuth),
@@ -204,10 +207,19 @@ export async function initAuth(): Promise<Auth> {
   }
 
   const mailServiceInstance = mailService(
-    emailConfig.RESEND_API_KEY || "dummy",
-    `${emailConfig.EMAIL_FROM_NAME} <${emailConfig.EMAIL_FROM_ADDRESS}>`
+    emailConfig.RESEND_API_KEY,
+    {
+      name: emailConfig.EMAIL_FROM_NAME,
+      address: emailConfig.EMAIL_FROM_ADDRESS,
+    }
   );
   const dbService = new PostgresDatabaseService(authConfig.NODE_ENV, authConfig.DATABASE_URL);
+
+  if (EnvironmentUtils.isDevelopment(authEnv.environment)) {
+    const seedingService = new DatabaseSeedingService(dbService.prisma);
+    await seedingService.seed();
+  }
+
   const passkeyAuth = passkeyAuthFactory(configService);
 
   return createAuth(
