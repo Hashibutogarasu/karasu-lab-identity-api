@@ -1,0 +1,26 @@
+/**
+ * Auth configuration service interface
+ * Provides environment-specific configuration for better-auth
+ */
+export interface IAuthConfig {
+  /**
+   * Get list of trusted origins for CORS
+   * @returns Array of allowed origin URLs
+   */
+  getTrustedOrigins(): string[];
+
+  /**
+   * Get cookie domain for cross-subdomain cookies
+   * @returns Domain string (e.g., '.karasu256.com')
+   */
+  getCookieDomain(): string;
+
+  /**
+   * Get cross-subdomain cookie configuration
+   * @returns Configuration object with enabled flag and domain
+   */
+  getCrossSubDomainCookies(): {
+    enabled: boolean;
+    domain: string;
+  };
+}

@@ -1,6 +1,7 @@
+ 
 /* eslint-disable @typescript-eslint/no-unnecessary-type-assertion */
 import { AbstractEndpoint } from "../../shared/auth/abstract-endpoint.js";
-import { oauthApplicationPluginInterface } from "@karasu-lab/common";
+import { oauthApplicationPluginInterface } from "@hashibutogarasu/common";
 import { IOAuth } from "../oauth/oauth.interface.js";
 import { AuthContext, EndpointContext } from "better-auth";
 

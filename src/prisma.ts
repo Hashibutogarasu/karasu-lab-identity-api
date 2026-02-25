@@ -1,12 +1,10 @@
-/* eslint-disable @typescript-eslint/no-unsafe-return */
-/* eslint-disable @typescript-eslint/no-redundant-type-constituents */
 import { PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import pg from "pg";
 
 let prismaInstance: PrismaClient | null = null;
 
-export function createPrisma(url: string = process.env.DATABASE_URL) {
+export function createPrisma(url: string = process.env.DATABASE_URL || "") {
   const pool = new pg.Pool({ 
     connectionString: url,
     max: 10,

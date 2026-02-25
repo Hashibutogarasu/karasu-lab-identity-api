@@ -22,13 +22,14 @@
     "format": "prettier --write --ignore-path .gitignore './**/*.{js,ts,json}'",
     "deploy": "sh scripts/deploy.sh",
     "setup": "sh scripts/setup.sh",
-    "prisma:generate": "npx @better-auth/cli@latest generate",
-    "prisma:migrate": "npx @better-auth/cli@latest migrate",
+    "prisma:generate": "npx @better-auth/cli@latest generate && npx prisma generate",
+    "prisma:migrate": "npx prisma migrate dev",
+    "prisma:push": "npx prisma db push",
     "prisma:pull": "npx prisma db pull"
   },
   "dependencies": {
     "@better-auth/passkey": "^1.4.18",
-    "@karasu-lab/common": "github:Hashibutogarasu/karasu-lab-api-common",
+    "@hashibutogarasu/common": "github:Hashibutogarasu/karasu-lab-api-common",
     "@nestjs/common": "^11.0.1",
     "@nestjs/core": "^11.0.1",
     "@nestjs/platform-express": "^11.0.1",
@@ -113,5 +114,10 @@
         }
       ]
     }
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@hashibutogarasu/common"
+    ]
   }
 }

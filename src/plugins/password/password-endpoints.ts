@@ -1,8 +1,9 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unnecessary-type-assertion */
 import { hashPassword, verifyPassword as verifyPasswordCrypto } from "better-auth/crypto";
 import cuid from "cuid";
 import { createAPIError, ErrorCodes } from "../../shared/errors/error.codes.js";
-import { passwordPluginInterface } from "@karasu-lab/common";
+import { passwordPluginInterface } from "@hashibutogarasu/common";
 import { AuthContext, EndpointContext, Session, User } from "better-auth";
 import { AbstractEndpoint } from "../../shared/auth/abstract-endpoint.js";
 

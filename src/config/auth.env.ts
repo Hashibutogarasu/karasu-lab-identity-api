@@ -6,6 +6,7 @@ dotenv.config();
 export const authEnvSchema = z.object({
   NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
   COOKIE_DOMAIN: z.string().optional(),
+  TRUSTED_ORIGINS: z.string().optional(),
   BETTER_AUTH_URL: z.string().url().default("http://localhost:3001"),
   BETTER_AUTH_SECRET: z.string().min(1).default("secret-for-testing"),
   FRONTEND_ORIGIN: z.string().url().optional(),

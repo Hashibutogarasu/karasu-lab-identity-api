@@ -1,6 +1,6 @@
-import { AbstractEnvironment } from "./abstract-environment.js";
 import { IConfigService } from "./config.service.interface.js";
 import { AuthEnv } from "../../config/auth.env.js";
+import { AbstractEnvironment } from "@hashibutogarasu/common";
 
 export abstract class AbstractConfigService extends AbstractEnvironment implements IConfigService {
   protected config: AuthEnv;

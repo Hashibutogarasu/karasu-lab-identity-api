@@ -13,7 +13,7 @@ export default defineConfig({
     include: ['**/*.spec.ts', '**/*.e2e-spec.ts'],
     setupFiles: ['./test/auth/auth.setup.ts'],
     alias: {
-      '@karasu-lab/common': resolve(__dirname, '../common/src/index.ts'),
+      '@hashibutogarasu/common': resolve(__dirname, '../common/src/index.ts'),
     },
     server: {
       deps: {

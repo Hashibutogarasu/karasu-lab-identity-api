@@ -1,6 +1,6 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+import { AbstractEnvironment, Environment } from "@hashibutogarasu/common";
 import { BetterAuthPlugin } from "better-auth";
-import { AbstractEnvironment } from "../config/abstract-environment.js";
-import { Environment } from "../../types/environment.js";
 
 class EnvironmentResolver extends AbstractEnvironment {}
 

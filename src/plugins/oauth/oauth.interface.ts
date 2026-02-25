@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-empty-object-type */
 import { AuthContext, Session, User, EndpointContext, Endpoint } from "better-auth";
 
 export type OAuthApplication = {

@@ -1,7 +1,6 @@
 import { IPasskeyAuth } from "./passkey.interface.js";
 import { IConfigService } from "../../shared/config/config.service.interface.js";
-import { AbstractEnvironment } from "../../shared/config/abstract-environment.js";
-import { Environment } from "../../types/environment.js";
+import { AbstractEnvironment, Environment } from "@hashibutogarasu/common";
 
 export abstract class AbstractPasskeyAuth extends AbstractEnvironment implements IPasskeyAuth {
     constructor(

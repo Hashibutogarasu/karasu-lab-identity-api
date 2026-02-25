@@ -1,7 +1,7 @@
 import { BetterAuthPlugin } from "better-auth";
 import { openAPI as defaultOpenAPI } from "better-auth/plugins";
 import { AbstractPluginEnvironment } from "../../shared/plugin/abstract-plugin-environment.js";
-import { Environment } from "../../types/environment.js";
+import { Environment } from "@hashibutogarasu/common";
 
 class ProductionOpenAPIEnvironment extends AbstractPluginEnvironment {
   resolve(): BetterAuthPlugin {

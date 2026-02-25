@@ -1,8 +1,8 @@
 import { IEmailFormat, IMailService } from "./mail.service.interface.js";
 import { ResendMailService } from "./resend-mail.service.js";
 import { ConsoleMailService } from "./console-mail.service.js";
-import { Environment } from "../../types/environment.js";
 import { AbstractPluginEnvironment } from "../plugin/abstract-plugin-environment.js";
+import { Environment } from "@hashibutogarasu/common";
 
 abstract class BaseMailServiceEnvironment extends AbstractPluginEnvironment<IMailService> {
 	protected defaultFrom: string;

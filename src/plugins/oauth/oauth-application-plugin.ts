@@ -1,5 +1,5 @@
+ 
 import { BetterAuthPlugin } from "better-auth";
-import { Environment } from "../../types/environment.js";
 import { AbstractPluginEnvironment } from "../../shared/plugin/abstract-plugin-environment.js";
 import { OAuth } from "./oauth.js";
 import { IOAuth } from "./oauth.interface.js";
@@ -12,6 +12,7 @@ import {
   UpdateApplicationDetailsEndpoint,
   UpdateApplicationDisabledStatusEndpoint,
 } from "./oauth-application-endpoints.js";
+import { Environment } from "@hashibutogarasu/common";
 
 abstract class BaseOAuthApplicationPluginEnvironment extends AbstractPluginEnvironment {
   constructor(protected oauth: IOAuth) {

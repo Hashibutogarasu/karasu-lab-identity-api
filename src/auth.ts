@@ -1,6 +1,8 @@
+ 
+ 
 import { betterAuth, BetterAuthOptions } from "better-auth/minimal";
 import { createAuthMiddleware, emailOTP, magicLink, organization, twoFactor } from "better-auth/plugins";
-import { EnvironmentUtils } from "./utils/enviroment.js";
+import { EnvironmentUtils, AbstractEnvironment } from "@hashibutogarasu/common";
 import { getFrontendUrl } from "./utils.js";
 import { passwordPlugin } from "./plugins/password/password-plugin.js";
 import { oauthApplicationPlugin } from "./plugins/oauth/oauth-application-plugin.js";
@@ -20,7 +22,8 @@ import { createAPIError, ErrorCodes } from "./shared/errors/error.codes.js";
 import { setupI18n } from "./shared/i18n/i18n.setup.js";
 import { IMailService } from "./shared/mail/mail.service.interface.js";
 import { mailService } from "./shared/mail/mail.service.js";
-import { AbstractEnvironment } from "./shared/config/abstract-environment.js";
+import { IAuthConfig } from "./services/auth/auth-config.interface.js";
+import { authConfigFactory } from "./services/auth/auth-config.service.js";
 
 class AuthEnvironment extends AbstractEnvironment {}
 
@@ -29,6 +32,7 @@ export function createAuth(
   dbService: IDataBaseService,
   mailService: IMailService,
   passkeyAuth: IPasskeyAuth,
+  authConfig: IAuthConfig,
   overrides: Partial<BetterAuthOptions> = {}
 ): ReturnType<typeof betterAuth> {
   const env = configService.getAll();
@@ -50,8 +54,8 @@ export function createAuth(
   }
   if ((env.X_CLIENT_ID && env.X_CLIENT_SECRET) || (env.TWITTER_CLIENT_ID && env.TWITTER_CLIENT_SECRET)) {
     socialProviders.twitter = {
-      clientId: env.X_CLIENT_ID || env.TWITTER_CLIENT_ID,
-      clientSecret: env.X_CLIENT_SECRET || env.TWITTER_CLIENT_SECRET,
+      clientId: env.X_CLIENT_ID || env.TWITTER_CLIENT_ID || "",
+      clientSecret: env.X_CLIENT_SECRET || env.TWITTER_CLIENT_SECRET || "",
     };
   }
 
@@ -59,18 +63,9 @@ export function createAuth(
     baseURL: env.BETTER_AUTH_URL,
     basePath: '/api/auth',
     advanced: {
-      crossSubDomainCookies: {
-        enabled: true,
-        domain: env.COOKIE_DOMAIN ?? '.karasu256.com',
-      },
+      crossSubDomainCookies: authConfig.getCrossSubDomainCookies(),
     },
-    trustedOrigins: [
-      "http://localhost:3000",
-      "https://sso.karasu256.com",
-      "https://www.karasu256.com",
-      "https://karasu256.com",
-      "https://www.karasu256.com",
-    ],
+    trustedOrigins: authConfig.getTrustedOrigins(),
     logger: {
       level: EnvironmentUtils.isProduction(authEnv.environment) ? "info" : "debug",
       disabled: false,
@@ -191,8 +186,13 @@ export function createAuth(
 }
 
 export type Auth = ReturnType<typeof betterAuth>;
+let cachedAuth: Auth | null = null;
 
 export async function initAuth(): Promise<Auth> {
+  if (cachedAuth) {
+    return cachedAuth;
+  }
+
   const authEnv = new AuthEnvironment(authConfig.NODE_ENV);
   if (EnvironmentUtils.isTest(authEnv.environment)) {
     return {} as unknown as ReturnType<typeof betterAuth>;
@@ -221,11 +221,17 @@ export async function initAuth(): Promise<Auth> {
   }
 
   const passkeyAuth = passkeyAuthFactory(configService);
+  const authConfigInstance = authConfigFactory(configService);
 
-  return createAuth(
+  cachedAuth = createAuth(
     configService,
     dbService,
     mailServiceInstance,
-    passkeyAuth
+    passkeyAuth,
+    authConfigInstance
   );
+
+  return cachedAuth;
 }
+
+export const auth: Auth = await initAuth();
