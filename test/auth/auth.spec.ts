@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { testAuth, testMailService } from './auth.setup.js';
+import { testAuth, testNotificationService } from './auth.setup.js';
 
 const BASE_URL = 'http://localhost:3000/api/auth';
 
@@ -166,12 +166,10 @@ describe('Better Auth Integration Tests', () => {
     });
 
     expect(res.status).toBe(200);
-    
-    expect(testMailService.sendEmail).toHaveBeenCalled();
-    const mockCallArgs = vi.mocked(testMailService.sendEmail).mock.calls[0][0] as { to: string; subject: string; html: string };
-    
-    expect(mockCallArgs.to).toBe('otpuser@example.com');
-    expect(mockCallArgs.subject).toBe('Your verification code');
-    expect(mockCallArgs.html).toContain('Your verification code is:');
+
+    expect(testNotificationService.sendVerificationOTP).toHaveBeenCalled();
+    const mockCallArgs = vi.mocked(testNotificationService.sendVerificationOTP).mock.calls[0][0];
+
+    expect(mockCallArgs.email).toBe('otpuser@example.com');
   });
 });

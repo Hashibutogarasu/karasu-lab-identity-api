@@ -1,43 +1,38 @@
- 
- 
 import { Auth as BetterAuthType, BetterAuthOptions } from "better-auth";
-import { createAuthMiddleware, emailOTP, magicLink, oidcProvider, organization, twoFactor } from "better-auth/plugins";
-import { BetterAuthBuilder, EnvironmentUtils, AbstractEnvironment } from "@hashibutogarasu/common";
-import { getFrontendUrl } from "./utils.js";
+import { admin, apiKey, createAuthMiddleware, emailOTP, magicLink, oidcProvider, organization, twoFactor } from "better-auth/plugins";
+import { BetterAuthBuilder, EnvironmentUtils } from "@hashibutogarasu/common";
 import { passwordPlugin } from "./plugins/password/password-plugin.js";
 import { oauthApplicationPlugin } from "./plugins/oauth/oauth-application-plugin.js";
 import { passkeyPlugin } from "./plugins/passkey/passkey-plugin.js";
 import { openAPIPlugin } from "./plugins/openapi/openapi-plugin.js";
 import { discoveryPlugin } from "./plugins/discovery/discovery-plugin.js";
 import { DatabaseSeedingService } from "./shared/database/database-seeding.service.js";
-import { authConfig } from "./config/auth.env.js";
-import { emailConfig } from "./config/email.env.js";
 import { IPasskeyAuth } from "./plugins/passkey/passkey.interface.js";
-import { passkeyAuthFactory } from "./plugins/passkey/passkey.service.js";
 import { IConfigService } from "./shared/config/config.service.interface.js";
-import { ConfigService } from "./shared/config/config.service.js";
 import { IDataBaseService } from "./shared/database/database.service.interface.js";
-import { PostgresDatabaseService } from "./shared/database/postgres-database.service.js";
-import { createAPIError, ErrorCodes } from "./shared/errors/error.codes.js";
-import { setupI18n } from "./shared/i18n/i18n.setup.js";
-import { IMailService } from "./shared/mail/mail.service.interface.js";
-import { mailService } from "./shared/mail/mail.service.js";
 import { IAuthConfig } from "./services/auth/auth-config.interface.js";
-import { authConfigFactory } from "./services/auth/auth-config.service.js";
 import { ISocialProviderConfig } from "./services/auth/social-provider-config.interface.js";
-import { socialProviderConfigFactory } from "./services/auth/social-provider-config.service.js";
-
-class AuthEnvironment extends AbstractEnvironment {}
+import { IAuthNotificationService } from "./services/auth/auth-notification.service.interface.js";
+import { IBetterAuthBootStrapper } from "./bootstrap/better-auth-bootstrapper.interface.js";
+import { I18nBootStrapper } from "./bootstrap/i18n.bootstrapper.js";
+import { DatabaseSeedingBootStrapper } from "./bootstrap/database-seeding.bootstrapper.js";
+import { AuthEnvironment } from "./auth-environment.js";
+import { AuthBootstrapContext } from "./bootstrap/auth-bootstrap.context.js";
+import { InitializeEnv } from "./bootstrap/initialize-env.js";
+import { ValidEnv } from "./bootstrap/valid-env.js";
+import { InitializeConfig } from "./bootstrap/initialize-config.js";
+import { InitializeService } from "./bootstrap/initialize-service.js";
+import { createAPIError, ErrorCodes } from "./shared/errors/error.codes.js";
 
 export function createAuth(
   configService: IConfigService,
   dbService: IDataBaseService,
-  mailService: IMailService,
+  notificationService: IAuthNotificationService,
   passkeyAuth: IPasskeyAuth,
   authConfig: IAuthConfig,
   socialProviderConfig: ISocialProviderConfig,
   overrides: Partial<BetterAuthOptions> = {}
-): Auth {
+): BetterAuthType {
   const env = configService.getAll();
   const authEnv = new AuthEnvironment(env.NODE_ENV);
 
@@ -55,31 +50,17 @@ export function createAuth(
     passkeyPlugin(passkeyAuth),
     twoFactor(),
     organization(),
+    admin(),
+    apiKey(),
     emailOTP({
       sendVerificationOTP: async ({ email, otp, type }) => {
-        const frontendUrl = env.FRONTEND_ORIGIN || getFrontendUrl();
-        const link = `${frontendUrl}/auth/email-verify?type=${encodeURIComponent(
-          String(type ?? '')
-        )}&email=${encodeURIComponent(email)}&otp=${encodeURIComponent(otp)}`;
-        await mailService.sendEmail({
-          to: email,
-          subject: "Your verification code",
-          html: `Your verification code is: <strong>${otp}</strong><br/><br/>Click to verify: <a href="${link}">${link}</a>`,
-        });
+        await notificationService.sendVerificationOTP({ email, otp, type });
       },
       sendVerificationOnSignUp: false,
     }),
     magicLink({
       sendMagicLink: async ({ email, token }) => {
-        const frontendUrl = env.FRONTEND_ORIGIN || getFrontendUrl();
-        const link = `${frontendUrl}/auth/email-verify?type=${encodeURIComponent(
-          'magic-link'
-        )}&email=${encodeURIComponent(email)}&otp=${encodeURIComponent(token)}`;
-        await mailService.sendEmail({
-          to: email,
-          subject: "Your magic link",
-          html: `Click the link to sign in: <a href="${link}">${link}</a>`,
-        });
+        await notificationService.sendMagicLink({ email, token });
       },
     }),
     ...(overrides.plugins ?? []),
@@ -100,11 +81,7 @@ export function createAuth(
     .email.setEmailAndPassword({ enabled: true, requireEmailVerification: true })
     .email.setEmailVerification({
       sendVerificationEmail: async ({ user, url }) => {
-        await mailService.sendEmail({
-          to: user.email,
-          subject: "Verify your email address",
-          html: `Click the link to verify your email: <a href="${url}">${url}</a>`,
-        });
+        await notificationService.sendVerificationEmail({ user, url });
       },
       sendOnSignUp: true,
       sendOnSignIn: true,
@@ -128,11 +105,7 @@ export function createAuth(
       changeEmail: {
         enabled: true,
         sendChangeEmailVerification: async ({ newEmail, url }) => {
-          await mailService.sendEmail({
-            to: newEmail,
-            subject: "Confirm your new email address",
-            html: `Click the link to confirm your new email address: <a href="${url}">${url}</a>`,
-          });
+          await notificationService.sendChangeEmailVerification({ newEmail, url });
         },
       },
     })
@@ -143,58 +116,44 @@ export function createAuth(
     .session.setSession({ cookieCache: { enabled: true, maxAge: 300 } })
     .database.setDatabase(dbService.getHandler())
     .withPlugins(corePlugins)
-    .buildServer() as unknown as Auth;
+    .buildServer() as unknown as BetterAuthType;
 }
 
-export type Auth = BetterAuthType;
-let cachedAuth: Auth | null = null;
+let cachedAuth: BetterAuthType | null = null;
 
-export async function initAuth(): Promise<Auth> {
+export async function initAuth(): Promise<BetterAuthType> {
   if (cachedAuth) {
     return cachedAuth;
   }
 
-  const authEnv = new AuthEnvironment(authConfig.NODE_ENV);
-  if (EnvironmentUtils.isTest(authEnv.environment)) {
-    return {} as unknown as Auth;
+  const context = new AuthBootstrapContext();
+
+  if (context.authEnv && EnvironmentUtils.isTest(context.authEnv.environment)) {
+    cachedAuth = context.auth!;
+    return cachedAuth;
   }
 
-  await setupI18n();
+  const bootstrappers: IBetterAuthBootStrapper[] = [
+    new InitializeEnv(context),
+    new ValidEnv(context),
+    new InitializeConfig(context),
+    new InitializeService(context, createAuth),
+    new I18nBootStrapper(),
+    ...(context.authEnv && EnvironmentUtils.isDevelopment(context.authEnv.environment) && context.dbService
+      ? [new DatabaseSeedingBootStrapper(new DatabaseSeedingService(context.dbService.prisma))]
+      : []),
+  ];
 
-  const configService = new ConfigService(authConfig.NODE_ENV);
-
-  if (EnvironmentUtils.isProduction(authEnv.environment) && !emailConfig.RESEND_API_KEY) {
-    throw createAPIError(ErrorCodes.SYSTEM.RESEND_API_KEY_REQUIRED);
+  for (const bootstrapper of bootstrappers) {
+    await bootstrapper.bootstrap();
   }
 
-  const mailServiceInstance = mailService(
-    emailConfig.RESEND_API_KEY,
-    {
-      name: emailConfig.EMAIL_FROM_NAME,
-      address: emailConfig.EMAIL_FROM_ADDRESS,
-    }
-  );
-  const dbService = new PostgresDatabaseService(authConfig.NODE_ENV, authConfig.DATABASE_URL);
-
-  if (EnvironmentUtils.isDevelopment(authEnv.environment)) {
-    const seedingService = new DatabaseSeedingService(dbService.prisma);
-    await seedingService.seed();
+  if (!context.auth) {
+    throw createAPIError(ErrorCodes.SYSTEM.AUTH_INITIALIZATION_FAILED);
   }
 
-  const passkeyAuth = passkeyAuthFactory(configService);
-  const authConfigInstance = authConfigFactory(configService);
-  const socialProviderConfigInstance = socialProviderConfigFactory(configService);
-
-  cachedAuth = createAuth(
-    configService,
-    dbService,
-    mailServiceInstance,
-    passkeyAuth,
-    authConfigInstance,
-    socialProviderConfigInstance
-  );
-
+  cachedAuth = context.auth;
   return cachedAuth;
 }
 
-export const auth: Auth = await initAuth();
+export const auth: BetterAuthType = await initAuth();

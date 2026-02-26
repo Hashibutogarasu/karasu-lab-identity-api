@@ -26,6 +26,7 @@ describe('AuthConfigService', () => {
         'https://sso.karasu256.com',
         'https://www.karasu256.com',
         'https://karasu256.com',
+        'https://id.karasu256.com',
       ]);
       expect(config.getCookieDomain()).toBe('.karasu256.com');
     });
@@ -133,6 +134,7 @@ describe('AuthConfigService', () => {
         'https://sso.karasu256.com',
         'https://www.karasu256.com',
         'https://karasu256.com',
+        'https://id.karasu256.com',
       ]);
     });
 

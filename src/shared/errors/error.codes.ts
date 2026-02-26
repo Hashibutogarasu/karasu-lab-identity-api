@@ -21,6 +21,7 @@ export const ErrorCodes = {
 	},
 	SYSTEM: {
 		RESEND_API_KEY_REQUIRED: { key: 'system.resend_api_key_required', status: 'INTERNAL_SERVER_ERROR' },
+		AUTH_INITIALIZATION_FAILED: { key: 'system.auth_initialization_failed', status: 'INTERNAL_SERVER_ERROR' },
 	},
 } as const satisfies Record<string, Record<string, ErrorDefinition>>;
 

@@ -1,36 +1,32 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
+import { Auth as BetterAuthType } from "better-auth";
 import { NestFactory } from "@nestjs/core";
 import { AppModule } from "./app.module.js";
 import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
 import { toNodeHandler } from "better-auth/node";
 import { AuthService } from "@thallesp/nestjs-better-auth";
 import type { Request, Response, NextFunction } from "express";
-import type { Auth } from "./auth.js";
+import { ConfigService } from "./shared/config/config.service.js";
+import { authConfigFactory } from "./services/auth/auth-config.service.js";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     bodyParser: false,
   });
 
-  const allowedOrigins = [
-    'https://sso.karasu256.com',
-    'https://www.karasu256.com',
-    'https://karasu256.com',
-    'https://www.karasu256.com',
-    'https://id.karasu256.com',
-    ...process.env.NODE_ENV === 'development' ? [
-      'http://localhost:3001',
-      'http://localhost:3000',
-    ] : [],
-  ];
+  const configService = new ConfigService(process.env.NODE_ENV);
+  const authConfigInstance = authConfigFactory(configService);
+  const allowedOrigins = authConfigInstance.getTrustedOrigins();
+  const allowedHeaders = authConfigInstance.getAllowedHeaders();
+  const allowCredentials = authConfigInstance.getCredentials();
 
   app.enableCors({
     origin: allowedOrigins,
-    allowedHeaders: 'Origin, X-Requested-With, Content-Type, Accept, Authorization',
-    credentials: true,
+    allowedHeaders: allowedHeaders,
+    credentials: allowCredentials,
   });
 
-  const authService = app.get<AuthService<Auth>>(AuthService);
+  const authService = app.get<AuthService<BetterAuthType>>(AuthService);
   const auth = authService.instance;
 
   const expressApp = app.getHttpAdapter().getInstance();

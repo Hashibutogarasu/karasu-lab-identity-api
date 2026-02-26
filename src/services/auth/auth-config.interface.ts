@@ -23,4 +23,16 @@ export interface IAuthConfig {
     enabled: boolean;
     domain: string;
   };
+
+  /**
+   * Get list of allowed headers for CORS
+   * @returns Comma-separated string of allowed headers
+   */
+  getAllowedHeaders(): string;
+
+  /**
+   * Get whether to allow credentials for CORS
+   * @returns Boolean indicating if credentials are allowed
+   */
+  getCredentials(): boolean;
 }

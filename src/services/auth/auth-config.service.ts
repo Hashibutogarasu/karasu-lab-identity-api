@@ -63,6 +63,20 @@ abstract class AbstractAuthConfig extends AbstractPluginEnvironment<IAuthConfig>
       domain: this.getCookieDomain(),
     };
   }
+
+  /**
+   * Get allowed headers for CORS
+   */
+  getAllowedHeaders(): string {
+    return 'Origin, X-Requested-With, Content-Type, Accept, Authorization';
+  }
+
+  /**
+   * Get whether to allow credentials for CORS
+   */
+  getCredentials(): boolean {
+    return true;
+  }
 }
 
 /**
@@ -75,6 +89,7 @@ class ProductionAuthConfig extends AbstractAuthConfig {
       'https://sso.karasu256.com',
       'https://www.karasu256.com',
       'https://karasu256.com',
+      'https://id.karasu256.com',
     ];
   }
 
@@ -91,9 +106,11 @@ class DevelopmentAuthConfig extends AbstractAuthConfig {
   protected getDefaultTrustedOrigins(): string[] {
     return [
       'http://localhost:3000',
+      'http://localhost:3001',
       'https://sso.karasu256.com',
       'https://www.karasu256.com',
       'https://karasu256.com',
+      'https://id.karasu256.com',
     ];
   }
 
