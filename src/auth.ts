@@ -1,8 +1,8 @@
  
  
-import { betterAuth, BetterAuthOptions } from "better-auth/minimal";
-import { createAuthMiddleware, emailOTP, magicLink, organization, twoFactor } from "better-auth/plugins";
-import { EnvironmentUtils, AbstractEnvironment } from "@hashibutogarasu/common";
+import { Auth as BetterAuthType, BetterAuthOptions } from "better-auth";
+import { createAuthMiddleware, emailOTP, magicLink, oidcProvider, organization, twoFactor } from "better-auth/plugins";
+import { BetterAuthBuilder, EnvironmentUtils, AbstractEnvironment } from "@hashibutogarasu/common";
 import { getFrontendUrl } from "./utils.js";
 import { passwordPlugin } from "./plugins/password/password-plugin.js";
 import { oauthApplicationPlugin } from "./plugins/oauth/oauth-application-plugin.js";
@@ -24,6 +24,8 @@ import { IMailService } from "./shared/mail/mail.service.interface.js";
 import { mailService } from "./shared/mail/mail.service.js";
 import { IAuthConfig } from "./services/auth/auth-config.interface.js";
 import { authConfigFactory } from "./services/auth/auth-config.service.js";
+import { ISocialProviderConfig } from "./services/auth/social-provider-config.interface.js";
+import { socialProviderConfigFactory } from "./services/auth/social-provider-config.service.js";
 
 class AuthEnvironment extends AbstractEnvironment {}
 
@@ -33,51 +35,70 @@ export function createAuth(
   mailService: IMailService,
   passkeyAuth: IPasskeyAuth,
   authConfig: IAuthConfig,
+  socialProviderConfig: ISocialProviderConfig,
   overrides: Partial<BetterAuthOptions> = {}
-): ReturnType<typeof betterAuth> {
+): Auth {
   const env = configService.getAll();
   const authEnv = new AuthEnvironment(env.NODE_ENV);
 
-  const socialProviders: Record<string, { clientId: string; clientSecret: string }> = {};
+  const socialProviders = {
+    ...socialProviderConfig.getProviders(),
+    ...overrides.socialProviders,
+  };
 
-  if (env.DISCORD_CLIENT_ID && env.DISCORD_CLIENT_SECRET) {
-    socialProviders.discord = {
-      clientId: env.DISCORD_CLIENT_ID,
-      clientSecret: env.DISCORD_CLIENT_SECRET,
-    };
-  }
-  if (env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET) {
-    socialProviders.google = {
-      clientId: env.GOOGLE_CLIENT_ID,
-      clientSecret: env.GOOGLE_CLIENT_SECRET,
-    };
-  }
-  if ((env.X_CLIENT_ID && env.X_CLIENT_SECRET) || (env.TWITTER_CLIENT_ID && env.TWITTER_CLIENT_SECRET)) {
-    socialProviders.twitter = {
-      clientId: env.X_CLIENT_ID || env.TWITTER_CLIENT_ID || "",
-      clientSecret: env.X_CLIENT_SECRET || env.TWITTER_CLIENT_SECRET || "",
-    };
-  }
+  const corePlugins = [
+    openAPIPlugin(),
+    discoveryPlugin(),
+    oidcProvider({ loginPage: "/login" }),
+    passwordPlugin(),
+    oauthApplicationPlugin(),
+    passkeyPlugin(passkeyAuth),
+    twoFactor(),
+    organization(),
+    emailOTP({
+      sendVerificationOTP: async ({ email, otp, type }) => {
+        const frontendUrl = env.FRONTEND_ORIGIN || getFrontendUrl();
+        const link = `${frontendUrl}/auth/email-verify?type=${encodeURIComponent(
+          String(type ?? '')
+        )}&email=${encodeURIComponent(email)}&otp=${encodeURIComponent(otp)}`;
+        await mailService.sendEmail({
+          to: email,
+          subject: "Your verification code",
+          html: `Your verification code is: <strong>${otp}</strong><br/><br/>Click to verify: <a href="${link}">${link}</a>`,
+        });
+      },
+      sendVerificationOnSignUp: false,
+    }),
+    magicLink({
+      sendMagicLink: async ({ email, token }) => {
+        const frontendUrl = env.FRONTEND_ORIGIN || getFrontendUrl();
+        const link = `${frontendUrl}/auth/email-verify?type=${encodeURIComponent(
+          'magic-link'
+        )}&email=${encodeURIComponent(email)}&otp=${encodeURIComponent(token)}`;
+        await mailService.sendEmail({
+          to: email,
+          subject: "Your magic link",
+          html: `Click the link to sign in: <a href="${link}">${link}</a>`,
+        });
+      },
+    }),
+    ...(overrides.plugins ?? []),
+  ];
 
-  const options: BetterAuthOptions = {
-    baseURL: env.BETTER_AUTH_URL,
-    basePath: '/api/auth',
-    advanced: {
-      crossSubDomainCookies: authConfig.getCrossSubDomainCookies(),
-    },
-    trustedOrigins: authConfig.getTrustedOrigins(),
-    logger: {
+  return BetterAuthBuilder.create()
+    .basic.setBaseURL(env.BETTER_AUTH_URL)
+    .basic.setBasePath('/api/auth')
+    .basic.setSecret(env.BETTER_AUTH_SECRET)
+    .basic.setAppName("Karasu Lab")
+    .basic.setTrustedOrigins(authConfig.getTrustedOrigins())
+    .basic.setAdvanced({ crossSubDomainCookies: authConfig.getCrossSubDomainCookies() })
+    .basic.setLogger({
       level: EnvironmentUtils.isProduction(authEnv.environment) ? "info" : "debug",
       disabled: false,
-    },
-    appName: "Karasu Lab",
-    secret: env.BETTER_AUTH_SECRET,
-    socialProviders,
-    emailAndPassword: {
-      enabled: true,
-      requireEmailVerification: true,
-    },
-    emailVerification: {
+    })
+    .basic.setRateLimit({ enabled: true, window: 60, max: 100 })
+    .email.setEmailAndPassword({ enabled: true, requireEmailVerification: true })
+    .email.setEmailVerification({
       sendVerificationEmail: async ({ user, url }) => {
         await mailService.sendEmail({
           to: user.email,
@@ -87,13 +108,13 @@ export function createAuth(
       },
       sendOnSignUp: true,
       sendOnSignIn: true,
-    },
-    hooks: {
+    })
+    .auth.setSocialProviders(socialProviders)
+    .auth.setHooks({
       after: createAuthMiddleware((context) => {
         if (context.path === "/oauth2/consent" || context.path === "/sign-out") {
           const expiredDate = new Date(0).toUTCString();
           const oidcCookies = ["oidc_login_prompt", "oidc_consent_prompt"];
-
           oidcCookies.forEach((cookieName) => {
             const setCookie = `${cookieName}=; Expires=${expiredDate}; Max-Age=0; Path=/; SameSite=lax`;
             context.setHeader("Set-Cookie", setCookie);
@@ -101,49 +122,9 @@ export function createAuth(
         }
         return Promise.resolve();
       }),
-    },
-    plugins: [
-      openAPIPlugin(),
-      discoveryPlugin(),
-      passwordPlugin(),
-      oauthApplicationPlugin(),
-      passkeyPlugin(passkeyAuth),
-      twoFactor(),
-      organization(),
-      emailOTP({
-        sendVerificationOTP: async ({ email, otp, type }) => {
-          const frontendUrl = env.FRONTEND_ORIGIN || getFrontendUrl();
-          const link = `${frontendUrl}/auth/email-verify?type=${encodeURIComponent(
-            String(type ?? '')
-          )}&email=${encodeURIComponent(email)}&otp=${encodeURIComponent(otp)}`;
-
-          await mailService.sendEmail({
-            to: email,
-            subject: "Your verification code",
-            html: `Your verification code is: <strong>${otp}</strong><br/><br/>Click to verify: <a href="${link}">${link}</a>`,
-          })
-        },
-        sendVerificationOnSignUp: false,
-      }),
-      magicLink({
-        sendMagicLink: async ({ email, token }) => {
-          const frontendUrl = env.FRONTEND_ORIGIN || getFrontendUrl();
-          const link = `${frontendUrl}/auth/email-verify?type=${encodeURIComponent(
-            'magic-link'
-          )}&email=${encodeURIComponent(email)}&otp=${encodeURIComponent(token)}`;
-
-          await mailService.sendEmail({
-            to: email,
-            subject: "Your magic link",
-            html: `Click the link to sign in: <a href="${link}">${link}</a>`,
-          });
-        },
-      })
-    ],
-    user: {
-      deleteUser: {
-        enabled: true,
-      },
+    })
+    .user.setUser({
+      deleteUser: { enabled: true },
       changeEmail: {
         enabled: true,
         sendChangeEmailVerification: async ({ newEmail, url }) => {
@@ -152,40 +133,20 @@ export function createAuth(
             subject: "Confirm your new email address",
             html: `Click the link to confirm your new email address: <a href="${url}">${url}</a>`,
           });
-        }
-      }
-    },
-    account: {
-      accountLinking: {
-        allowDifferentEmails: true
+        },
       },
+    })
+    .user.setAccount({
+      accountLinking: { allowDifferentEmails: true },
       updateAccountOnSignIn: true,
-    },
-    database: dbService.getHandler(),
-    rateLimit: {
-      enabled: true,
-      window: 60,
-      max: 100,
-    },
-    session: {
-      cookieCache: {
-        enabled: true,
-        maxAge: 300
-      }
-    }
-  };
-
-  const finalOptions = {
-    ...options,
-    ...overrides,
-    plugins: [...(options.plugins || []), ...(overrides.plugins || [])],
-    socialProviders: { ...socialProviders, ...overrides.socialProviders }
-  };
-
-  return betterAuth(finalOptions);
+    })
+    .session.setSession({ cookieCache: { enabled: true, maxAge: 300 } })
+    .database.setDatabase(dbService.getHandler())
+    .withPlugins(corePlugins)
+    .buildServer() as unknown as Auth;
 }
 
-export type Auth = ReturnType<typeof betterAuth>;
+export type Auth = BetterAuthType;
 let cachedAuth: Auth | null = null;
 
 export async function initAuth(): Promise<Auth> {
@@ -195,7 +156,7 @@ export async function initAuth(): Promise<Auth> {
 
   const authEnv = new AuthEnvironment(authConfig.NODE_ENV);
   if (EnvironmentUtils.isTest(authEnv.environment)) {
-    return {} as unknown as ReturnType<typeof betterAuth>;
+    return {} as unknown as Auth;
   }
 
   await setupI18n();
@@ -222,13 +183,15 @@ export async function initAuth(): Promise<Auth> {
 
   const passkeyAuth = passkeyAuthFactory(configService);
   const authConfigInstance = authConfigFactory(configService);
+  const socialProviderConfigInstance = socialProviderConfigFactory(configService);
 
   cachedAuth = createAuth(
     configService,
     dbService,
     mailServiceInstance,
     passkeyAuth,
-    authConfigInstance
+    authConfigInstance,
+    socialProviderConfigInstance
   );
 
   return cachedAuth;

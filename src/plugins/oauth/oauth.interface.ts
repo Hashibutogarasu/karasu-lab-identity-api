@@ -6,7 +6,7 @@ export type OAuthApplication = {
 	name: string;
 	clientId: string;
 	clientSecret: string | null;
-	redirectURLs: string;
+	redirectUrls: string;
 	type: string;
 	disabled: boolean | null;
 	userId: string | null;

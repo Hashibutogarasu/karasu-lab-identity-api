@@ -23,7 +23,7 @@ export class OAuthManage implements IOAuthManage {
 				id: app.id,
 				name: app.name,
 				clientId: app.clientId,
-				redirectURLs: app.redirectURLs,
+				redirectUrls: app.redirectUrls,
 				type: app.type,
 				disabled: app.disabled,
 				userId: app.userId,
@@ -60,7 +60,7 @@ export class OAuthManage implements IOAuthManage {
 			id: application.id,
 			name: application.name,
 			clientId: application.clientId,
-			redirectURLs: application.redirectURLs,
+			redirectUrls: application.redirectUrls,
 			type: application.type,
 			disabled: application.disabled,
 			userId: application.userId,
@@ -96,7 +96,7 @@ export class OAuthManage implements IOAuthManage {
 			id: application.id,
 			name: application.name,
 			clientId: application.clientId,
-			redirectURLs: application.redirectURLs,
+			redirectUrls: application.redirectUrls,
 			type: application.type,
 			disabled: application.disabled,
 			userId: application.userId,
@@ -167,7 +167,7 @@ export class OAuthManage implements IOAuthManage {
 			id: updated.id,
 			name: updated.name,
 			clientId: updated.clientId,
-			redirectURLs: updated.redirectURLs,
+			redirectUrls: updated.redirectUrls,
 			type: updated.type,
 			disabled: updated.disabled,
 			userId: updated.userId,
@@ -201,7 +201,7 @@ export class OAuthManage implements IOAuthManage {
 
 		const appId = application.id;
 		const nameValue = body.name || "";
-		const redirectURLsValue = (body.redirectUris || []).join(",");
+		const redirectUrlsValue = (body.redirectUris || []).join(",");
 
 		await ctx.context.adapter.update({
 			model: "oauthApplication",
@@ -218,7 +218,7 @@ export class OAuthManage implements IOAuthManage {
 			],
 			update: {
 				name: nameValue,
-				redirectURLs: redirectURLsValue,
+				redirectUrls: redirectUrlsValue,
 			},
 		});
 
@@ -242,7 +242,7 @@ export class OAuthManage implements IOAuthManage {
 			id: updated.id,
 			name: updated.name,
 			clientId: updated.clientId,
-			redirectURLs: updated.redirectURLs,
+			redirectUrls: updated.redirectUrls,
 			type: updated.type,
 			disabled: updated.disabled,
 			userId: updated.userId,

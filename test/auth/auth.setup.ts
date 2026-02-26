@@ -6,6 +6,7 @@ import { MockMailService } from '../mocks/mail.service.mock.js';
 import { MemoryDatabaseService } from '../mocks/memory-database.service.js';
 import { passkeyAuthFactory } from '../../src/plugins/passkey/passkey.service.js';
 import { authConfigFactory } from '../../src/services/auth/auth-config.service.js';
+import { socialProviderConfigFactory } from '../../src/services/auth/social-provider-config.service.js';
 
 export let testDbService: MemoryDatabaseService;
 export let testMailService: MockMailService;
@@ -22,8 +23,9 @@ beforeAll(() => {
   testDbService = new MemoryDatabaseService("test");
   const passkeyAuth = passkeyAuthFactory(configService);
   const authConfig = authConfigFactory(configService);
+  const socialProviderConfig = socialProviderConfigFactory(configService);
 
-  testAuth = createAuth(configService, testDbService, testMailService, passkeyAuth, authConfig, {
+  testAuth = createAuth(configService, testDbService, testMailService, passkeyAuth, authConfig, socialProviderConfig, {
     plugins: [
       genericOAuth({
         config: [
