@@ -39,7 +39,11 @@ else
   echo "⚠️ .env.production not found. Skipping sync."
 fi
 
-# 2. Push to GitHub
+# 2. Run Database Migrations
+echo "🗄️ Running database migrations..."
+pnpm run prisma:push
+
+# 3. Push to GitHub
 echo "⬆️ Pushing to GitHub..."
 git add .
 if ! git diff-index --quiet HEAD --; then
