@@ -118,7 +118,6 @@
   "pnpm": {
     "onlyBuiltDependencies": [
       "@hashibutogarasu/common",
-      "@karasu-lab/common",
       "@nestjs/core",
       "@prisma/client",
       "@prisma/engines",
