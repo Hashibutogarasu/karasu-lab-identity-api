@@ -8,4 +8,4 @@ onlyBuiltDependencies:
   - esbuild
   - prisma
   - unrs-resolver
-  - '@karasu-lab/common'
+  - '@hashibutogarasu/common'
