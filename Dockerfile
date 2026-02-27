@@ -16,12 +16,12 @@ RUN DATABASE_URL="postgresql://build:dummy@localhost:5432/dummy" npx prisma gene
 RUN pnpm run build
 RUN pnpm prune --prod
 
-FROM node:20-alpine AS runner
+FROM node:20-bookworm-slim AS runner
 
 ENV NODE_ENV production
 WORKDIR /app
 
-RUN apk add --no-cache openssl ca-certificates
+RUN apt-get update && apt-get install -y openssl ca-certificates && rm -rf /var/lib/apt/lists/*
 
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/dist ./dist
