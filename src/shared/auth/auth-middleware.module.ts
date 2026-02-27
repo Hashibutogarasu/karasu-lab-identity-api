@@ -28,6 +28,6 @@ export class AuthMiddlewareModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer
       .apply(AuthMiddleware)
-      .forRoutes({ path: `${this.options.path}(.*)`, method: RequestMethod.ALL });
+      .forRoutes({ path: `${this.options.path}*path`, method: RequestMethod.ALL });
   }
 }
