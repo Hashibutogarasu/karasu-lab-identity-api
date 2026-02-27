@@ -1,11 +1,11 @@
 import { IOAuthManage, OAuthContext, OAuthApplication } from "./oauth.interface.js";
-import { createAPIError, ErrorCodes } from "../../shared/errors/error.codes.js";
+import { ErrorCodes } from "../../shared/errors/error.codes.js";
 import { generateRandomString } from "better-auth/crypto";
 
 export class OAuthManage implements IOAuthManage {
 	async listAllApplications(ctx: OAuthContext): Promise<Partial<OAuthApplication>[]> {
 		const session = ctx.context.session;
-		if (!session) throw createAPIError(ErrorCodes.AUTH.UNAUTHORIZED);
+		if (!session) throw ErrorCodes.AUTH.UNAUTHORIZED;
 		const user = session.user;
 
 		const applications = (await ctx.context.adapter.findMany<OAuthApplication>({
@@ -35,7 +35,7 @@ export class OAuthManage implements IOAuthManage {
 
 	async getApplicationById(ctx: OAuthContext): Promise<Partial<OAuthApplication>> {
 		const session = ctx.context.session;
-		if (!session) throw createAPIError(ErrorCodes.AUTH.UNAUTHORIZED);
+		if (!session) throw ErrorCodes.AUTH.UNAUTHORIZED;
 		const user = session.user;
 
 		const body = (ctx.body || {}) as { id: string };
@@ -54,7 +54,7 @@ export class OAuthManage implements IOAuthManage {
 		}));
 		const application = applications[0];
 
-		if (!application) throw createAPIError(ErrorCodes.OAUTH.APPLICATION_NOT_FOUND);
+		if (!application) throw ErrorCodes.OAUTH.APPLICATION_NOT_FOUND;
 
 		return {
 			id: application.id,
@@ -71,7 +71,7 @@ export class OAuthManage implements IOAuthManage {
 
 	async getApplicationByClientId(ctx: OAuthContext): Promise<Partial<OAuthApplication>> {
 		const session = ctx.context.session;
-		if (!session) throw createAPIError(ErrorCodes.AUTH.UNAUTHORIZED);
+		if (!session) throw ErrorCodes.AUTH.UNAUTHORIZED;
 		const user = session.user;
 
 		const query = (ctx.query || {}) as { client_id: string };
@@ -90,7 +90,7 @@ export class OAuthManage implements IOAuthManage {
 		}));
 		const application = applications[0];
 
-		if (!application) throw createAPIError(ErrorCodes.OAUTH.APPLICATION_NOT_FOUND);
+		if (!application) throw ErrorCodes.OAUTH.APPLICATION_NOT_FOUND;
 
 		return {
 			id: application.id,
@@ -107,7 +107,7 @@ export class OAuthManage implements IOAuthManage {
 
 	async updateApplicationDisabledStatus(ctx: OAuthContext): Promise<Partial<OAuthApplication>> {
 		const session = ctx.context.session;
-		if (!session) throw createAPIError(ErrorCodes.AUTH.UNAUTHORIZED);
+		if (!session) throw ErrorCodes.AUTH.UNAUTHORIZED;
 		const user = session.user;
 
 		const body = (ctx.body || {}) as { id: string; disabled: boolean };
@@ -125,7 +125,7 @@ export class OAuthManage implements IOAuthManage {
 			],
 		}));
 
-		if (!application) throw createAPIError(ErrorCodes.OAUTH.APPLICATION_NOT_FOUND);
+		if (!application) throw ErrorCodes.OAUTH.APPLICATION_NOT_FOUND;
 
 		const appId = application.id;
 
@@ -161,7 +161,7 @@ export class OAuthManage implements IOAuthManage {
 			],
 		}));
 
-		if (!updated) throw createAPIError(ErrorCodes.OAUTH.APPLICATION_NOT_FOUND);
+		if (!updated) throw ErrorCodes.OAUTH.APPLICATION_NOT_FOUND;
 
 		return {
 			id: updated.id,
@@ -178,7 +178,7 @@ export class OAuthManage implements IOAuthManage {
 
 	async updateApplicationDetails(ctx: OAuthContext): Promise<Partial<OAuthApplication>> {
 		const session = ctx.context.session;
-		if (!session) throw createAPIError(ErrorCodes.AUTH.UNAUTHORIZED);
+		if (!session) throw ErrorCodes.AUTH.UNAUTHORIZED;
 		const user = session.user;
 
 		const body = (ctx.body || {}) as { id: string; name: string; redirectUris: string[] };
@@ -197,7 +197,7 @@ export class OAuthManage implements IOAuthManage {
 		}));
 		const application = applications[0];
 
-		if (!application) throw createAPIError(ErrorCodes.OAUTH.APPLICATION_NOT_FOUND);
+		if (!application) throw ErrorCodes.OAUTH.APPLICATION_NOT_FOUND;
 
 		const appId = application.id;
 		const nameValue = body.name || "";
@@ -236,7 +236,7 @@ export class OAuthManage implements IOAuthManage {
 			],
 		}));
 
-		if (!updated) throw createAPIError(ErrorCodes.OAUTH.APPLICATION_NOT_FOUND);
+		if (!updated) throw ErrorCodes.OAUTH.APPLICATION_NOT_FOUND;
 
 		return {
 			id: updated.id,
@@ -253,7 +253,7 @@ export class OAuthManage implements IOAuthManage {
 
 	async regenerateApplicationSecret(ctx: OAuthContext): Promise<OAuthApplication> {
 		const session = ctx.context.session;
-		if (!session) throw createAPIError(ErrorCodes.AUTH.UNAUTHORIZED);
+		if (!session) throw ErrorCodes.AUTH.UNAUTHORIZED;
 		const user = session.user;
 
 		const body = (ctx.body || {}) as { id: string };
@@ -272,7 +272,7 @@ export class OAuthManage implements IOAuthManage {
 		}));
 		const application = applications[0];
 
-		if (!application) throw createAPIError(ErrorCodes.OAUTH.APPLICATION_NOT_FOUND);
+		if (!application) throw ErrorCodes.OAUTH.APPLICATION_NOT_FOUND;
 
 		const appId = application.id;
 		const newSecret = generateRandomString(32);
@@ -309,14 +309,14 @@ export class OAuthManage implements IOAuthManage {
 			],
 		}));
 
-		if (!updated) throw createAPIError(ErrorCodes.OAUTH.APPLICATION_NOT_FOUND);
+		if (!updated) throw ErrorCodes.OAUTH.APPLICATION_NOT_FOUND;
 
 		return updated;
 	}
 
 	async deleteApplication(ctx: OAuthContext): Promise<{ success: boolean }> {
 		const session = ctx.context.session;
-		if (!session) throw createAPIError(ErrorCodes.AUTH.UNAUTHORIZED);
+		if (!session) throw ErrorCodes.AUTH.UNAUTHORIZED;
 		const user = session.user;
 
 		const body = (ctx.body || {}) as { id: string };
@@ -335,7 +335,7 @@ export class OAuthManage implements IOAuthManage {
 		}));
 		const application = applications[0];
 
-		if (!application) throw createAPIError(ErrorCodes.OAUTH.APPLICATION_NOT_FOUND);
+		if (!application) throw ErrorCodes.OAUTH.APPLICATION_NOT_FOUND;
 
 		const appId = application.id;
 

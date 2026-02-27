@@ -22,7 +22,7 @@ import { InitializeEnv } from "./bootstrap/initialize-env.js";
 import { ValidEnv } from "./bootstrap/valid-env.js";
 import { InitializeConfig } from "./bootstrap/initialize-config.js";
 import { InitializeService } from "./bootstrap/initialize-service.js";
-import { createAPIError, ErrorCodes } from "./shared/errors/error.codes.js";
+import { ErrorCodes } from "./shared/errors/error.codes.js";
 
 export function createAuth(
   configService: IConfigService,
@@ -151,7 +151,7 @@ export async function initAuth(): Promise<BetterAuthType> {
   }
 
   if (!context.auth) {
-    throw createAPIError(ErrorCodes.SYSTEM.AUTH_INITIALIZATION_FAILED);
+    throw ErrorCodes.SYSTEM.AUTH_INITIALIZATION_FAILED;
   }
 
   cachedAuth = context.auth;

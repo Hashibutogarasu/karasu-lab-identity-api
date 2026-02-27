@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import cuid from 'cuid';
 
 import { getPrisma } from '../prisma.js';
-import { createAPIError, ErrorCodes } from '../shared/errors/error.codes.js';
+import { ErrorCodes } from '../shared/errors/error.codes.js';
 import { IObjectStorageService } from '../storage/object-storage.interface.js';
 import type { IObjectStorage } from '../storage/object-storage.interface.js';
 import type { CreateAttachmentDto } from './dto/create-attachment.dto.js';
@@ -83,19 +83,19 @@ export class BlogService {
       where: { id },
       include: { attachments: true },
     });
-    if (!blog) throw createAPIError(ErrorCodes.BLOG.NOT_FOUND);
+    if (!blog) throw ErrorCodes.BLOG.NOT_FOUND;
     const PUBLISHED: Status = 'published';
     if (blog.status !== PUBLISHED && blog.authorId !== userId) {
-      throw createAPIError(ErrorCodes.BLOG.FORBIDDEN);
+      throw ErrorCodes.BLOG.FORBIDDEN;
     }
     return blog;
   }
 
   async updateBlog(id: string, authorId: string, dto: UpdateBlogDto) {
     const blog = await this.prisma.blog.findUnique({ where: { id } });
-    if (!blog) throw createAPIError(ErrorCodes.BLOG.NOT_FOUND);
-    if (blog.authorId !== authorId) throw createAPIError(ErrorCodes.BLOG.FORBIDDEN);
-    if (blog.locked) throw createAPIError(ErrorCodes.BLOG.LOCKED);
+    if (!blog) throw ErrorCodes.BLOG.NOT_FOUND;
+    if (blog.authorId !== authorId) throw ErrorCodes.BLOG.FORBIDDEN;
+    if (blog.locked) throw ErrorCodes.BLOG.LOCKED;
 
     return this.prisma.blog.update({
       where: { id },
@@ -110,9 +110,9 @@ export class BlogService {
 
   async deleteBlog(id: string, authorId: string) {
     const blog = await this.prisma.blog.findUnique({ where: { id } });
-    if (!blog) throw createAPIError(ErrorCodes.BLOG.NOT_FOUND);
-    if (blog.authorId !== authorId) throw createAPIError(ErrorCodes.BLOG.FORBIDDEN);
-    if (blog.locked) throw createAPIError(ErrorCodes.BLOG.LOCKED);
+    if (!blog) throw ErrorCodes.BLOG.NOT_FOUND;
+    if (blog.authorId !== authorId) throw ErrorCodes.BLOG.FORBIDDEN;
+    if (blog.locked) throw ErrorCodes.BLOG.LOCKED;
 
     const attachments = await this.prisma.attachmentMetadata.findMany({
       where: { blogId: id },
@@ -129,9 +129,9 @@ export class BlogService {
     dto: CreateAttachmentDto,
   ) {
     const blog = await this.prisma.blog.findUnique({ where: { id: blogId } });
-    if (!blog) throw createAPIError(ErrorCodes.BLOG.NOT_FOUND);
-    if (blog.locked) throw createAPIError(ErrorCodes.BLOG.LOCKED);
-    if (file.size > MAX_ATTACHMENT_SIZE) throw createAPIError(ErrorCodes.BLOG.ATTACHMENT_TOO_LARGE);
+    if (!blog) throw ErrorCodes.BLOG.NOT_FOUND;
+    if (blog.locked) throw ErrorCodes.BLOG.LOCKED;
+    if (file.size > MAX_ATTACHMENT_SIZE) throw ErrorCodes.BLOG.ATTACHMENT_TOO_LARGE;
 
     const attachmentId = cuid();
     const key = `blogs/${blogId}/attachments/${attachmentId}`;
@@ -153,7 +153,7 @@ export class BlogService {
 
   async getAttachment(id: string) {
     const metadata = await this.prisma.attachmentMetadata.findUnique({ where: { id } });
-    if (!metadata) throw createAPIError(ErrorCodes.BLOG.ATTACHMENT_NOT_FOUND);
+    if (!metadata) throw ErrorCodes.BLOG.ATTACHMENT_NOT_FOUND;
 
     const url = await this.storage.getPresignedUrl(metadata.key);
     return { url, metadata };
@@ -166,13 +166,13 @@ export class BlogService {
     dto: UpdateAttachmentDto,
   ) {
     const metadata = await this.prisma.attachmentMetadata.findUnique({ where: { id } });
-    if (!metadata) throw createAPIError(ErrorCodes.BLOG.ATTACHMENT_NOT_FOUND);
-    if (metadata.authorId !== authorId) throw createAPIError(ErrorCodes.BLOG.FORBIDDEN);
+    if (!metadata) throw ErrorCodes.BLOG.ATTACHMENT_NOT_FOUND;
+    if (metadata.authorId !== authorId) throw ErrorCodes.BLOG.FORBIDDEN;
 
     const blog = await this.prisma.blog.findUnique({ where: { id: metadata.blogId } });
-    if (blog?.locked) throw createAPIError(ErrorCodes.BLOG.LOCKED);
+    if (blog?.locked) throw ErrorCodes.BLOG.LOCKED;
 
-    if (file.size > MAX_ATTACHMENT_SIZE) throw createAPIError(ErrorCodes.BLOG.ATTACHMENT_TOO_LARGE);
+    if (file.size > MAX_ATTACHMENT_SIZE) throw ErrorCodes.BLOG.ATTACHMENT_TOO_LARGE;
 
     await this.storage.putObject(metadata.key, file.buffer, file.mimetype);
 
@@ -188,11 +188,11 @@ export class BlogService {
 
   async deleteAttachment(id: string, authorId: string) {
     const metadata = await this.prisma.attachmentMetadata.findUnique({ where: { id } });
-    if (!metadata) throw createAPIError(ErrorCodes.BLOG.ATTACHMENT_NOT_FOUND);
-    if (metadata.authorId !== authorId) throw createAPIError(ErrorCodes.BLOG.FORBIDDEN);
+    if (!metadata) throw ErrorCodes.BLOG.ATTACHMENT_NOT_FOUND;
+    if (metadata.authorId !== authorId) throw ErrorCodes.BLOG.FORBIDDEN;
 
     const blog = await this.prisma.blog.findUnique({ where: { id: metadata.blogId } });
-    if (blog?.locked) throw createAPIError(ErrorCodes.BLOG.LOCKED);
+    if (blog?.locked) throw ErrorCodes.BLOG.LOCKED;
 
     await this.storage.deleteObject(metadata.key);
     await this.prisma.attachmentMetadata.delete({ where: { id } });

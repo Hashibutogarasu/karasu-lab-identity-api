@@ -1,10 +1,7 @@
 import 'reflect-metadata';
 import { Test, TestingModule } from '@nestjs/testing';
 import { 
-  ArgumentsHost, 
-  Catch, 
   Controller, 
-  ExceptionFilter, 
   Get, 
   HttpException, 
   HttpStatus, 
@@ -17,46 +14,13 @@ import {
   NestMiddleware 
 } from '@nestjs/common';
 import request, { Response as SuperTestResponse } from 'supertest';
-import { createAPIError, ErrorCodes } from '../src/shared/errors/error.codes.js';
+import { ErrorCodes } from '../src/shared/errors/error.codes.js';
 import { I18nService } from '../src/shared/i18n/i18n.service.js';
 import { II18nService } from '../src/shared/i18n/i18n.service.interface.js';
 import { describe, it, expect, beforeEach, afterAll } from 'vitest';
 import { NextFunction, Request, Response } from 'express';
-import { APIError } from "better-auth/api";
 
-const statusMap: Record<string, number> = {
-    'BAD_REQUEST': 400,
-    'UNAUTHORIZED': 401,
-    'FORBIDDEN': 403,
-    'NOT_FOUND': 404,
-    'INTERNAL_SERVER_ERROR': 500,
-    'SERVICE_UNAVAILABLE': 503,
-};
-
-@Catch()
-class APIStringStatusExceptionFilter implements ExceptionFilter {
-  catch(exception: unknown, host: ArgumentsHost): void {
-    const ctx = host.switchToHttp();
-    const response = ctx.getResponse<Response>();
-    
-    if (exception instanceof HttpException) {
-        response.status(exception.getStatus()).json(exception.getResponse());
-        return;
-    }
-
-    if (exception instanceof APIError) {
-        const statusStr = String(exception.status);
-        const status = statusMap[statusStr] || 500;
-        response.status(status).json({
-          message: exception.body.message,
-        });
-        return;
-    }
-    response.status(500).json({
-      message: 'Internal server error',
-    });
-  }
-}
+import { GlobalExceptionFilter } from '../src/shared/errors/global-exception.filter.js';
 
 @Injectable()
 class TestErrorService {
@@ -65,15 +29,15 @@ class TestErrorService {
   }
 
   throwUnauthorized(): never {
-    throw createAPIError(ErrorCodes.AUTH.UNAUTHORIZED);
+    throw ErrorCodes.AUTH.UNAUTHORIZED;
   }
 
   throwApplicationNotFound(): never {
-    throw createAPIError(ErrorCodes.OAUTH.APPLICATION_NOT_FOUND);
+    throw ErrorCodes.OAUTH.APPLICATION_NOT_FOUND;
   }
 
   throwSystemError(): never {
-      throw createAPIError(ErrorCodes.SYSTEM.RESEND_API_KEY_REQUIRED);
+      throw ErrorCodes.SYSTEM.RESEND_API_KEY_REQUIRED;
   }
 
   throwHttpException(): never {
@@ -157,7 +121,7 @@ describe('Error I18n (Integration)', () => {
     }).compile();
 
     const createdApp = moduleFixture.createNestApplication();
-    createdApp.useGlobalFilters(new APIStringStatusExceptionFilter());
+    createdApp.useGlobalFilters(new GlobalExceptionFilter());
     
     const i18nService = moduleFixture.get(I18nService);
     await i18nService.init();

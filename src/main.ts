@@ -3,11 +3,14 @@ import { AppModule } from "./app.module.js";
 import { ConfigService } from "./shared/config/config.service.js";
 import { authConfigFactory } from "./services/auth/auth-config.service.js";
 import { OpenApiService } from "./shared/openapi/openapi.service.js";
+import { GlobalExceptionFilter } from "./shared/errors/global-exception.filter.js";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     bodyParser: false,
   });
+
+  app.useGlobalFilters(new GlobalExceptionFilter());
 
   const configService = new ConfigService(process.env.NODE_ENV);
   const authConfigInstance = authConfigFactory(configService);

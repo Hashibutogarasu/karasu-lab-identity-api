@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unnecessary-type-assertion */
 import { hashPassword, verifyPassword as verifyPasswordCrypto } from "better-auth/crypto";
 import cuid from "cuid";
-import { createAPIError, ErrorCodes } from "../../shared/errors/error.codes.js";
+import { ErrorCodes } from "../../shared/errors/error.codes.js";
 import { passwordPluginInterface } from "@hashibutogarasu/common";
 import { AuthContext, EndpointContext, Session, User } from "better-auth";
 import { AbstractEndpoint } from "../../shared/auth/abstract-endpoint.js";
@@ -41,14 +41,14 @@ export class VerifyPasswordEndpoint extends AbstractEndpoint<
         const password = body.password;
 
         if (!session || !user) {
-            throw createAPIError(ErrorCodes.AUTH.UNAUTHORIZED);
+            throw ErrorCodes.AUTH.UNAUTHORIZED;
         }
 
         const accounts = await context.internalAdapter.findAccountByUserId(user.id);
         const account = accounts[0];
 
         if (!account || !account.password) {
-            throw createAPIError(ErrorCodes.AUTH.PASSWORD_NOT_SET);
+            throw ErrorCodes.AUTH.PASSWORD_NOT_SET;
         }
 
         const valid = await verifyPasswordCrypto({
@@ -82,7 +82,7 @@ export class SetPasswordEndpoint extends AbstractEndpoint<
         const newPassword = body.newPassword;
 
         if (!session || !user) {
-            throw createAPIError(ErrorCodes.AUTH.UNAUTHORIZED);
+            throw ErrorCodes.AUTH.UNAUTHORIZED;
         }
 
         const accounts = await context.internalAdapter.findAccountByUserId(user.id);
@@ -103,7 +103,7 @@ export class SetPasswordEndpoint extends AbstractEndpoint<
                 success: true,
             };
         } else {
-            throw createAPIError(ErrorCodes.AUTH.PASSWORD_ALREADY_SET);
+            throw ErrorCodes.AUTH.PASSWORD_ALREADY_SET;
         }
     };
 }

@@ -3,7 +3,7 @@ import { IBetterAuthBootStrapper } from "./better-auth-bootstrapper.interface.js
 import { AuthBootstrapContext } from "./auth-bootstrap.context.js";
 import { EnvironmentUtils } from "@hashibutogarasu/common";
 import { emailConfig } from "../config/email.env.js";
-import { createAPIError, ErrorCodes } from "../shared/errors/error.codes.js";
+import { ErrorCodes } from "../shared/errors/error.codes.js";
 
 export class ValidEnv implements IBetterAuthBootStrapper {
   constructor(private context: AuthBootstrapContext) {}
@@ -12,7 +12,7 @@ export class ValidEnv implements IBetterAuthBootStrapper {
     if (this.context.auth || !this.context.authEnv) return;
 
     if (EnvironmentUtils.isProduction(this.context.authEnv.environment) && !emailConfig.RESEND_API_KEY) {
-      throw createAPIError(ErrorCodes.SYSTEM.RESEND_API_KEY_REQUIRED);
+      throw ErrorCodes.SYSTEM.RESEND_API_KEY_REQUIRED;
     }
   }
 }

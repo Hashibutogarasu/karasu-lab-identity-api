@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { APIError } from 'better-auth/api';
+import { ErrorDefinition } from '../../src/shared/errors/error.codes.js';
 
 import { getPrisma } from '../../src/prisma.js';
 import { NullObjectStorageService } from '../mocks/null-object-storage.service.js';
@@ -283,7 +283,7 @@ describe('BlogService (E2E)', () => {
     });
 
     it('throws NOT_FOUND for a non-existent blog', async () => {
-      await expect(service.getBlog('non-existent-id')).rejects.toThrow(APIError);
+      await expect(service.getBlog('non-existent-id')).rejects.toThrow(ErrorDefinition);
     });
 
     it('draft: owner can fetch own draft', async () => {
@@ -413,19 +413,19 @@ describe('BlogService (E2E)', () => {
       const blog = await service.createBlog(ownerUserId, { content: 'Owner only' });
       await expect(
         service.updateBlog(blog.id, otherUserId, { content: 'Hacked' }),
-      ).rejects.toThrow(APIError);
+      ).rejects.toThrow(ErrorDefinition);
     });
 
     it('prevents a non-owner from deleting a blog', async () => {
       const blog = await service.createBlog(ownerUserId, { content: 'Cannot delete' });
-      await expect(service.deleteBlog(blog.id, otherUserId)).rejects.toThrow(APIError);
+      await expect(service.deleteBlog(blog.id, otherUserId)).rejects.toThrow(ErrorDefinition);
     });
 
     it('prevents a non-owner from deleting an attachment', async () => {
       const blog = await service.createBlog(ownerUserId, { content: 'With attachment' });
       const attachment = await service.createAttachment(blog.id, ownerUserId, smallFile, {});
       await expect(service.deleteAttachment(attachment.id, otherUserId)).rejects.toThrow(
-        APIError,
+        ErrorDefinition,
       );
       // Clean up
       await service.deleteAttachment(attachment.id, ownerUserId);
@@ -436,7 +436,7 @@ describe('BlogService (E2E)', () => {
       const attachment = await service.createAttachment(blog.id, ownerUserId, smallFile, {});
       await expect(
         service.updateAttachment(attachment.id, otherUserId, smallFile, {}),
-      ).rejects.toThrow(APIError);
+      ).rejects.toThrow(ErrorDefinition);
       // Clean up
       await service.deleteAttachment(attachment.id, ownerUserId);
     });
@@ -450,11 +450,11 @@ describe('BlogService (E2E)', () => {
     it('deletes a blog and makes it unretrievable', async () => {
       const blog = await service.createBlog(ownerUserId, { content: 'To be deleted' });
       await service.deleteBlog(blog.id, ownerUserId);
-      await expect(service.getBlog(blog.id)).rejects.toThrow(APIError);
+      await expect(service.getBlog(blog.id)).rejects.toThrow(ErrorDefinition);
     });
 
     it('throws NOT_FOUND when deleting a non-existent blog', async () => {
-      await expect(service.deleteBlog('ghost-id', ownerUserId)).rejects.toThrow(APIError);
+      await expect(service.deleteBlog('ghost-id', ownerUserId)).rejects.toThrow(ErrorDefinition);
     });
   });
 
@@ -480,7 +480,7 @@ describe('BlogService (E2E)', () => {
     it('throws NOT_FOUND when the blog does not exist', async () => {
       await expect(
         service.createAttachment('no-such-blog', ownerUserId, smallFile, {}),
-      ).rejects.toThrow(APIError);
+      ).rejects.toThrow(ErrorDefinition);
     });
   });
 
@@ -498,7 +498,7 @@ describe('BlogService (E2E)', () => {
     });
 
     it('throws ATTACHMENT_NOT_FOUND for a non-existent attachment', async () => {
-      await expect(service.getAttachment('ghost-attachment')).rejects.toThrow(APIError);
+      await expect(service.getAttachment('ghost-attachment')).rejects.toThrow(ErrorDefinition);
     });
   });
 
@@ -524,7 +524,7 @@ describe('BlogService (E2E)', () => {
       const attachment = await service.createAttachment(blog.id, ownerUserId, smallFile, {});
 
       await service.deleteAttachment(attachment.id, ownerUserId);
-      await expect(service.getAttachment(attachment.id)).rejects.toThrow(APIError);
+      await expect(service.getAttachment(attachment.id)).rejects.toThrow(ErrorDefinition);
     });
   });
 
@@ -556,7 +556,7 @@ describe('BlogService (E2E)', () => {
       };
       await expect(
         service.createAttachment(blog.id, ownerUserId, oversizedFile, {}),
-      ).rejects.toThrow(APIError);
+      ).rejects.toThrow(ErrorDefinition);
     });
 
     it('rejects an oversized replacement file in updateAttachment', async () => {
@@ -570,7 +570,7 @@ describe('BlogService (E2E)', () => {
       };
       await expect(
         service.updateAttachment(attachment.id, ownerUserId, oversizedFile, {}),
-      ).rejects.toThrow(APIError);
+      ).rejects.toThrow(ErrorDefinition);
 
       // Clean up
       await service.deleteAttachment(attachment.id, ownerUserId);

@@ -16,7 +16,7 @@ import { Auth as BetterAuthType } from 'better-auth';
 import { fromNodeHeaders } from 'better-auth/node';
 import type { Request } from 'express';
 
-import { createAPIError, ErrorCodes } from '../shared/errors/error.codes.js';
+import { ErrorCodes } from '../shared/errors/error.codes.js';
 import { ZodValidationPipe } from '../shared/pipes/zod-validation.pipe.js';
 import { BlogService, MAX_ATTACHMENT_SIZE } from './blog.service.js';
 import type { AttachmentFile } from './blog.service.js';
@@ -169,7 +169,7 @@ export class BlogController {
     const session = await this.authService.instance.api.getSession({
       headers: fromNodeHeaders(req.headers),
     });
-    if (!session) throw createAPIError(ErrorCodes.AUTH.UNAUTHORIZED);
+    if (!session) throw ErrorCodes.AUTH.UNAUTHORIZED;
     return session;
   }
 

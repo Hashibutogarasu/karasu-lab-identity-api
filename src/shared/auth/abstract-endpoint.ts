@@ -1,5 +1,6 @@
 import { AuthContext, Endpoint, EndpointContext } from 'better-auth';
 import { createAuthEndpoint, AuthEndpoint } from 'better-auth/api';
+import { createAPIError, ErrorDefinition } from '../errors/error.codes.js';
 
 export abstract class AbstractEndpoint<
 	Path extends string = string,
@@ -14,7 +15,16 @@ export abstract class AbstractEndpoint<
 	) => Promise<Output>;
 
 	getEndpoint(): AuthEndpoint<Path, Options, Output> {
-		const handler = this.execute.bind(this);
+		const handler = async (ctx: EndpointContext<Path, Options> & { context: AuthContext }) => {
+			try {
+				return await this.execute(ctx);
+			} catch (error) {
+				if (error instanceof ErrorDefinition) {
+					throw createAPIError(error);
+				}
+				throw error;
+			}
+		};
 		return createAuthEndpoint(
 			this.path,
 			this.options,

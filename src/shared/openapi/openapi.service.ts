@@ -1,6 +1,6 @@
 import { Injectable, INestApplication } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder, OpenAPIObject } from '@nestjs/swagger';
-import { createAPIError, ErrorCodes } from '../errors/error.codes.js';
+import { ErrorCodes } from '../errors/error.codes.js';
 
 @Injectable()
 export class OpenApiService {
@@ -20,7 +20,7 @@ export class OpenApiService {
 
   getDocument(): OpenAPIObject {
     if (!this.document) {
-      throw createAPIError(ErrorCodes.SYSTEM.OPENAPI_UNINITIALIZED);
+      throw ErrorCodes.SYSTEM.OPENAPI_UNINITIALIZED;
     }
     return this.document;
   }
