@@ -2,19 +2,19 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { APIError } from 'better-auth/api';
 
 import { getPrisma } from '../../src/prisma.js';
-import { ObjectStorageService } from '../../src/storage/object-storage.service.js';
+import { NullObjectStorageService } from '../mocks/null-object-storage.service.js';
 import { BlogService, MAX_ATTACHMENT_SIZE } from '../../src/blogs/blog.service.js';
 
 /**
  * BlogService E2E tests.
  *
- * Runs against the real PostgreSQL database (DATABASE_URL in packages/api/.env)
- * and the real Cloudflare R2 bucket (R2_* vars).
+ * Runs against the real PostgreSQL database (DATABASE_URL in packages/api/.env).
+ * Object storage calls are handled by NullObjectStorageService (no-op stub).
  * All test data is cleaned up in afterAll.
  */
 describe('BlogService (E2E)', () => {
   let service: BlogService;
-  let storage: ObjectStorageService;
+  let storage: NullObjectStorageService;
   const prisma = getPrisma();
 
   // Unique suffix keeps parallel runs from colliding.
@@ -29,7 +29,7 @@ describe('BlogService (E2E)', () => {
   };
 
   beforeAll(async () => {
-    storage = new ObjectStorageService();
+    storage = new NullObjectStorageService();
     service = new BlogService(storage);
 
     // Create two test users directly so FK constraints are satisfied.
@@ -232,6 +232,22 @@ describe('BlogService (E2E)', () => {
         );
       }
     });
+
+    it('authenticated non-owner: cannot see draft attachments from others', async () => {
+      const blog = await service.createBlog(ownerUserId, {
+        content: 'Attachment visibility',
+        status: 'published',
+      });
+      const draftAttachment = await service.createAttachment(blog.id, ownerUserId, smallFile, {
+        status: 'draft',
+      });
+
+      const attachments = await service.listAttachments(otherUserId);
+      const ids = attachments.map((a) => a.id);
+      expect(ids).not.toContain(draftAttachment.id);
+
+      await service.deleteAttachment(draftAttachment.id, ownerUserId);
+    });
   });
 
   // ---------------------------------------------------------------------------
@@ -261,13 +277,39 @@ describe('BlogService (E2E)', () => {
   describe('getBlog', () => {
     it('returns an existing blog with its attachments', async () => {
       const created = await service.createBlog(ownerUserId, { content: 'Fetch me' });
-      const fetched = await service.getBlog(created.id);
+      const fetched = await service.getBlog(created.id, ownerUserId);
       expect(fetched.id).toBe(created.id);
       expect(fetched.attachments).toBeInstanceOf(Array);
     });
 
     it('throws NOT_FOUND for a non-existent blog', async () => {
       await expect(service.getBlog('non-existent-id')).rejects.toThrow(APIError);
+    });
+
+    it('draft: owner can fetch own draft', async () => {
+      const draft = await service.createBlog(ownerUserId, { content: 'My draft', status: 'draft' });
+      const fetched = await service.getBlog(draft.id, ownerUserId);
+      expect(fetched.id).toBe(draft.id);
+    });
+
+    it('draft: non-owner cannot fetch draft → FORBIDDEN', async () => {
+      const draft = await service.createBlog(ownerUserId, {
+        content: 'Hidden draft',
+        status: 'draft',
+      });
+      await expect(service.getBlog(draft.id, otherUserId)).rejects.toMatchObject({
+        status: 'FORBIDDEN',
+      });
+    });
+
+    it('draft: anonymous cannot fetch draft → FORBIDDEN', async () => {
+      const draft = await service.createBlog(ownerUserId, {
+        content: 'Anon hidden draft',
+        status: 'draft',
+      });
+      await expect(service.getBlog(draft.id)).rejects.toMatchObject({
+        status: 'FORBIDDEN',
+      });
     });
   });
 
@@ -314,7 +356,7 @@ describe('BlogService (E2E)', () => {
       });
       await expect(
         service.updateBlog(blog.id, ownerUserId, { content: 'Changed' }),
-      ).rejects.toThrow(APIError);
+      ).rejects.toMatchObject({ status: 'FORBIDDEN' });
     });
 
     it('prevents uploading an attachment to a locked blog', async () => {
@@ -324,7 +366,41 @@ describe('BlogService (E2E)', () => {
       });
       await expect(
         service.createAttachment(blog.id, ownerUserId, smallFile, {}),
-      ).rejects.toThrow(APIError);
+      ).rejects.toMatchObject({ status: 'FORBIDDEN' });
+    });
+
+    it('prevents deleting a locked blog', async () => {
+      const blog = await service.createBlog(ownerUserId, {
+        content: 'Locked delete',
+        locked: true,
+      });
+      await expect(service.deleteBlog(blog.id, ownerUserId)).rejects.toMatchObject({
+        status: 'FORBIDDEN',
+      });
+    });
+
+    it('prevents updating an attachment on a locked blog', async () => {
+      const blog = await service.createBlog(ownerUserId, {
+        content: 'Locked for attachment update',
+      });
+      const attachment = await service.createAttachment(blog.id, ownerUserId, smallFile, {});
+      await service.updateBlog(blog.id, ownerUserId, { locked: true });
+
+      await expect(
+        service.updateAttachment(attachment.id, ownerUserId, smallFile, {}),
+      ).rejects.toMatchObject({ status: 'FORBIDDEN' });
+    });
+
+    it('prevents deleting an attachment on a locked blog', async () => {
+      const blog = await service.createBlog(ownerUserId, {
+        content: 'Locked for attachment delete',
+      });
+      const attachment = await service.createAttachment(blog.id, ownerUserId, smallFile, {});
+      await service.updateBlog(blog.id, ownerUserId, { locked: true });
+
+      await expect(
+        service.deleteAttachment(attachment.id, ownerUserId),
+      ).rejects.toMatchObject({ status: 'FORBIDDEN' });
     });
   });
 

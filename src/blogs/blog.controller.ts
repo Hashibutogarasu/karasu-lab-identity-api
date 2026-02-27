@@ -65,11 +65,12 @@ export class BlogController {
     return this.blogService.createBlog(user.id, dto);
   }
 
-  /** Get a blog post by ID. Public. */
+  /** Get a blog post by ID. Public, but draft posts are author-only. */
   @AllowAnonymous()
   @Get(':id')
-  getBlog(@Param('id') id: string) {
-    return this.blogService.getBlog(id);
+  async getBlog(@Req() req: Request, @Param('id') id: string) {
+    const session = await this.optionalSession(req);
+    return this.blogService.getBlog(id, session?.user.id);
   }
 
   /** Update a blog post. Requires authentication and ownership. */

@@ -78,12 +78,16 @@ export class BlogService {
     });
   }
 
-  async getBlog(id: string) {
+  async getBlog(id: string, userId?: string) {
     const blog = await this.prisma.blog.findUnique({
       where: { id },
       include: { attachments: true },
     });
     if (!blog) throw createAPIError(ErrorCodes.BLOG.NOT_FOUND);
+    const PUBLISHED: Status = 'published';
+    if (blog.status !== PUBLISHED && blog.authorId !== userId) {
+      throw createAPIError(ErrorCodes.BLOG.FORBIDDEN);
+    }
     return blog;
   }
 
@@ -108,8 +112,8 @@ export class BlogService {
     const blog = await this.prisma.blog.findUnique({ where: { id } });
     if (!blog) throw createAPIError(ErrorCodes.BLOG.NOT_FOUND);
     if (blog.authorId !== authorId) throw createAPIError(ErrorCodes.BLOG.FORBIDDEN);
+    if (blog.locked) throw createAPIError(ErrorCodes.BLOG.LOCKED);
 
-    // Remove all attachments from storage before deleting the blog record.
     const attachments = await this.prisma.attachmentMetadata.findMany({
       where: { blogId: id },
     });
@@ -186,6 +190,9 @@ export class BlogService {
     const metadata = await this.prisma.attachmentMetadata.findUnique({ where: { id } });
     if (!metadata) throw createAPIError(ErrorCodes.BLOG.ATTACHMENT_NOT_FOUND);
     if (metadata.authorId !== authorId) throw createAPIError(ErrorCodes.BLOG.FORBIDDEN);
+
+    const blog = await this.prisma.blog.findUnique({ where: { id: metadata.blogId } });
+    if (blog?.locked) throw createAPIError(ErrorCodes.BLOG.LOCKED);
 
     await this.storage.deleteObject(metadata.key);
     await this.prisma.attachmentMetadata.delete({ where: { id } });
