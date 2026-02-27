@@ -5,9 +5,11 @@ import { AuthModule } from "@thallesp/nestjs-better-auth";
 import { II18nService } from "./shared/i18n/i18n.service.interface.js";
 import { I18nService } from "./shared/i18n/i18n.service.js";
 import { I18nMiddleware } from "./shared/i18n/i18n.middleware.js";
+import { StorageModule } from "./storage/storage.module.js";
 
 @Module({
   imports: [
+    StorageModule,
     AuthModule.forRootAsync({
       useFactory: async () => {
         const { initAuth } = await import("./auth.js");

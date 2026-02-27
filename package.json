@@ -28,6 +28,8 @@
     "prisma:pull": "npx prisma db pull"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.999.0",
+    "@aws-sdk/s3-request-presigner": "^3.999.0",
     "@better-auth/passkey": "^1.4.19",
     "@hashibutogarasu/common": "github:Hashibutogarasu/karasu-lab-api-common",
     "@nestjs/common": "^11.1.14",
