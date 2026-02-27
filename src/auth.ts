@@ -1,5 +1,5 @@
 import { Auth as BetterAuthType, BetterAuthOptions } from "better-auth";
-import { admin, apiKey, createAuthMiddleware, emailOTP, magicLink, oidcProvider, organization, twoFactor } from "better-auth/plugins";
+import { admin, apiKey, createAuthMiddleware, deviceAuthorization, emailOTP, magicLink, oidcProvider, organization, twoFactor } from "better-auth/plugins";
 import { BetterAuthBuilder, EnvironmentUtils } from "@hashibutogarasu/common";
 import { passwordPlugin } from "./plugins/password/password-plugin.js";
 import { oauthApplicationPlugin } from "./plugins/oauth/oauth-application-plugin.js";
@@ -52,6 +52,7 @@ export function createAuth(
     organization(),
     admin(),
     apiKey(),
+    deviceAuthorization(),
     emailOTP({
       sendVerificationOTP: async ({ email, otp, type }) => {
         await notificationService.sendVerificationOTP({ email, otp, type });
