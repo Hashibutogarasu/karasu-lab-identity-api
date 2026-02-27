@@ -12,7 +12,7 @@ docker run -d \
   --name watchtower-webhook \
   --restart always \
   -v /var/run/docker.sock:/var/run/docker.sock \
-  -p 8082:8082 \
+  -p 8082:8080 \
   -e WATCHTOWER_LIFECYCLE_HOOKS=true \
   containrrr/watchtower \
   --http-api-update \
