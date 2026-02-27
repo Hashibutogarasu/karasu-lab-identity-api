@@ -11,6 +11,7 @@
 	"system": {
 		"resend_api_key_required": "本番環境ではRESEND_API_KEYが必要です。",
 		"auth_initialization_failed": "認証の初期化に失敗しました。",
-		"openapi_uninitialized": "OpenAPIドキュメントが初期化されていません。先にsetup()を呼び出してください。"
+		"openapi_uninitialized": "OpenAPIドキュメントが初期化されていません。先にsetup()を呼び出してください。",
+		"openapi_unauthorized": "ドキュメントを表示するには認証が必要です。"
 	}
 }

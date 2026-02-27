@@ -6,8 +6,6 @@ import { setupI18n } from './i18n.setup.js';
 
 @Injectable()
 export class I18nService implements II18nService {
-	private initialized = false;
-
 	async init() {
 		await setupI18n();
 	}
