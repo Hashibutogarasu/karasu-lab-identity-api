@@ -23,6 +23,13 @@ export const ErrorCodes = {
 		RESEND_API_KEY_REQUIRED: { key: 'system.resend_api_key_required', status: 'INTERNAL_SERVER_ERROR' },
 		AUTH_INITIALIZATION_FAILED: { key: 'system.auth_initialization_failed', status: 'INTERNAL_SERVER_ERROR' },
 	},
+	BLOG: {
+		NOT_FOUND: { key: 'blog.not_found', status: 'NOT_FOUND' },
+		ATTACHMENT_NOT_FOUND: { key: 'blog.attachment_not_found', status: 'NOT_FOUND' },
+		FORBIDDEN: { key: 'blog.forbidden', status: 'FORBIDDEN' },
+		LOCKED: { key: 'blog.locked', status: 'FORBIDDEN' },
+		ATTACHMENT_TOO_LARGE: { key: 'blog.attachment_too_large', status: 'BAD_REQUEST' },
+	},
 } as const satisfies Record<string, Record<string, ErrorDefinition>>;
 
 export const createAPIError = (error: ErrorDefinition, options?: Record<string, unknown>): APIError => {

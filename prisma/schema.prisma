@@ -50,6 +50,8 @@ model User {
   oauthaccesstokens OauthAccessToken[]
   oauthconsents     OauthConsent[]
   apikeys           Apikey[]
+  blogs             Blog[]
+  blogAttachments   AttachmentMetadata[]
 
   @@unique([email])
   @@map("user")
@@ -268,4 +270,37 @@ model Apikey {
   @@index([key])
   @@index([userId])
   @@map("apikey")
+}
+
+model Blog {
+  id          String               @id
+  content     String
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+  authorId    String
+  author      User                 @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  status      String               @default("draft")
+  locked      Boolean              @default(false)
+  attachments AttachmentMetadata[]
+
+  @@index([authorId])
+  @@map("blog")
+}
+
+model AttachmentMetadata {
+  id          String   @id
+  blogId      String
+  blog        Blog     @relation(fields: [blogId], references: [id], onDelete: Cascade)
+  key         String
+  contentType String?
+  size        Int
+  status      String   @default("draft")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  authorId    String
+  author      User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([blogId])
+  @@index([authorId])
+  @@map("attachmentMetadata")
 }
