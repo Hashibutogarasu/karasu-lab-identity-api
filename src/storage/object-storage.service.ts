@@ -70,6 +70,6 @@ export class ObjectStorageService implements IObjectStorage {
     const res = await this.client.send(
       new ListObjectsV2Command({ Bucket: this.bucket, Prefix: prefix }),
     );
-    return (res.Contents ?? []).map((obj) => obj.Key!).filter(Boolean);
+    return (res.Contents ?? []).map((obj) => obj.Key).filter(Boolean);
   }
 }
