@@ -14,7 +14,7 @@ export class OpenApiService {
       .build();
 
     this.document = SwaggerModule.createDocument(app, config);
-    SwaggerModule.setup("docs", app, this.document);
+    SwaggerModule.setup("/api/docs", app, this.document);
     return this.document;
   }
 

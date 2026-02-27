@@ -86,6 +86,7 @@ abstract class AbstractAuthConfig extends AbstractPluginEnvironment<IAuthConfig>
 class ProductionAuthConfig extends AbstractAuthConfig {
   protected getDefaultTrustedOrigins(): string[] {
     return [
+      'https://api.karasu256.com',
       'https://sso.karasu256.com',
       'https://www.karasu256.com',
       'https://karasu256.com',

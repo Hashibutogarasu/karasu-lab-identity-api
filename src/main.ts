@@ -4,6 +4,7 @@ import { ConfigService } from "./shared/config/config.service.js";
 import { authConfigFactory } from "./services/auth/auth-config.service.js";
 import { OpenApiService } from "./shared/openapi/openapi.service.js";
 import { GlobalExceptionFilter } from "./shared/errors/global-exception.filter.js";
+import { DocsAuthMiddleware } from "./shared/openapi/docs-auth.middleware.js";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -25,6 +26,11 @@ async function bootstrap() {
   });
 
   const openApiService = app.get(OpenApiService);
+  const docsAuthMiddleware = app.get(DocsAuthMiddleware);
+  app.use("/api/docs", (req: any, res: any, next: any) => {
+    docsAuthMiddleware.use(req, res, next).catch(next);
+  });
+
   openApiService.setup(app);
 
   const port = process.env.PORT ?? 3001;

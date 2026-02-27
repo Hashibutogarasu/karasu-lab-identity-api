@@ -45,6 +45,7 @@ export const ErrorCodes = createErrorMap({
 		RESEND_API_KEY_REQUIRED: ['system.resend_api_key_required', 'INTERNAL_SERVER_ERROR'],
 		AUTH_INITIALIZATION_FAILED: ['system.auth_initialization_failed', 'INTERNAL_SERVER_ERROR'],
 		OPENAPI_UNINITIALIZED: ['system.openapi_uninitialized', 'INTERNAL_SERVER_ERROR'],
+		OPENAPI_UNAUTHORIZED: ['system.openapi_unauthorized', 'UNAUTHORIZED'],
 	},
 	BLOG: {
 		NOT_FOUND: ['blog.not_found', 'NOT_FOUND'],

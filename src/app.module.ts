@@ -9,18 +9,17 @@ import { StorageModule } from "./storage/storage.module.js";
 import { BlogModule } from "./blogs/blog.module.js";
 import { OpenApiModule } from "./shared/openapi/openapi.module.js";
 import { AuthMiddlewareModule } from "./shared/auth/auth-middleware.module.js";
-
-const apiAuthPath = process.env.AUTH_API_PATH ?? '/api/auth';
+import { initAuth } from "./auth.js";
+import { DocsAuthMiddleware } from "./shared/openapi/docs-auth.middleware.js";
 
 @Module({
   imports: [
     StorageModule,
     BlogModule,
     OpenApiModule,
-    AuthMiddlewareModule.forRoot({ path: apiAuthPath }),
+    AuthMiddlewareModule.forRoot({ path: '/api/auth' }),
     AuthModule.forRootAsync({
       useFactory: async () => {
-        const { initAuth } = await import("./auth.js");
         const authInstance = await initAuth();
         return { auth: authInstance };
       },
@@ -34,6 +33,7 @@ const apiAuthPath = process.env.AUTH_API_PATH ?? '/api/auth';
       useClass: I18nService,
     },
     I18nService,
+    DocsAuthMiddleware,
   ],
 })
 export class AppModule implements NestModule {

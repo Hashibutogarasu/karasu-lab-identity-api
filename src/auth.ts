@@ -141,13 +141,20 @@ export async function initAuth(): Promise<BetterAuthType> {
     new InitializeConfig(context),
     new InitializeService(context, createAuth),
     new I18nBootStrapper(),
-    ...(context.authEnv && EnvironmentUtils.isDevelopment(context.authEnv.environment) && context.dbService
-      ? [new DatabaseSeedingBootStrapper(new DatabaseSeedingService(context.dbService.prisma))]
-      : []),
   ];
 
   for (const bootstrapper of bootstrappers) {
     await bootstrapper.bootstrap();
+  }
+
+  if (
+    context.authEnv &&
+    EnvironmentUtils.isDevelopment(context.authEnv.environment) &&
+    context.dbService
+  ) {
+    await new DatabaseSeedingBootStrapper(
+      new DatabaseSeedingService(context.dbService.prisma)
+    ).bootstrap();
   }
 
   if (!context.auth) {
