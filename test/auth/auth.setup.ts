@@ -26,6 +26,7 @@ beforeAll(() => {
   const socialProviderConfig = socialProviderConfigFactory(configService);
 
   testAuth = createAuth(configService, testDbService, testNotificationService, passkeyAuth, authConfig, socialProviderConfig, {
+    rateLimit: { enabled: false },
     plugins: [
       genericOAuth({
         config: [

@@ -1,5 +1,5 @@
 import { Auth as BetterAuthType, BetterAuthOptions } from "better-auth";
-import { admin, apiKey, createAuthMiddleware, deviceAuthorization, emailOTP, magicLink, oidcProvider, organization, twoFactor } from "better-auth/plugins";
+import { admin, apiKey, bearer, createAuthMiddleware, deviceAuthorization, emailOTP, magicLink, oidcProvider, organization, twoFactor } from "better-auth/plugins";
 import { BetterAuthBuilder, EnvironmentUtils } from "@hashibutogarasu/common";
 import { passwordPlugin } from "./plugins/password/password-plugin.js";
 import { oauthApplicationPlugin } from "./plugins/oauth/oauth-application-plugin.js";
@@ -51,8 +51,9 @@ export function createAuth(
     twoFactor(),
     organization(),
     admin(),
-    apiKey(),
+    apiKey({ enableSessionForAPIKeys: true }),
     deviceAuthorization(),
+    bearer(),
     emailOTP({
       sendVerificationOTP: async ({ email, otp, type }) => {
         await notificationService.sendVerificationOTP({ email, otp, type });
@@ -78,7 +79,7 @@ export function createAuth(
       level: EnvironmentUtils.isProduction(authEnv.environment) ? "info" : "debug",
       disabled: false,
     })
-    .basic.setRateLimit({ enabled: true, window: 60, max: 100 })
+    .basic.setRateLimit(overrides.rateLimit ?? { enabled: true, window: 60, max: 100 })
     .email.setEmailAndPassword({ enabled: true, requireEmailVerification: true })
     .email.setEmailVerification({
       sendVerificationEmail: async ({ user, url }) => {
