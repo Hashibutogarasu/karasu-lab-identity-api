@@ -7,11 +7,17 @@ import { I18nService } from "./shared/i18n/i18n.service.js";
 import { I18nMiddleware } from "./shared/i18n/i18n.middleware.js";
 import { StorageModule } from "./storage/storage.module.js";
 import { BlogModule } from "./blogs/blog.module.js";
+import { OpenApiModule } from "./shared/openapi/openapi.module.js";
+import { AuthMiddlewareModule } from "./shared/auth/auth-middleware.module.js";
+
+const apiAuthPath = process.env.AUTH_API_PATH ?? '/api/auth';
 
 @Module({
   imports: [
     StorageModule,
     BlogModule,
+    OpenApiModule,
+    AuthMiddlewareModule.forRoot({ path: apiAuthPath }),
     AuthModule.forRootAsync({
       useFactory: async () => {
         const { initAuth } = await import("./auth.js");

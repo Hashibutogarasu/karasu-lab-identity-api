@@ -10,6 +10,7 @@
 	},
 	"system": {
 		"resend_api_key_required": "RESEND_API_KEY is required in production environment.",
-		"auth_initialization_failed": "Auth initialization failed."
+		"auth_initialization_failed": "Auth initialization failed.",
+		"openapi_uninitialized": "OpenAPI document has not been initialized. Call setup() first."
 	}
 }

@@ -22,6 +22,7 @@ export const ErrorCodes = {
 	SYSTEM: {
 		RESEND_API_KEY_REQUIRED: { key: 'system.resend_api_key_required', status: 'INTERNAL_SERVER_ERROR' },
 		AUTH_INITIALIZATION_FAILED: { key: 'system.auth_initialization_failed', status: 'INTERNAL_SERVER_ERROR' },
+		OPENAPI_UNINITIALIZED: { key: 'system.openapi_uninitialized', status: 'INTERNAL_SERVER_ERROR' },
 	},
 	BLOG: {
 		NOT_FOUND: { key: 'blog.not_found', status: 'NOT_FOUND' },

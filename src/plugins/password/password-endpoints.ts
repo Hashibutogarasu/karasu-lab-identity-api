@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unnecessary-type-assertion */
 import { hashPassword, verifyPassword as verifyPasswordCrypto } from "better-auth/crypto";
 import cuid from "cuid";
