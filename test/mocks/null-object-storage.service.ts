@@ -1,13 +1,16 @@
 /* eslint-disable @typescript-eslint/no-unsafe-return */
 import type { IObjectStorage } from '../../src/storage/object-storage.interface.js';
 
-/** No-op implementation of IObjectStorage for use in unit/integration tests. */
+/** In-memory implementation of IObjectStorage for use in unit/integration tests. */
 export class NullObjectStorageService implements IObjectStorage {
+  private readonly store = new Map<string, Buffer>();
+
   getPresignedUrl(key: string): Promise<string> {
     return Promise.resolve(`https://test-stub/${key}`);
   }
 
-  putObject(): Promise<void> {
+  putObject(key: string, body: Buffer | Uint8Array): Promise<void> {
+    this.store.set(key, Buffer.isBuffer(body) ? body : Buffer.from(body));
     return Promise.resolve();
   }
 
@@ -15,7 +18,12 @@ export class NullObjectStorageService implements IObjectStorage {
     return Promise.resolve(undefined);
   }
 
-  deleteObject(): Promise<void> {
+  getObject(key: string): Promise<Buffer | null> {
+    return Promise.resolve(this.store.get(key) ?? null);
+  }
+
+  deleteObject(key: string): Promise<void> {
+    this.store.delete(key);
     return Promise.resolve();
   }
 

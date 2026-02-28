@@ -89,11 +89,13 @@ export class BlogService {
 
 		return Promise.all(
 			filtered.map(async (blog) => {
-				const attachmentsSnapshot = await this.attachmentsCol
-					.where('blogId', '==', blog.id)
-					.get();
+				const [contentBuffer, attachmentsSnapshot] = await Promise.all([
+					this.storage.getObject(`blogs/${blog.id}/content`),
+					this.attachmentsCol.where('blogId', '==', blog.id).get(),
+				]);
 				return {
 					...blog,
+					content: contentBuffer?.toString('utf-8') ?? '',
 					attachments: attachmentsSnapshot.docs.map((d) => this.mapDoc<AttachmentData>(d)),
 				};
 			}),
@@ -117,7 +119,6 @@ export class BlogService {
 		const id = cuid();
 		const now = FieldValue.serverTimestamp();
 		const data = {
-			content: dto.content,
 			authorId,
 			status: dto.status ?? 'draft',
 			locked: dto.locked ?? false,
@@ -125,7 +126,10 @@ export class BlogService {
 			updatedAt: now,
 		};
 
-		await this.blogsCol.doc(id).set(data);
+		await Promise.all([
+			this.blogsCol.doc(id).set(data),
+			this.storage.putObject(`blogs/${id}/content`, Buffer.from(dto.content), 'text/plain; charset=utf-8'),
+		]);
 		return this.getBlog(id, authorId);
 	}
 
@@ -140,8 +144,12 @@ export class BlogService {
 			throw ErrorCodes.BLOG.FORBIDDEN;
 		}
 
-		// Include attachments
-		const attachmentsSnapshot = await this.attachmentsCol.where('blogId', '==', id).get();
+		const [contentBuffer, attachmentsSnapshot] = await Promise.all([
+			this.storage.getObject(`blogs/${id}/content`),
+			this.attachmentsCol.where('blogId', '==', id).get(),
+		]);
+
+		blog.content = contentBuffer?.toString('utf-8') ?? '';
 		blog.attachments = attachmentsSnapshot.docs.map((d) => this.mapDoc<AttachmentData>(d));
 
 		return blog;
@@ -158,11 +166,14 @@ export class BlogService {
 		const updateData: Record<string, unknown> = {
 			updatedAt: FieldValue.serverTimestamp(),
 		};
-		if (dto.content !== undefined) updateData['content'] = dto.content;
 		if (dto.status !== undefined) updateData['status'] = dto.status;
 		if (dto.locked !== undefined) updateData['locked'] = dto.locked;
 
-		await this.blogsCol.doc(id).update(updateData);
+		const ops: Promise<unknown>[] = [this.blogsCol.doc(id).update(updateData)];
+		if (dto.content !== undefined) {
+			ops.push(this.storage.putObject(`blogs/${id}/content`, Buffer.from(dto.content), 'text/plain; charset=utf-8'));
+		}
+		await Promise.all(ops);
 		return this.getBlog(id, authorId);
 	}
 
@@ -177,7 +188,10 @@ export class BlogService {
 		const attachmentsSnapshot = await this.attachmentsCol.where('blogId', '==', id).get();
 		const attachments = attachmentsSnapshot.docs.map((d) => d.data());
 
-		await Promise.all(attachments.map((a) => this.storage.deleteObject(a?.['key'] as string)));
+		await Promise.all([
+			...attachments.map((a) => this.storage.deleteObject(a?.['key'] as string)),
+			this.storage.deleteObject(`blogs/${id}/content`),
+		]);
 
 		const batch = this.firebase.db.batch();
 		batch.delete(this.blogsCol.doc(id));

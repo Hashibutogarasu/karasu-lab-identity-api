@@ -60,6 +60,22 @@ export class ObjectStorageService implements IObjectStorage {
     }
   }
 
+  async getObject(key: string): Promise<Buffer | null> {
+    try {
+      const resp = await this.client.send(
+        new GetObjectCommand({ Bucket: this.bucket, Key: key }),
+      );
+      if (!resp.Body) return null;
+      const chunks: Buffer[] = [];
+      for await (const chunk of resp.Body as AsyncIterable<Buffer>) {
+        chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+      }
+      return Buffer.concat(chunks);
+    } catch {
+      return null;
+    }
+  }
+
   async deleteObject(key: string): Promise<void> {
     await this.client.send(
       new DeleteObjectCommand({ Bucket: this.bucket, Key: key }),

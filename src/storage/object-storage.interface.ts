@@ -33,6 +33,13 @@ export interface IObjectStorage {
   getContentType(key: string): Promise<string | undefined>;
 
   /**
+   * Retrieves an object from the bucket as a Buffer.
+   * Returns null if the object does not exist or an error occurs.
+   * @param key Object key
+   */
+  getObject(key: string): Promise<Buffer | null>;
+
+  /**
    * Deletes the given object from the bucket.
    * @param key Object key
    */
