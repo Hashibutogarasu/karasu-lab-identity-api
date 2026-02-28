@@ -6,6 +6,7 @@ import { II18nService } from "./shared/i18n/i18n.service.interface.js";
 import { I18nService } from "./shared/i18n/i18n.service.js";
 import { StorageModule } from "./storage/storage.module.js";
 import { BlogModule } from "./blogs/blog.module.js";
+import { AttachmentModule } from "./attachments/attachment.module.js";
 import { OpenApiModule } from "./shared/openapi/openapi.module.js";
 import { AuthMiddlewareModule } from "./shared/auth/auth-middleware.module.js";
 import { initAuth } from "./auth.js";
@@ -14,6 +15,7 @@ import { initAuth } from "./auth.js";
   imports: [
     StorageModule,
     BlogModule,
+    AttachmentModule,
     OpenApiModule,
     AuthMiddlewareModule.forRoot({ path: '/api/auth' }),
     AuthModule.forRootAsync({
