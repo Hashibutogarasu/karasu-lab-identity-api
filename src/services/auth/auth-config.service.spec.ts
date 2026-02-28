@@ -23,6 +23,7 @@ describe('AuthConfigService', () => {
       const origins = config.getTrustedOrigins();
 
       expect(origins).toEqual([
+        'https://api.karasu256.com',
         'https://sso.karasu256.com',
         'https://www.karasu256.com',
         'https://karasu256.com',
@@ -131,6 +132,7 @@ describe('AuthConfigService', () => {
       const origins = config.getTrustedOrigins();
 
       expect(origins).toEqual([
+        'https://api.karasu256.com',
         'https://sso.karasu256.com',
         'https://www.karasu256.com',
         'https://karasu256.com',
