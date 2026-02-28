@@ -20,6 +20,9 @@ export const authEnvSchema = z.object({
   PASSKEY_RP_NAME: z.string().default("Karasu Lab"),
   PASSKEY_ORIGIN: z.string().url().optional(),
   DATABASE_URL: z.string().optional(),
+  FIREBASE_PROJECT_ID: z.string().optional(),
+  FIREBASE_CLIENT_EMAIL: z.string().optional(),
+  FIREBASE_PRIVATE_KEY: z.string().optional(),
 });
 
 export type AuthEnv = z.infer<typeof authEnvSchema>;

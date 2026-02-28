@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { AbstractEnvironment, Environment } from "@hashibutogarasu/common";
 import { BetterAuthPlugin } from "better-auth";
 

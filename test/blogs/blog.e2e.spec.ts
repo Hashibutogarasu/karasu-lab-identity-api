@@ -4,69 +4,85 @@ import { ErrorDefinition } from '../../src/shared/errors/error.codes.js';
 import { getPrisma } from '../../src/prisma.js';
 import { NullObjectStorageService } from '../mocks/null-object-storage.service.js';
 import { BlogService, MAX_ATTACHMENT_SIZE } from '../../src/blogs/blog.service.js';
+import { FirebaseAdminProvider } from '../../src/shared/firebase/firebase-admin.provider.js';
+import { ConfigService } from '../../src/shared/config/config.service.js';
 
 /**
  * BlogService E2E tests.
  *
- * Runs against the real PostgreSQL database (DATABASE_URL in packages/api/.env).
+ * Runs against the real PostgreSQL database for users,
+ * and uses the real Firestore (sandbox-5879e) for Blog/Attachment metadata.
  * Object storage calls are handled by NullObjectStorageService (no-op stub).
  * All test data is cleaned up in afterAll.
  */
 describe('BlogService (E2E)', () => {
-  let service: BlogService;
-  let storage: NullObjectStorageService;
-  const prisma = getPrisma();
+	let service: BlogService;
+	let storage: NullObjectStorageService;
+	let firebaseProvider: FirebaseAdminProvider;
+	const prisma = getPrisma();
 
-  // Unique suffix keeps parallel runs from colliding.
-  const suffix = Date.now();
-  const ownerUserId = `e2e-blog-owner-${suffix}`;
-  const otherUserId = `e2e-blog-other-${suffix}`;
+	// Unique suffix keeps parallel runs from colliding.
+	const suffix = Date.now();
+	const ownerUserId = `e2e-blog-owner-${suffix}`;
+	const otherUserId = `e2e-blog-other-${suffix}`;
 
-  const smallFile = {
-    buffer: Buffer.from('fake image data'),
-    mimetype: 'image/png',
-    size: 15,
-  };
+	const smallFile = {
+		buffer: Buffer.from('fake image data'),
+		mimetype: 'image/png',
+		size: 15,
+	};
 
-  beforeAll(async () => {
-    storage = new NullObjectStorageService();
-    service = new BlogService(storage);
+	beforeAll(async () => {
+		storage = new NullObjectStorageService();
 
-    // Create two test users directly so FK constraints are satisfied.
-    await prisma.user.createMany({
-      data: [
-        {
-          id: ownerUserId,
-          name: 'E2E Blog Owner',
-          email: `e2e-blog-owner-${suffix}@example.com`,
-          emailVerified: true,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-        {
-          id: otherUserId,
-          name: 'E2E Blog Other',
-          email: `e2e-blog-other-${suffix}@example.com`,
-          emailVerified: true,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-      ],
-    });
-  });
+		// auth.env.ts loads dotenv at module level, so process.env already has Firebase vars.
+		const configService = new ConfigService('test');
+		firebaseProvider = new FirebaseAdminProvider(configService);
+		firebaseProvider.onModuleInit();
 
-  afterAll(async () => {
-    // Clean up test data in dependency order.
-    await prisma.attachmentMetadata.deleteMany({
-      where: { authorId: { in: [ownerUserId, otherUserId] } },
-    });
-    await prisma.blog.deleteMany({
-      where: { authorId: { in: [ownerUserId, otherUserId] } },
-    });
-    await prisma.user.deleteMany({
-      where: { id: { in: [ownerUserId, otherUserId] } },
-    });
-  });
+		service = new BlogService(storage, firebaseProvider);
+
+		// Create two test users directly so FK constraints are satisfied.
+		await prisma.user.createMany({
+			data: [
+				{
+					id: ownerUserId,
+					name: 'E2E Blog Owner',
+					email: `e2e-blog-owner-${suffix}@example.com`,
+					emailVerified: true,
+					createdAt: new Date(),
+					updatedAt: new Date(),
+				},
+				{
+					id: otherUserId,
+					name: 'E2E Blog Other',
+					email: `e2e-blog-other-${suffix}@example.com`,
+					emailVerified: true,
+					createdAt: new Date(),
+					updatedAt: new Date(),
+				},
+			],
+		});
+	});
+
+	afterAll(async () => {
+		// Delete all Firestore blog/attachment documents created during this test run.
+		const db = firebaseProvider.db;
+		const [blogsSnap, attachSnap] = await Promise.all([
+			db.collection('blogs').where('authorId', '==', ownerUserId).get(),
+			db.collection('attachments').where('authorId', '==', ownerUserId).get(),
+		]);
+
+		const batch = db.batch();
+		blogsSnap.docs.forEach((doc) => batch.delete(doc.ref));
+		attachSnap.docs.forEach((doc) => batch.delete(doc.ref));
+		await batch.commit();
+
+		// Clean up PostgreSQL test data.
+		await prisma.user.deleteMany({
+			where: { id: { in: [ownerUserId, otherUserId] } },
+		});
+	});
 
   // ---------------------------------------------------------------------------
   // List endpoints

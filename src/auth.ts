@@ -1,5 +1,6 @@
 import { Auth as BetterAuthType, BetterAuthOptions } from "better-auth";
 import { admin, apiKey, bearer, createAuthMiddleware, deviceAuthorization, emailOTP, magicLink, oidcProvider, organization, twoFactor } from "better-auth/plugins";
+import { firebaseAuthPlugin as firebaseAuth } from "better-auth-firebase-auth";
 import { BetterAuthBuilder, EnvironmentUtils } from "@hashibutogarasu/common";
 import { passwordPlugin } from "./plugins/password/password-plugin.js";
 import { oauthApplicationPlugin } from "./plugins/oauth/oauth-application-plugin.js";
@@ -65,6 +66,16 @@ export function createAuth(
         await notificationService.sendMagicLink({ email, token });
       },
     }),
+    ...(env.FIREBASE_PROJECT_ID ? [
+      firebaseAuth({
+        mode: "credentials",
+        admin: {
+          projectId: env.FIREBASE_PROJECT_ID,
+          clientEmail: env.FIREBASE_CLIENT_EMAIL,
+          privateKey: env.FIREBASE_PRIVATE_KEY,
+        },
+      })
+    ] : []),
     ...(overrides.plugins ?? []),
   ];
 

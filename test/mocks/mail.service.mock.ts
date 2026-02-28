@@ -7,7 +7,5 @@ export class MockMailService extends AbstractMailService {
     super(environment);
   }
 
-  sendEmail: Mock<(options: SendEmailOptions) => Promise<void>> = vi.fn().mockImplementation(async (options: SendEmailOptions) => {
-    return Promise.resolve();
-  });
+  sendEmail: Mock<(options: SendEmailOptions) => Promise<void>> = vi.fn().mockResolvedValue(undefined);
 }

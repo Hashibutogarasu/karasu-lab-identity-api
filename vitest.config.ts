@@ -12,12 +12,14 @@ export default defineConfig({
     environment: 'node',
     include: ['**/*.spec.ts', '**/*.e2e-spec.ts'],
     setupFiles: ['./test/auth/auth.setup.ts'],
+    testTimeout: 30000,
+    hookTimeout: 30000,
     alias: {
       '@hashibutogarasu/common': resolve(__dirname, '../common/src/index.ts'),
     },
     server: {
       deps: {
-        inline: [/@karasu-lab\/common/],
+        inline: [/@karasu-lab\/common/, 'better-auth-firebase-auth'],
       },
     },
   },

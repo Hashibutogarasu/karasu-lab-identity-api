@@ -150,10 +150,10 @@ describe('Better Auth Integration Tests', () => {
     });
 
     expect(res.status).toBe(200);
-    const body = await res.json();
-    
+    const body = await res.json() as { challenge: string; rpId: string };
+
     expect(body.challenge).toBeDefined();
-    expect(body.rpId).toBe('localhost'); 
+    expect(body.rpId).toBe('localhost');
   });
 
   it('Test 5: Mocked email sending function correctly sends authentication and OTP emails', async () => {
@@ -168,7 +168,7 @@ describe('Better Auth Integration Tests', () => {
     expect(res.status).toBe(200);
 
     expect(testNotificationService.sendVerificationOTP).toHaveBeenCalled();
-    const mockCallArgs = vi.mocked(testNotificationService.sendVerificationOTP).mock.calls[0][0];
+    const mockCallArgs = vi.mocked(testNotificationService.sendVerificationOTP).mock.calls[0][0] as { email: string };
 
     expect(mockCallArgs.email).toBe('otpuser@example.com');
   });

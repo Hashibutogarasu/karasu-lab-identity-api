@@ -1,7 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
 import cuid from 'cuid';
+import { FieldValue, DocumentSnapshot } from 'firebase-admin/firestore';
 
-import { getPrisma } from '../prisma.js';
+import { FirebaseAdminProvider } from '../shared/firebase/firebase-admin.provider.js';
 import { ErrorCodes } from '../shared/errors/error.codes.js';
 import { IObjectStorageService } from '../storage/object-storage.interface.js';
 import type { IObjectStorage } from '../storage/object-storage.interface.js';
@@ -15,186 +16,259 @@ import type { UpdateBlogDto } from './dto/update-blog.dto.js';
 export const MAX_ATTACHMENT_SIZE = 8 * 1024 * 1024;
 
 export interface AttachmentFile {
-  buffer: Buffer;
-  mimetype: string;
-  size: number;
+	buffer: Buffer;
+	mimetype: string;
+	size: number;
 }
 
-/**
- * Builds the Prisma `where` clause for list queries.
- * - Authenticated: own records (all statuses) OR published records from others.
- * - Anonymous: published only.
- */
-function visibilityWhere(userId?: string) {
-  if (userId) {
-    return { OR: [{ authorId: userId }, { status: 'published' as Status }] };
-  }
-  return { status: 'published' as Status };
+export interface AttachmentData {
+	id: string;
+	blogId: string;
+	key: string;
+	contentType: string;
+	size: number;
+	status: Status;
+	authorId: string;
+	createdAt: Date;
+	updatedAt: Date;
+}
+
+export interface BlogData {
+	id: string;
+	content: string;
+	authorId: string;
+	status: Status;
+	locked: boolean;
+	createdAt: Date;
+	updatedAt: Date;
+	attachments?: AttachmentData[];
 }
 
 @Injectable()
 export class BlogService {
-  private readonly prisma = getPrisma();
+	constructor(
+		@Inject(IObjectStorageService) private readonly storage: IObjectStorage,
+		private readonly firebase: FirebaseAdminProvider
+	) {}
 
-  constructor(
-    @Inject(IObjectStorageService) private readonly storage: IObjectStorage,
-  ) {}
+	private get blogsCol() {
+		return this.firebase.db.collection('blogs');
+	}
 
-  /**
-   * List blogs.
-   * - Authenticated: own posts (all statuses) + published posts from others.
-   * - Anonymous: published posts only.
-   */
-  async listBlogs(userId?: string) {
-    return await this.prisma.blog.findMany({
-      where: visibilityWhere(userId),
-      include: { attachments: true },
-      orderBy: { createdAt: 'desc' },
-    });
-  }
+	private get attachmentsCol() {
+		return this.firebase.db.collection('attachments');
+	}
 
-  /**
-   * List attachments.
-   * - Authenticated: own attachments (all statuses) + published attachments from others.
-   * - Anonymous: published attachments only.
-   */
-  async listAttachments(userId?: string) {
-    return await this.prisma.attachmentMetadata.findMany({
-      where: visibilityWhere(userId),
-      orderBy: { createdAt: 'desc' },
-    });
-  }
+	private mapDoc<T extends { createdAt: Date; updatedAt: Date }>(doc: DocumentSnapshot): T {
+		const data = doc.data();
+		const toDate = (val: unknown): Date =>
+			val != null && typeof (val as { toDate?: unknown }).toDate === 'function'
+				? (val as { toDate(): Date }).toDate()
+				: (val as Date);
+		return {
+			...data,
+			id: doc.id,
+			createdAt: toDate(data?.createdAt),
+			updatedAt: toDate(data?.updatedAt),
+		} as unknown as T;
+	}
 
-  async createBlog(authorId: string, dto: CreateBlogDto) {
-    return await this.prisma.blog.create({
-      data: {
-        id: cuid(),
-        content: dto.content,
-        authorId,
-        ...(dto.status !== undefined && { status: dto.status }),
-        ...(dto.locked !== undefined && { locked: dto.locked }),
-      },
-      include: { attachments: true },
-    });
-  }
+	/**
+	 * List blogs.
+	 * - Authenticated: own posts (all statuses) + published posts from others.
+	 * - Anonymous: published posts only.
+	 */
+	async listBlogs(userId?: string): Promise<BlogData[]> {
+		const snapshot = await this.blogsCol.orderBy('createdAt', 'desc').get();
+		const allBlogs = snapshot.docs.map((d) => this.mapDoc<BlogData>(d));
 
-  async getBlog(id: string, userId?: string) {
-    const blog = await this.prisma.blog.findUnique({
-      where: { id },
-      include: { attachments: true },
-    });
-    if (!blog) throw ErrorCodes.BLOG.NOT_FOUND;
-    const PUBLISHED: Status = 'published';
-    if (blog.status !== PUBLISHED && blog.authorId !== userId) {
-      throw ErrorCodes.BLOG.FORBIDDEN;
-    }
-    return blog;
-  }
+		const filtered = allBlogs.filter((blog) => {
+			if (userId && blog.authorId === userId) return true;
+			return blog.status === 'published';
+		});
 
-  async updateBlog(id: string, authorId: string, dto: UpdateBlogDto) {
-    const blog = await this.prisma.blog.findUnique({ where: { id } });
-    if (!blog) throw ErrorCodes.BLOG.NOT_FOUND;
-    if (blog.authorId !== authorId) throw ErrorCodes.BLOG.FORBIDDEN;
-    if (blog.locked) throw ErrorCodes.BLOG.LOCKED;
+		return Promise.all(
+			filtered.map(async (blog) => {
+				const attachmentsSnapshot = await this.attachmentsCol
+					.where('blogId', '==', blog.id)
+					.get();
+				return {
+					...blog,
+					attachments: attachmentsSnapshot.docs.map((d) => this.mapDoc<AttachmentData>(d)),
+				};
+			}),
+		);
+	}
 
-    return this.prisma.blog.update({
-      where: { id },
-      data: {
-        ...(dto.content !== undefined && { content: dto.content }),
-        ...(dto.status !== undefined && { status: dto.status }),
-        ...(dto.locked !== undefined && { locked: dto.locked }),
-      },
-      include: { attachments: true },
-    });
-  }
+	/**
+	 * List attachments.
+	 */
+	async listAttachments(userId?: string): Promise<AttachmentData[]> {
+		const snapshot = await this.attachmentsCol.orderBy('createdAt', 'desc').get();
+		const allAttachments = snapshot.docs.map((d) => this.mapDoc<AttachmentData>(d));
 
-  async deleteBlog(id: string, authorId: string) {
-    const blog = await this.prisma.blog.findUnique({ where: { id } });
-    if (!blog) throw ErrorCodes.BLOG.NOT_FOUND;
-    if (blog.authorId !== authorId) throw ErrorCodes.BLOG.FORBIDDEN;
-    if (blog.locked) throw ErrorCodes.BLOG.LOCKED;
+		return allAttachments.filter((attachment) => {
+			if (userId && attachment.authorId === userId) return true;
+			return attachment.status === 'published';
+		});
+	}
 
-    const attachments = await this.prisma.attachmentMetadata.findMany({
-      where: { blogId: id },
-    });
-    await Promise.all(attachments.map((a) => this.storage.deleteObject(a.key)));
+	async createBlog(authorId: string, dto: CreateBlogDto): Promise<BlogData> {
+		const id = cuid();
+		const now = FieldValue.serverTimestamp();
+		const data = {
+			content: dto.content,
+			authorId,
+			status: dto.status ?? 'draft',
+			locked: dto.locked ?? false,
+			createdAt: now,
+			updatedAt: now,
+		};
 
-    await this.prisma.blog.delete({ where: { id } });
-  }
+		await this.blogsCol.doc(id).set(data);
+		return this.getBlog(id, authorId);
+	}
 
-  async createAttachment(
-    blogId: string,
-    authorId: string,
-    file: AttachmentFile,
-    dto: CreateAttachmentDto,
-  ) {
-    const blog = await this.prisma.blog.findUnique({ where: { id: blogId } });
-    if (!blog) throw ErrorCodes.BLOG.NOT_FOUND;
-    if (blog.locked) throw ErrorCodes.BLOG.LOCKED;
-    if (file.size > MAX_ATTACHMENT_SIZE) throw ErrorCodes.BLOG.ATTACHMENT_TOO_LARGE;
+	async getBlog(id: string, userId?: string): Promise<BlogData> {
+		const doc = await this.blogsCol.doc(id).get();
+		if (!doc.exists) throw ErrorCodes.BLOG.NOT_FOUND;
 
-    const attachmentId = cuid();
-    const key = `blogs/${blogId}/attachments/${attachmentId}`;
+		const blog = this.mapDoc<BlogData>(doc);
+		const PUBLISHED: Status = 'published';
 
-    await this.storage.putObject(key, file.buffer, file.mimetype);
+		if (blog.status !== PUBLISHED && blog.authorId !== userId) {
+			throw ErrorCodes.BLOG.FORBIDDEN;
+		}
 
-    return this.prisma.attachmentMetadata.create({
-      data: {
-        id: attachmentId,
-        blogId,
-        key,
-        contentType: file.mimetype,
-        size: file.size,
-        ...(dto.status !== undefined && { status: dto.status }),
-        authorId,
-      },
-    });
-  }
+		// Include attachments
+		const attachmentsSnapshot = await this.attachmentsCol.where('blogId', '==', id).get();
+		blog.attachments = attachmentsSnapshot.docs.map((d) => this.mapDoc<AttachmentData>(d));
 
-  async getAttachment(id: string) {
-    const metadata = await this.prisma.attachmentMetadata.findUnique({ where: { id } });
-    if (!metadata) throw ErrorCodes.BLOG.ATTACHMENT_NOT_FOUND;
+		return blog;
+	}
 
-    const url = await this.storage.getPresignedUrl(metadata.key);
-    return { url, metadata };
-  }
+	async updateBlog(id: string, authorId: string, dto: UpdateBlogDto): Promise<BlogData> {
+		const doc = await this.blogsCol.doc(id).get();
+		if (!doc.exists) throw ErrorCodes.BLOG.NOT_FOUND;
 
-  async updateAttachment(
-    id: string,
-    authorId: string,
-    file: AttachmentFile,
-    dto: UpdateAttachmentDto,
-  ) {
-    const metadata = await this.prisma.attachmentMetadata.findUnique({ where: { id } });
-    if (!metadata) throw ErrorCodes.BLOG.ATTACHMENT_NOT_FOUND;
-    if (metadata.authorId !== authorId) throw ErrorCodes.BLOG.FORBIDDEN;
+		const blog = doc.data();
+		if (blog?.['authorId'] !== authorId) throw ErrorCodes.BLOG.FORBIDDEN;
+		if (blog?.['locked']) throw ErrorCodes.BLOG.LOCKED;
 
-    const blog = await this.prisma.blog.findUnique({ where: { id: metadata.blogId } });
-    if (blog?.locked) throw ErrorCodes.BLOG.LOCKED;
+		const updateData: Record<string, unknown> = {
+			updatedAt: FieldValue.serverTimestamp(),
+		};
+		if (dto.content !== undefined) updateData['content'] = dto.content;
+		if (dto.status !== undefined) updateData['status'] = dto.status;
+		if (dto.locked !== undefined) updateData['locked'] = dto.locked;
 
-    if (file.size > MAX_ATTACHMENT_SIZE) throw ErrorCodes.BLOG.ATTACHMENT_TOO_LARGE;
+		await this.blogsCol.doc(id).update(updateData);
+		return this.getBlog(id, authorId);
+	}
 
-    await this.storage.putObject(metadata.key, file.buffer, file.mimetype);
+	async deleteBlog(id: string, authorId: string): Promise<void> {
+		const doc = await this.blogsCol.doc(id).get();
+		if (!doc.exists) throw ErrorCodes.BLOG.NOT_FOUND;
 
-    return this.prisma.attachmentMetadata.update({
-      where: { id },
-      data: {
-        contentType: file.mimetype,
-        size: file.size,
-        ...(dto.status !== undefined && { status: dto.status }),
-      },
-    });
-  }
+		const blog = doc.data();
+		if (blog?.['authorId'] !== authorId) throw ErrorCodes.BLOG.FORBIDDEN;
+		if (blog?.['locked']) throw ErrorCodes.BLOG.LOCKED;
 
-  async deleteAttachment(id: string, authorId: string) {
-    const metadata = await this.prisma.attachmentMetadata.findUnique({ where: { id } });
-    if (!metadata) throw ErrorCodes.BLOG.ATTACHMENT_NOT_FOUND;
-    if (metadata.authorId !== authorId) throw ErrorCodes.BLOG.FORBIDDEN;
+		const attachmentsSnapshot = await this.attachmentsCol.where('blogId', '==', id).get();
+		const attachments = attachmentsSnapshot.docs.map((d) => d.data());
 
-    const blog = await this.prisma.blog.findUnique({ where: { id: metadata.blogId } });
-    if (blog?.locked) throw ErrorCodes.BLOG.LOCKED;
+		await Promise.all(attachments.map((a) => this.storage.deleteObject(a?.['key'] as string)));
 
-    await this.storage.deleteObject(metadata.key);
-    await this.prisma.attachmentMetadata.delete({ where: { id } });
-  }
+		const batch = this.firebase.db.batch();
+		batch.delete(this.blogsCol.doc(id));
+		attachmentsSnapshot.docs.forEach((d) => batch.delete(d.ref));
+		await batch.commit();
+	}
+
+	async createAttachment(
+		blogId: string,
+		authorId: string,
+		file: AttachmentFile,
+		dto: CreateAttachmentDto
+	): Promise<AttachmentData> {
+		const blogDoc = await this.blogsCol.doc(blogId).get();
+		if (!blogDoc.exists) throw ErrorCodes.BLOG.NOT_FOUND;
+		if (blogDoc.data()?.['locked']) throw ErrorCodes.BLOG.LOCKED;
+		if (file.size > MAX_ATTACHMENT_SIZE) throw ErrorCodes.BLOG.ATTACHMENT_TOO_LARGE;
+
+		const attachmentId = cuid();
+		const key = `blogs/${blogId}/attachments/${attachmentId}`;
+
+		await this.storage.putObject(key, file.buffer, file.mimetype);
+
+		const now = FieldValue.serverTimestamp();
+		const data = {
+			blogId,
+			key,
+			contentType: file.mimetype,
+			size: file.size,
+			status: dto.status ?? 'draft',
+			authorId,
+			createdAt: now,
+			updatedAt: now,
+		};
+
+		await this.attachmentsCol.doc(attachmentId).set(data);
+		const doc = await this.attachmentsCol.doc(attachmentId).get();
+		return this.mapDoc<AttachmentData>(doc);
+	}
+
+	async getAttachment(id: string): Promise<{ url: string; metadata: AttachmentData }> {
+		const doc = await this.attachmentsCol.doc(id).get();
+		if (!doc.exists) throw ErrorCodes.BLOG.ATTACHMENT_NOT_FOUND;
+
+		const metadata = this.mapDoc<AttachmentData>(doc);
+		const url = await this.storage.getPresignedUrl(metadata.key);
+		return { url, metadata };
+	}
+
+	async updateAttachment(
+		id: string,
+		authorId: string,
+		file: AttachmentFile,
+		dto: UpdateAttachmentDto
+	): Promise<AttachmentData> {
+		const doc = await this.attachmentsCol.doc(id).get();
+		if (!doc.exists) throw ErrorCodes.BLOG.ATTACHMENT_NOT_FOUND;
+
+		const metadata = doc.data();
+		if (metadata?.['authorId'] !== authorId) throw ErrorCodes.BLOG.FORBIDDEN;
+
+		const blogDoc = await this.blogsCol.doc(metadata?.['blogId'] as string).get();
+		if (blogDoc.data()?.['locked']) throw ErrorCodes.BLOG.LOCKED;
+
+		if (file.size > MAX_ATTACHMENT_SIZE) throw ErrorCodes.BLOG.ATTACHMENT_TOO_LARGE;
+
+		await this.storage.putObject(metadata?.['key'] as string, file.buffer, file.mimetype);
+
+		const updateData: Record<string, unknown> = {
+			contentType: file.mimetype,
+			size: file.size,
+			updatedAt: FieldValue.serverTimestamp(),
+		};
+		if (dto.status !== undefined) updateData['status'] = dto.status;
+
+		await this.attachmentsCol.doc(id).update(updateData);
+		const updatedDoc = await this.attachmentsCol.doc(id).get();
+		return this.mapDoc<AttachmentData>(updatedDoc);
+	}
+
+	async deleteAttachment(id: string, authorId: string): Promise<void> {
+		const doc = await this.attachmentsCol.doc(id).get();
+		if (!doc.exists) throw ErrorCodes.BLOG.ATTACHMENT_NOT_FOUND;
+
+		const metadata = doc.data();
+		if (metadata?.['authorId'] !== authorId) throw ErrorCodes.BLOG.FORBIDDEN;
+
+		const blogDoc = await this.blogsCol.doc(metadata?.['blogId'] as string).get();
+		if (blogDoc.data()?.['locked']) throw ErrorCodes.BLOG.LOCKED;
+
+		await this.storage.deleteObject(metadata?.['key'] as string);
+		await this.attachmentsCol.doc(id).delete();
+	}
 }

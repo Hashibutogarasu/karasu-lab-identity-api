@@ -23,7 +23,62 @@
 
 ## Description
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+NestJS-based identity and authentication API service, using PostgreSQL (via Prisma) for user/session data and Cloud Firestore for blog/attachment metadata.
+
+## Firestore Integration Setup
+
+Blog and attachment metadata is stored in Cloud Firestore. Follow these steps once per environment to connect a Firebase project.
+
+### Prerequisites
+
+- [Firebase CLI](https://firebase.google.com/docs/cli) — `npm install -g firebase-tools`
+- [Google Cloud CLI](https://cloud.google.com/sdk/docs/install) — `gcloud`
+
+### 1. Identify the Firebase project
+
+List your Firebase projects to confirm the project ID:
+
+```bash
+firebase projects:list
+```
+
+### 2. Create a service account key
+
+Generate a key for the Firebase Admin SDK service account. Replace `<PROJECT_ID>` with your Firebase project ID:
+
+```bash
+gcloud iam service-accounts keys create firebase-service-account.json \
+  --iam-account=firebase-adminsdk-<RANDOM-ID>@<PROJECT_ID>.iam.gserviceaccount.com \
+  --project=<PROJECT_ID>
+```
+
+This writes `firebase-service-account.json` to the current directory. The file is listed in `.gitignore` and must **never be committed**.
+
+### 3. Add credentials to `.env`
+
+Open `.env` and add the following variables. Copy the values from `firebase-service-account.json`:
+
+```dotenv
+FIREBASE_PROJECT_ID=<PROJECT_ID>
+FIREBASE_CLIENT_EMAIL=firebase-adminsdk-<RANDOM-ID>@<PROJECT_ID>.iam.gserviceaccount.com
+FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
+```
+
+| `.env` key              | JSON field     |
+| ----------------------- | -------------- |
+| `FIREBASE_PROJECT_ID`   | `project_id`   |
+| `FIREBASE_CLIENT_EMAIL` | `client_email` |
+| `FIREBASE_PRIVATE_KEY`  | `private_key`  |
+
+> The `private_key` field in the JSON already contains `\n` escape sequences. Paste the value as-is, wrapped in double quotes.
+
+### 4. Delete the key file
+
+Remove the key file from your working directory once the credentials are in `.env`:
+
+```bash
+rm firebase-service-account.json
+```
 
 ## Project setup
 
