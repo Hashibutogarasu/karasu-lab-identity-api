@@ -1,7 +1,7 @@
 import { Auth as BetterAuthType, BetterAuthOptions } from "better-auth";
 import { admin, apiKey, bearer, createAuthMiddleware, deviceAuthorization, emailOTP, magicLink, oidcProvider, organization, twoFactor } from "better-auth/plugins";
 import { firebaseAuthPlugin as firebaseAuth } from "better-auth-firebase-auth/server";
-import * as firebaseAdmin from "firebase-admin";
+import { initializeApp, getApps, cert } from "firebase-admin/app";
 import { getAuth } from "firebase-admin/auth";
 import { BetterAuthBuilder, EnvironmentUtils } from "@hashibutogarasu/common";
 import { passwordPlugin } from "./plugins/password/password-plugin.js";
@@ -39,11 +39,9 @@ export function createAuth(
   const env = configService.getAll();
   const authEnv = new AuthEnvironment(env.NODE_ENV);
 
-  // Initialize Firebase Admin here so it is ready before firebaseAuthPlugin calls getAuth().
-  // FirebaseAdminProvider.onModuleInit() respects the !admin.apps.length guard and skips re-init.
-  if (env.FIREBASE_PROJECT_ID && !firebaseAdmin.apps.length) {
-    firebaseAdmin.initializeApp({
-      credential: firebaseAdmin.credential.cert({
+  if (env.FIREBASE_PROJECT_ID && !getApps().length) {
+    initializeApp({
+      credential: cert({
         projectId: env.FIREBASE_PROJECT_ID,
         clientEmail: env.FIREBASE_CLIENT_EMAIL,
         privateKey: env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
