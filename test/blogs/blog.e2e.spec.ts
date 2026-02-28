@@ -97,7 +97,7 @@ describe('BlogService (E2E)', () => {
       });
 
       const blogs = await service.listBlogs(); // no userId → anonymous
-      const ids = blogs.map((b) => b.id);
+      const ids = blogs.data.map((b) => b.id);
       expect(ids).toContain(published.id);
       expect(ids).not.toContain(draft.id);
     });
@@ -117,7 +117,7 @@ describe('BlogService (E2E)', () => {
       });
 
       const blogs = await service.listBlogs(ownerUserId);
-      const ids = blogs.map((b) => b.id);
+      const ids = blogs.data.map((b) => b.id);
       expect(ids).toContain(draft.id);
       expect(ids).toContain(archived.id);
       expect(ids).toContain(published.id);
@@ -134,7 +134,7 @@ describe('BlogService (E2E)', () => {
       });
 
       const blogs = await service.listBlogs(otherUserId); // different user
-      const ids = blogs.map((b) => b.id);
+      const ids = blogs.data.map((b) => b.id);
       expect(ids).toContain(published.id);
       expect(ids).not.toContain(draft.id);
     });
@@ -145,15 +145,15 @@ describe('BlogService (E2E)', () => {
         status: 'published',
       });
       const blogs = await service.listBlogs();
-      const found = blogs.find((b) => b.id === blog.id);
+      const found = blogs.data.find((b) => b.id === blog.id);
       expect(found?.attachments).toBeInstanceOf(Array);
     });
 
     it('returns results in descending createdAt order', async () => {
       const blogs = await service.listBlogs(ownerUserId);
-      for (let i = 1; i < blogs.length; i++) {
-        expect(blogs[i - 1].createdAt.getTime()).toBeGreaterThanOrEqual(
-          blogs[i].createdAt.getTime(),
+      for (let i = 1; i < blogs.data.length; i++) {
+        expect(blogs.data[i - 1].createdAt.getTime()).toBeGreaterThanOrEqual(
+          blogs.data[i].createdAt.getTime(),
         );
       }
     });

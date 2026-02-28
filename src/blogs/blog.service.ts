@@ -8,12 +8,21 @@ import { IObjectStorageService } from '../storage/object-storage.interface.js';
 import type { IObjectStorage } from '../storage/object-storage.interface.js';
 import type { CreateAttachmentDto } from './dto/create-attachment.dto.js';
 import type { CreateBlogDto } from './dto/create-blog.dto.js';
+import type { ListBlogsQueryDto } from './dto/list-blogs-query.dto.js';
 import type { Status } from './dto/status.schema.js';
 import type { UpdateAttachmentDto } from './dto/update-attachment.dto.js';
 import type { UpdateBlogDto } from './dto/update-blog.dto.js';
 
 /** Maximum allowed attachment size: 8 MB (fits a 4K JPEG/PNG/WebP image). */
 export const MAX_ATTACHMENT_SIZE = 8 * 1024 * 1024;
+
+export interface PaginatedResult<T> {
+	data: T[];
+	total: number;
+	page: number;
+	limit: number;
+	totalPages: number;
+}
 
 export interface AttachmentFile {
 	buffer: Buffer;
@@ -78,8 +87,12 @@ export class BlogService {
 	 * - Authenticated: own posts (all statuses) + published posts from others.
 	 * - Anonymous: published posts only.
 	 */
-	async listBlogs(userId?: string): Promise<BlogData[]> {
-		const snapshot = await this.blogsCol.orderBy('createdAt', 'desc').get();
+	async listBlogs(
+		userId?: string,
+		query: ListBlogsQueryDto = { page: 1, limit: 10, sort: 'desc' },
+	): Promise<PaginatedResult<BlogData>> {
+		const { page, limit, sort } = query;
+		const snapshot = await this.blogsCol.orderBy('createdAt', sort).get();
 		const allBlogs = snapshot.docs.map((d) => this.mapDoc<BlogData>(d));
 
 		const filtered = allBlogs.filter((blog) => {
@@ -87,8 +100,13 @@ export class BlogService {
 			return blog.status === 'published';
 		});
 
-		return Promise.all(
-			filtered.map(async (blog) => {
+		const total = filtered.length;
+		const totalPages = Math.ceil(total / limit);
+		const skip = (page - 1) * limit;
+		const paged = filtered.slice(skip, skip + limit);
+
+		const data = await Promise.all(
+			paged.map(async (blog) => {
 				const [contentBuffer, attachmentsSnapshot] = await Promise.all([
 					this.storage.getObject(`blogs/${blog.id}/content`),
 					this.attachmentsCol.where('blogId', '==', blog.id).get(),
@@ -100,6 +118,44 @@ export class BlogService {
 				};
 			}),
 		);
+
+		return { data, total, page, limit, totalPages };
+	}
+
+	/**
+	 * List only the authenticated user's own blog posts (all statuses).
+	 */
+	async listMyBlogs(
+		userId: string,
+		query: ListBlogsQueryDto = { page: 1, limit: 10, sort: 'desc' },
+	): Promise<PaginatedResult<BlogData>> {
+		const { page, limit, sort } = query;
+		const snapshot = await this.blogsCol
+			.where('authorId', '==', userId)
+			.orderBy('createdAt', sort)
+			.get();
+		const allBlogs = snapshot.docs.map((d) => this.mapDoc<BlogData>(d));
+
+		const total = allBlogs.length;
+		const totalPages = Math.ceil(total / limit);
+		const skip = (page - 1) * limit;
+		const paged = allBlogs.slice(skip, skip + limit);
+
+		const data = await Promise.all(
+			paged.map(async (blog) => {
+				const [contentBuffer, attachmentsSnapshot] = await Promise.all([
+					this.storage.getObject(`blogs/${blog.id}/content`),
+					this.attachmentsCol.where('blogId', '==', blog.id).get(),
+				]);
+				return {
+					...blog,
+					content: contentBuffer?.toString('utf-8') ?? '',
+					attachments: attachmentsSnapshot.docs.map((d) => this.mapDoc<AttachmentData>(d)),
+				};
+			}),
+		);
+
+		return { data, total, page, limit, totalPages };
 	}
 
 	/**
