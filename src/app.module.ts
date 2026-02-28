@@ -9,7 +9,6 @@ import { BlogModule } from "./blogs/blog.module.js";
 import { OpenApiModule } from "./shared/openapi/openapi.module.js";
 import { AuthMiddlewareModule } from "./shared/auth/auth-middleware.module.js";
 import { initAuth } from "./auth.js";
-import { DocsAuthMiddleware } from "./shared/openapi/docs-auth.middleware.js";
 
 @Module({
   imports: [
@@ -32,7 +31,6 @@ import { DocsAuthMiddleware } from "./shared/openapi/docs-auth.middleware.js";
       useClass: I18nService,
     },
     I18nService,
-    DocsAuthMiddleware,
   ],
 })
 export class AppModule {}
