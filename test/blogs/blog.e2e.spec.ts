@@ -545,6 +545,40 @@ describe('BlogService (E2E)', () => {
   });
 
   // ---------------------------------------------------------------------------
+  // Attachment Firestore presence
+  // ---------------------------------------------------------------------------
+
+  describe('attachment Firestore presence', () => {
+    it('returns FORBIDDEN when a non-owner attempts to delete an attachment', async () => {
+      const blog = await service.createBlog(ownerUserId, { content: 'perm test' });
+      const att = await service.createAttachment(blog.id, ownerUserId, smallFile, {});
+      await expect(service.deleteAttachment(att.id, otherUserId)).rejects.toMatchObject({
+        status: 'FORBIDDEN',
+        key: 'blog.forbidden',
+      });
+      await service.deleteAttachment(att.id, ownerUserId);
+    });
+
+    it('persists the attachment document in Firestore after createAttachment', async () => {
+      const blog = await service.createBlog(ownerUserId, { content: 'firestore check' });
+      const att = await service.createAttachment(blog.id, ownerUserId, smallFile, {});
+      const doc = await firebaseProvider.db.collection('attachments').doc(att.id).get();
+      expect(doc.exists).toBe(true);
+      expect(doc.data()?.blogId).toBe(blog.id);
+      expect(doc.data()?.authorId).toBe(ownerUserId);
+      await service.deleteAttachment(att.id, ownerUserId);
+    });
+
+    it('removes the attachment document from Firestore after deleteAttachment', async () => {
+      const blog = await service.createBlog(ownerUserId, { content: 'delete check' });
+      const att = await service.createAttachment(blog.id, ownerUserId, smallFile, {});
+      await service.deleteAttachment(att.id, ownerUserId);
+      const doc = await firebaseProvider.db.collection('attachments').doc(att.id).get();
+      expect(doc.exists).toBe(false);
+    });
+  });
+
+  // ---------------------------------------------------------------------------
   // File size boundary
   // ---------------------------------------------------------------------------
 
