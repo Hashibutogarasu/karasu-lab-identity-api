@@ -15,6 +15,7 @@ export default defineConfig({
     testTimeout: 30000,
     hookTimeout: 30000,
     alias: {
+      // TODO: Add a common package to api submodule for CI tests
       '@hashibutogarasu/common': resolve(__dirname, '../common/src/index.ts'),
     },
     server: {

@@ -1,24 +1,19 @@
-import fs from "fs";
 import { Environment } from "@hashibutogarasu/common";
 import { IAdminConfig } from "./admin-config.interface.js";
 import { AbstractAdminConfig } from "./abstract-admin-config.js";
 import { AbstractPluginEnvironment } from "../../../shared/plugin/abstract-plugin-environment.js";
+import { readConfigContent } from "../../../utils/config.util.js";
 
 /**
  * Production environment admin configuration
- * Reads admin user IDs from /configs/config.json
+ * Reads admin user IDs from configs/config.json relative to project root
  */
 class ProductionAdminConfig extends AbstractAdminConfig {
 	constructor() {
 		super();
-		try {
-			const configPath = "/configs/config.json";
-			if (fs.existsSync(configPath)) {
-				const content = fs.readFileSync(configPath, "utf-8");
-				this.parse(content);
-			}
-		} catch {
-			// Silent error as it's optional
+		const content = readConfigContent("configs", "config.json");
+		if (content) {
+			this.parse(content);
 		}
 	}
 
