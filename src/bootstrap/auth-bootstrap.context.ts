@@ -7,6 +7,7 @@ import { ISocialProviderConfig } from "../services/auth/social-provider-config.i
 import { IAuthNotificationService } from "../services/auth/auth-notification.service.interface.js";
 import { IPasskeyAuth } from "../plugins/passkey/passkey.interface.js";
 import { IAdminConfig } from "../services/auth/admin-config.interface.js";
+import { IRateLimitConfig } from "../services/auth/rate-limit-config.interface.js";
 
 export class AuthBootstrapContext {
   authEnv?: AuthEnvironment;
@@ -15,6 +16,7 @@ export class AuthBootstrapContext {
   authConfigInstance?: IAuthConfig;
   socialProviderConfigInstance?: ISocialProviderConfig;
   adminConfigInstance?: IAdminConfig;
+  rateLimitConfigInstance?: IRateLimitConfig;
   notificationService?: IAuthNotificationService;
   passkeyAuth?: IPasskeyAuth;
   auth?: BetterAuthType;

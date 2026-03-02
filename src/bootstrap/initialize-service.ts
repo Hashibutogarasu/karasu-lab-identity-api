@@ -38,7 +38,9 @@ export class InitializeService implements IBetterAuthBootStrapper {
       this.context.passkeyAuth,
       this.context.authConfigInstance,
       this.context.socialProviderConfigInstance,
-      this.context.adminConfigInstance
+      this.context.adminConfigInstance,
+      this.context.rateLimitConfigInstance
     );
+
   }
 }

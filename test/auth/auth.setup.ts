@@ -10,6 +10,7 @@ import { socialProviderConfigFactory } from '../../src/services/auth/social-prov
 
 import { DatabaseSeedingConstants } from '../../src/shared/database/seeding.service.interface.js';
 import { MockAdminConfig } from '../mocks/admin-config.mock.js';
+import { MockRateLimitConfig } from '../mocks/rate-limit-config.mock.js';
 import { MockDatabaseSeedingService } from '../mocks/database-seeding.service.mock.js';
 
 export let testDbService: MemoryDatabaseService;
@@ -29,9 +30,11 @@ beforeAll(async () => {
   const authConfig = authConfigFactory(configService);
   const socialProviderConfig = socialProviderConfigFactory(configService);
   const adminConfig = new MockAdminConfig([DatabaseSeedingConstants.DUMMY_USER_ID]);
+  const rateLimitConfig = new MockRateLimitConfig({ enabled: false });
 
-  testAuth = createAuth(configService, testDbService, testNotificationService, passkeyAuth, authConfig, socialProviderConfig, adminConfig, {
+  testAuth = createAuth(configService, testDbService, testNotificationService, passkeyAuth, authConfig, socialProviderConfig, adminConfig, rateLimitConfig, {
     rateLimit: { enabled: false },
+
     plugins: [
       genericOAuth({
         config: [

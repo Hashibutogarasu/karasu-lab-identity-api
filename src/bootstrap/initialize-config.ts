@@ -6,6 +6,7 @@ import { ConfigService } from "../shared/config/config.service.js";
 import { authConfigFactory } from "../services/auth/auth-config.service.js";
 import { socialProviderConfigFactory } from "../services/auth/social-provider-config.service.js";
 import { adminConfigFactory } from "../services/auth/admin-config.service.js";
+import { rateLimitConfigFactory } from "../services/auth/rate-limit-config.service.js";
 
 export class InitializeConfig implements IBetterAuthBootStrapper {
   constructor(private context: AuthBootstrapContext) {}
@@ -17,5 +18,6 @@ export class InitializeConfig implements IBetterAuthBootStrapper {
     this.context.authConfigInstance = authConfigFactory(this.context.configService);
     this.context.socialProviderConfigInstance = socialProviderConfigFactory(this.context.configService);
     this.context.adminConfigInstance = adminConfigFactory();
+    this.context.rateLimitConfigInstance = rateLimitConfigFactory();
   }
 }

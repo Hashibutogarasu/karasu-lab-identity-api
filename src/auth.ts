@@ -26,8 +26,8 @@ import { ValidEnv } from "./bootstrap/valid-env.js";
 import { InitializeConfig } from "./bootstrap/initialize-config.js";
 import { InitializeService } from "./bootstrap/initialize-service.js";
 import { ErrorCodes } from "./shared/errors/error.codes.js";
-
 import { IAdminConfig } from "./services/auth/admin-config.interface.js";
+import { IRateLimitConfig } from "./services/auth/rate-limit-config.interface.js";
 
 export function createAuth(
   configService: IConfigService,
@@ -37,6 +37,7 @@ export function createAuth(
   authConfig: IAuthConfig,
   socialProviderConfig: ISocialProviderConfig,
   adminConfig: IAdminConfig,
+  rateLimitConfig: IRateLimitConfig,
   overrides: Partial<BetterAuthOptions> = {}
 ): BetterAuthType {
   const env = configService.getAll();
@@ -103,7 +104,7 @@ export function createAuth(
       level: EnvironmentUtils.isProduction(authEnv.environment) ? "info" : "debug",
       disabled: false,
     })
-    .basic.setRateLimit(overrides.rateLimit ?? { enabled: true, window: 60, max: 100 })
+    .basic.setRateLimit(overrides.rateLimit ?? rateLimitConfig.getConfig())
     .email.setEmailAndPassword({ enabled: true, requireEmailVerification: true })
     .email.setEmailVerification({
       sendVerificationEmail: async ({ user, url }) => {
