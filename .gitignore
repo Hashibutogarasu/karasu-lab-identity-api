@@ -64,3 +64,6 @@ dist/
 
 # Firebase service account key (do not commit)
 firebase-service-account.json
+
+# Production configs
+/configs/config.json
