@@ -1,4 +1,4 @@
-import { IConfigService } from '../../shared/config/config.service.interface.js';
+import { IConfigService } from '../../../shared/config/config.service.interface.js';
 import { ISocialProvider, ISocialProviderConfig } from './social-provider-config.interface.js';
 
 /**

@@ -1,7 +1,7 @@
 import { Environment } from "@hashibutogarasu/common";
-import { IConfigService } from "../../shared/config/config.service.interface.js";
+import { IConfigService } from "../../../shared/config/config.service.interface.js";
 import { IAuthConfig } from "./auth-config.interface.js";
-import { AbstractPluginEnvironment } from "../../shared/plugin/abstract-plugin-environment.js";
+import { AbstractPluginEnvironment } from "../../../shared/plugin/abstract-plugin-environment.js";
 
 /**
  * Abstract base class for auth configuration

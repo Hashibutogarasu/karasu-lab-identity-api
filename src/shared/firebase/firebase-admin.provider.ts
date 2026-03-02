@@ -1,13 +1,13 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { initializeApp, getApps, cert } from 'firebase-admin/app';
 import { getFirestore, Firestore } from 'firebase-admin/firestore';
-import { ConfigService } from '../config/config.service.js';
+import { IConfigService } from '../config/config.service.interface.js';
 
 @Injectable()
 export class FirebaseAdminProvider implements OnModuleInit {
 	private _firestore: Firestore;
 
-	constructor(private readonly configService: ConfigService) {}
+	constructor(private readonly configService: IConfigService) {}
 
 	onModuleInit() {
 		const env = this.configService.getAll();

@@ -1,5 +1,5 @@
 import { describe, it, expect, afterEach } from 'vitest';
-import { MockConfigService } from '../../../test/mocks/config.service.mock.js';
+import { MockConfigService } from '../../../../test/mocks/config.service.mock.js';
 import { authConfigFactory } from './auth-config.service.js';
 
 describe('AuthConfigService', () => {

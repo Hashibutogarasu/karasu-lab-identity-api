@@ -1,4 +1,4 @@
-import { IAdminConfig } from "../../src/services/auth/admin-config.interface.js";
+import { IAdminConfig } from "../../src/services/auth/admin/admin-config.interface.js";
 
 /**
  * Mock implementation of IAdminConfig for testing

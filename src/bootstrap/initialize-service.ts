@@ -5,7 +5,7 @@ import { authConfig } from "../config/auth.env.js";
 import { emailConfig } from "../config/email.env.js";
 import { mailService } from "../shared/mail/mail.service.js";
 import { PostgresDatabaseService } from "../shared/database/postgres-database.service.js";
-import { authNotificationServiceFactory } from "../services/auth/auth-notification.service.js";
+import { authNotificationServiceFactory } from "../services/auth/notification/auth-notification.service.js";
 import { passkeyAuthFactory } from "../plugins/passkey/passkey.service.js";
 import type { createAuth } from "../auth.js";
 

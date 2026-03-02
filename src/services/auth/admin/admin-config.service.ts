@@ -2,7 +2,7 @@ import fs from "fs";
 import { Environment } from "@hashibutogarasu/common";
 import { IAdminConfig } from "./admin-config.interface.js";
 import { AbstractAdminConfig } from "./abstract-admin-config.js";
-import { AbstractPluginEnvironment } from "../../shared/plugin/abstract-plugin-environment.js";
+import { AbstractPluginEnvironment } from "../../../shared/plugin/abstract-plugin-environment.js";
 
 /**
  * Production environment admin configuration

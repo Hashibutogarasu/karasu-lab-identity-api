@@ -1,8 +1,11 @@
 import { IConfigService } from "./config.service.interface.js";
 import { AuthEnv } from "../../config/auth.env.js";
-import { AbstractEnvironment } from "@hashibutogarasu/common";
 
-export abstract class AbstractConfigService extends AbstractEnvironment implements IConfigService {
+/**
+ * Abstract base class for config services
+ * Satisfies IConfigService interface for NestJS and environment patterns
+ */
+export abstract class AbstractConfigService extends IConfigService {
   protected config: AuthEnv;
 
   constructor(environment: string, config: AuthEnv) {
@@ -16,5 +19,12 @@ export abstract class AbstractConfigService extends AbstractEnvironment implemen
 
   getAll(): AuthEnv {
     return this.config;
+  }
+
+  /**
+   * Resolve current instance
+   */
+  resolve(): IConfigService {
+    return this;
   }
 }

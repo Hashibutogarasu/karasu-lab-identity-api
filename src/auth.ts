@@ -13,9 +13,9 @@ import { databaseSeedingFactory } from "./shared/database/database-seeding.servi
 import { IPasskeyAuth } from "./plugins/passkey/passkey.interface.js";
 import { IConfigService } from "./shared/config/config.service.interface.js";
 import { IDataBaseService } from "./shared/database/database.service.interface.js";
-import { IAuthConfig } from "./services/auth/auth-config.interface.js";
-import { ISocialProviderConfig } from "./services/auth/social-provider-config.interface.js";
-import { IAuthNotificationService } from "./services/auth/auth-notification.service.interface.js";
+import { IAuthConfig } from "./services/auth/config/auth-config.interface.js";
+import { ISocialProviderConfig } from "./services/auth/socialProvider/social-provider-config.interface.js";
+import { IAuthNotificationService } from "./services/auth/notification/auth-notification.service.interface.js";
 import { IBetterAuthBootStrapper } from "./bootstrap/better-auth-bootstrapper.interface.js";
 import { I18nBootStrapper } from "./bootstrap/i18n.bootstrapper.js";
 import { DatabaseSeedingBootStrapper } from "./bootstrap/database-seeding.bootstrapper.js";
@@ -26,8 +26,8 @@ import { ValidEnv } from "./bootstrap/valid-env.js";
 import { InitializeConfig } from "./bootstrap/initialize-config.js";
 import { InitializeService } from "./bootstrap/initialize-service.js";
 import { ErrorCodes } from "./shared/errors/error.codes.js";
-import { IAdminConfig } from "./services/auth/admin-config.interface.js";
-import { IRateLimitConfig } from "./services/auth/rate-limit-config.interface.js";
+import { IAdminConfig } from "./services/auth/admin/admin-config.interface.js";
+import { IRateLimitConfig } from "./services/auth/rateLimit/rate-limit-config.interface.js";
 
 export function createAuth(
   configService: IConfigService,

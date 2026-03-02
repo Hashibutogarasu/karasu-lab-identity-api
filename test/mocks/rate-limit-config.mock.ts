@@ -1,5 +1,5 @@
 import { BetterAuthOptions } from "better-auth";
-import { IRateLimitConfig } from "../../src/services/auth/rate-limit-config.interface.js";
+import { IRateLimitConfig } from "../../src/services/auth/rateLimit/rate-limit-config.interface.js";
 
 /**
  * Mock implementation of IRateLimitConfig for testing

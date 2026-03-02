@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { IAdminConfig } from "./admin-config.interface.js";
-import { AbstractPluginEnvironment } from "../../shared/plugin/abstract-plugin-environment.js";
+import { AbstractPluginEnvironment } from "../../../shared/plugin/abstract-plugin-environment.js";
 
 /**
  * Common schema for admin configuration

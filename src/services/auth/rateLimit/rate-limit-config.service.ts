@@ -1,7 +1,7 @@
 import { Environment } from "@hashibutogarasu/common";
 import { BetterAuthOptions } from "better-auth";
 import { IRateLimitConfig } from "./rate-limit-config.interface.js";
-import { AbstractPluginEnvironment } from "../../shared/plugin/abstract-plugin-environment.js";
+import { AbstractPluginEnvironment } from "../../../shared/plugin/abstract-plugin-environment.js";
 
 /**
  * Abstract base class for rate limit configuration

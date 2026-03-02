@@ -5,7 +5,8 @@ import { getPrisma } from '../../src/prisma.js';
 import { NullObjectStorageService } from '../mocks/null-object-storage.service.js';
 import { BlogService, MAX_ATTACHMENT_SIZE } from '../../src/blogs/blog.service.js';
 import { FirebaseAdminProvider } from '../../src/shared/firebase/firebase-admin.provider.js';
-import { ConfigService } from '../../src/shared/config/config.service.js';
+import { configServiceFactory } from '../../src/shared/config/config.service.js';
+import { IConfigService } from '../../src/shared/config/config.service.interface.js';
 
 /**
  * BlogService E2E tests.
@@ -35,8 +36,7 @@ describe('BlogService (E2E)', () => {
 	beforeAll(async () => {
 		storage = new NullObjectStorageService();
 
-		// auth.env.ts loads dotenv at module level, so process.env already has Firebase vars.
-		const configService = new ConfigService('test');
+		const configService: IConfigService = configServiceFactory();
 		firebaseProvider = new FirebaseAdminProvider(configService);
 		firebaseProvider.onModuleInit();
 

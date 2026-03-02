@@ -1,12 +1,13 @@
 import { NestFactory } from "@nestjs/core";
 import { Request, Response, NextFunction } from "express";
 import { AppModule } from "./app.module.js";
-import { ConfigService } from "./shared/config/config.service.js";
-import { authConfigFactory } from "./services/auth/auth-config.service.js";
+import { authConfigFactory } from "./services/auth/config/auth-config.service.js";
 import { OpenApiService } from "./shared/openapi/openapi.service.js";
 import { GlobalExceptionFilter } from "./shared/errors/global-exception.filter.js";
 import { setupI18n } from "./shared/i18n/i18n.setup.js";
 import { II18nService } from "./shared/i18n/i18n.service.interface.js";
+import { configServiceFactory } from "./shared/config/config.service.js";
+import { IConfigService } from "./shared/config/config.service.interface.js";
 
 async function bootstrap() {
   await setupI18n();
@@ -17,7 +18,8 @@ async function bootstrap() {
   app.useGlobalFilters(new GlobalExceptionFilter());
   app.setGlobalPrefix("api");
 
-  const configService = new ConfigService(process.env.NODE_ENV);
+  const configService: IConfigService = configServiceFactory();
+
   const authConfigInstance = authConfigFactory(configService);
   const allowedOrigins = authConfigInstance.getTrustedOrigins();
   const allowedHeaders = authConfigInstance.getAllowedHeaders();

@@ -1,6 +1,6 @@
-import { IMailService } from "../../shared/mail/mail.service.interface.js";
-import { IConfigService } from "../../shared/config/config.service.interface.js";
-import { getFrontendUrl } from "../../utils.js";
+import { IMailService } from "../../../shared/mail/mail.service.interface.js";
+import { IConfigService } from "../../../shared/config/config.service.interface.js";
+import { getFrontendUrl } from "../../../utils.js";
 import { IAuthNotificationService } from "./auth-notification.service.interface.js";
 
 export class AuthNotificationService implements IAuthNotificationService {

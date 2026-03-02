@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { MockConfigService } from '../../../test/mocks/config.service.mock.js';
-import { MockMailService } from '../../../test/mocks/mail.service.mock.js';
+import { MockConfigService } from '../../../../test/mocks/config.service.mock.js';
+import { MockMailService } from '../../../../test/mocks/mail.service.mock.js';
 import { AuthNotificationService, authNotificationServiceFactory } from './auth-notification.service.js';
 
 describe('AuthNotificationService', () => {
