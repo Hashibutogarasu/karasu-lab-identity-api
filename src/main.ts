@@ -1,3 +1,6 @@
+import { dotEnvService } from "./shared/config/dotenv.service.js";
+dotEnvService.init();
+
 import { NestFactory } from "@nestjs/core";
 import { Request, Response, NextFunction } from "express";
 import { AppModule } from "./app.module.js";

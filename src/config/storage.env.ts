@@ -1,7 +1,4 @@
-import dotenv from "dotenv";
 import { z } from "zod";
-
-dotenv.config();
 
 export const storageEnvSchema = z.object({
   R2_ENDPOINT: z.string(),

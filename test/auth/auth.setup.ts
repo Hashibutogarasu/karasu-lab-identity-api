@@ -1,3 +1,6 @@
+import { dotEnvService } from '../../src/shared/config/dotenv.service.js';
+dotEnvService.init();
+
 import { beforeAll, afterAll } from 'vitest';
 import { createAuth } from '../../src/auth.js';
 import { genericOAuth } from "better-auth/plugins";

@@ -10,6 +10,8 @@ import { AttachmentModule } from "./attachments/attachment.module.js";
 import { OpenApiModule } from "./shared/openapi/openapi.module.js";
 import { AuthMiddlewareModule } from "./shared/auth/auth-middleware.module.js";
 import { initAuth } from "./auth.js";
+import { IDotEnvService } from "./shared/config/dotenv.service.interface.js";
+import { DotEnvServiceProvider } from "./shared/config/dotenv.service.js";
 
 @Module({
   imports: [
@@ -28,6 +30,7 @@ import { initAuth } from "./auth.js";
   controllers: [AppController],
   providers: [
     AppService,
+    DotEnvServiceProvider,
     {
       provide: II18nService,
       useClass: I18nService,

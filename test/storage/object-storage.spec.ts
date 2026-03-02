@@ -1,30 +1,44 @@
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 
-import { ObjectStorageService } from "../../src/storage/object-storage.service.js";
+import { NullObjectStorageService } from "../mocks/null-object-storage.service.js";
+import { IObjectStorage } from "../../src/storage/object-storage.interface.js";
 
 /**
- * ObjectStorageService E2E tests
- *
- * Runs against the actual Cloudflare R2 bucket (karasu-lab-storage-test).
- * Requires R2_* environment variables to be set in packages/api/.env.
+ * ObjectStorageService tests using a mock implementation.
  */
-describe("ObjectStorageService (E2E)", () => {
-  let service: ObjectStorageService;
+describe("ObjectStorageService", () => {
+  let service: IObjectStorage;
 
-  const testKey = `e2e-test/${Date.now()}-sample.txt`;
+  const testKey = `test/${Date.now()}-sample.txt`;
   const testBody = Buffer.from("Hello, Cloudflare R2!");
   const testContentType = "text/plain";
 
   beforeAll(() => {
-    service = new ObjectStorageService();
+    service = new NullObjectStorageService();
+
+    vi.stubGlobal('fetch', async (url: string) => {
+      if (url.startsWith('https://test-stub/')) {
+        const key = url.split('https://test-stub/')[1].split('?')[0];
+        const data = await service.getObject(key);
+        if (data) {
+          return {
+            ok: true,
+            text: () => Promise.resolve(data.toString()),
+            buffer: () => Promise.resolve(data),
+          };
+        }
+        return { ok: false, status: 404 };
+      }
+      throw new Error(`Unexpected fetch call to ${url}`);
+    });
   });
 
   afterAll(async () => {
-    // Ensure the test object is cleaned up even if a test fails
+    vi.unstubAllGlobals();
     try {
       await service.deleteObject(testKey);
     } catch {
-      // Already deleted — ignore
+      // ignore
     }
   });
 
@@ -52,7 +66,7 @@ describe("ObjectStorageService (E2E)", () => {
 
   describe("listObjects", () => {
     it("returns object keys filtered by prefix", async () => {
-      const keys = await service.listObjects("e2e-test/");
+      const keys = await service.listObjects("test/");
       expect(keys).toContain(testKey);
     });
 
@@ -99,7 +113,7 @@ describe("ObjectStorageService (E2E)", () => {
     });
 
     it("excludes the deleted object from the listing", async () => {
-      const keys = await service.listObjects("e2e-test/");
+      const keys = await service.listObjects("test/");
       expect(keys).not.toContain(testKey);
     });
   });

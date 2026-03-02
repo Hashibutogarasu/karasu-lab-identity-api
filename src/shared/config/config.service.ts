@@ -2,14 +2,12 @@ import { Environment } from "@hashibutogarasu/common";
 import { authEnvSchema } from "../../config/auth.env.js";
 import { AbstractConfigService } from "./abstract-config.service.js";
 import { IConfigService } from "./config.service.interface.js";
-import dotenv from "dotenv";
 
 /**
  * Production environment config service
  */
 class ProductionConfigService extends AbstractConfigService {
 	constructor() {
-		dotenv.config();
 		const parsedConfig = authEnvSchema.parse(process.env);
 		super(Environment.PRODUCTION, parsedConfig);
 	}
@@ -20,7 +18,6 @@ class ProductionConfigService extends AbstractConfigService {
  */
 class DevelopmentConfigService extends AbstractConfigService {
 	constructor() {
-		dotenv.config();
 		const parsedConfig = authEnvSchema.parse(process.env);
 		super(Environment.DEVELOPMENT, parsedConfig);
 	}
