@@ -131,7 +131,7 @@ export function createAuth(
       },
     })
     .user.setAccount({
-      accountLinking: { allowDifferentEmails: true },
+      accountLinking: { allowDifferentEmails: false },
       updateAccountOnSignIn: true,
     })
     .session.setSession({ cookieCache: { enabled: true, maxAge: 300 } })
