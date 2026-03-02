@@ -6,7 +6,6 @@ import { FirebaseAdminProvider } from '../shared/firebase/firebase-admin.provide
 import { ConfigService } from '../shared/config/config.service.js';
 import { SessionModule } from '../shared/auth/session.module.js';
 
-// TODO: move blog content to R2 object srorage
 @Module({
 	imports: [SessionModule],
 	controllers: [BlogController],
