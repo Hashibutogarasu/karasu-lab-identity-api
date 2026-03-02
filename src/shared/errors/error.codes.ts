@@ -33,6 +33,7 @@ function createErrorMap<T extends Record<string, Record<string, readonly [string
 export const ErrorCodes = createErrorMap({
 	AUTH: {
 		UNAUTHORIZED: ['auth.unauthorized', 'UNAUTHORIZED'],
+		FORBIDDEN: ['auth.forbidden', 'FORBIDDEN'],
 		PASSWORD_NOT_SET: ['auth.password_not_set', 'BAD_REQUEST'],
 		PASSWORD_ALREADY_SET: ['auth.password_already_set', 'BAD_REQUEST'],
 	},

@@ -8,12 +8,16 @@ import {
   Put,
   Query,
   Req,
+  UseGuards,
 } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AllowAnonymous } from '@thallesp/nestjs-better-auth';
+import { UserRole } from '@hashibutogarasu/common';
 import type { Request } from 'express';
 
 import { SessionService } from '../shared/auth/session.service.js';
+import { Roles } from '../shared/auth/roles.decorator.js';
+import { RolesGuard } from '../shared/auth/roles.guard.js';
 import { ZodValidationPipe } from '../shared/pipes/zod-validation.pipe.js';
 import { BlogService } from './blog.service.js';
 import {
@@ -30,6 +34,7 @@ import { UpdateBlogDto, updateBlogSchema } from './dto/update-blog.dto.js';
 import { UserResponseDto } from './dto/user-response.dto.js';
 import { SuccessResponseDto } from './dto/success-response.dto.js';
 
+@UseGuards(RolesGuard)
 @ApiTags('Blogs')
 @Controller('blogs')
 export class BlogController {
@@ -95,7 +100,8 @@ export class BlogController {
     return this.blogService.listMyBlogs(user.id, query);
   }
 
-  /** Create a new blog post. Requires authentication. */
+  /** Create a new blog post. Requires admin role. */
+  @Roles(UserRole.ADMIN)
   @ApiOperation({ summary: 'Create a new blog post' })
   @ApiResponse({
     status: 201,
@@ -125,7 +131,8 @@ export class BlogController {
     return this.blogService.getBlog(id, session?.user.id);
   }
 
-  /** Update a blog post. Requires authentication and ownership. */
+  /** Update a blog post. Requires admin role. */
+  @Roles(UserRole.ADMIN)
   @ApiOperation({ summary: 'Update a blog post' })
   @ApiResponse({
     status: 200,
@@ -142,7 +149,8 @@ export class BlogController {
     return this.blogService.updateBlog(id, user.id, dto);
   }
 
-  /** Delete a blog post and all its attachments. Requires authentication and ownership. */
+  /** Delete a blog post and all its attachments. Requires admin role. */
+  @Roles(UserRole.ADMIN)
   @ApiOperation({ summary: 'Delete a blog post' })
   @ApiResponse({
     status: 200,
