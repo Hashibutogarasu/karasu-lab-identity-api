@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { createZodDto } from 'nestjs-zod'
 
 export const listBlogsQuerySchema = z.object({
 	page: z.coerce.number().int().min(1).default(1),
@@ -6,4 +7,4 @@ export const listBlogsQuerySchema = z.object({
 	sort: z.enum(['asc', 'desc']).default('desc'),
 });
 
-export type ListBlogsQueryDto = z.infer<typeof listBlogsQuerySchema>;
+export class ListBlogsQueryDto extends createZodDto(listBlogsQuerySchema) { };

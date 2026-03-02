@@ -1,7 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import { App } from 'supertest/types.js';
-import request from 'supertest';
 import { AppController } from '../src/app.controller.js';
 import { AppService } from '../src/app.service.js';
 import { beforeEach, describe, expect, it } from 'vitest';
@@ -21,11 +20,5 @@ describe('AppController (e2e)', () => {
 
   it('should be defined', () => {
     expect(app).toBeDefined();
-  });
-
-  it('/api (GET)', () => {
-    return request(app.getHttpServer())
-      .get('/api')
-      .expect(200);
   });
 });

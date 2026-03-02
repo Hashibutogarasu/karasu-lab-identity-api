@@ -52,6 +52,7 @@
     "i18next": "^25.8.13",
     "jest-mock-extended": "^4.0.0",
     "kysely": "^0.28.11",
+    "nestjs-zod": "^5.1.1",
     "pg": "^8.18.0",
     "prisma": "^7.4.1",
     "reflect-metadata": "^0.2.2",

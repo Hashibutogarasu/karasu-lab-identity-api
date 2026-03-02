@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { createZodDto } from 'nestjs-zod'
 
 import { statusSchema } from './status.schema.js';
 
@@ -8,4 +9,4 @@ export const createBlogSchema = z.object({
   locked: z.boolean().optional(),
 });
 
-export type CreateBlogDto = z.infer<typeof createBlogSchema>;
+export class CreateBlogDto extends createZodDto(createBlogSchema) { }

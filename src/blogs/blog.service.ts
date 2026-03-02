@@ -12,6 +12,8 @@ import type { ListBlogsQueryDto } from './dto/list-blogs-query.dto.js';
 import type { Status } from './dto/status.schema.js';
 import type { UpdateAttachmentDto } from './dto/update-attachment.dto.js';
 import type { UpdateBlogDto } from './dto/update-blog.dto.js';
+import { PrismaClient } from '@prisma/client';
+import getPrisma from '../prisma.js';
 
 /** Maximum allowed attachment size: 8 MB (fits a 4K JPEG/PNG/WebP image). */
 export const MAX_ATTACHMENT_SIZE = 8 * 1024 * 1024;
@@ -59,6 +61,16 @@ export class BlogService {
 		@Inject(IObjectStorageService) private readonly storage: IObjectStorage,
 		private readonly firebase: FirebaseAdminProvider
 	) {}
+
+	private readonly prisma: PrismaClient = getPrisma();
+
+	async getAuthors(ids: string[]) {
+		const users = await this.prisma.user.findMany({
+			where: { id: { in: ids } },
+			select: { id: true, name: true, image: true },
+		});
+		return users;
+	}
 
 	private get blogsCol() {
 		return this.firebase.db.collection('blogs');

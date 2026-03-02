@@ -3,7 +3,7 @@ import { AllowAnonymous } from "@thallesp/nestjs-better-auth";
 import { AppService } from "./app.service.js";
 
 @AllowAnonymous()
-@Controller('api')
+@Controller()
 export class AppController {
   constructor(private readonly appService: AppService) { }
 

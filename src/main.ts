@@ -15,6 +15,7 @@ async function bootstrap() {
   });
 
   app.useGlobalFilters(new GlobalExceptionFilter());
+  app.setGlobalPrefix("api");
 
   const configService = new ConfigService(process.env.NODE_ENV);
   const authConfigInstance = authConfigFactory(configService);
