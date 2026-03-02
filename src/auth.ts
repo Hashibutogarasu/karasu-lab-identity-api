@@ -9,7 +9,7 @@ import { oauthApplicationPlugin } from "./plugins/oauth/oauth-application-plugin
 import { passkeyPlugin } from "./plugins/passkey/passkey-plugin.js";
 import { openAPIPlugin } from "./plugins/openapi/openapi-plugin.js";
 import { discoveryPlugin } from "./plugins/discovery/discovery-plugin.js";
-import { DatabaseSeedingService } from "./shared/database/database-seeding.service.js";
+import { databaseSeedingFactory } from "./shared/database/database-seeding.service.js";
 import { IPasskeyAuth } from "./plugins/passkey/passkey.interface.js";
 import { IConfigService } from "./shared/config/config.service.interface.js";
 import { IDataBaseService } from "./shared/database/database.service.interface.js";
@@ -27,6 +27,8 @@ import { InitializeConfig } from "./bootstrap/initialize-config.js";
 import { InitializeService } from "./bootstrap/initialize-service.js";
 import { ErrorCodes } from "./shared/errors/error.codes.js";
 
+import { IAdminConfig } from "./services/auth/admin-config.interface.js";
+
 export function createAuth(
   configService: IConfigService,
   dbService: IDataBaseService,
@@ -34,6 +36,7 @@ export function createAuth(
   passkeyAuth: IPasskeyAuth,
   authConfig: IAuthConfig,
   socialProviderConfig: ISocialProviderConfig,
+  adminConfig: IAdminConfig,
   overrides: Partial<BetterAuthOptions> = {}
 ): BetterAuthType {
   const env = configService.getAll();
@@ -63,7 +66,9 @@ export function createAuth(
     passkeyPlugin(passkeyAuth),
     twoFactor(),
     organization(),
-    admin(),
+    admin({
+      adminUserIds: adminConfig.getUserIds()
+    }),
     apiKey({ enableSessionForAPIKeys: true }),
     deviceAuthorization(),
     bearer(),
@@ -166,13 +171,9 @@ export async function initAuth(): Promise<BetterAuthType> {
     await bootstrapper.bootstrap();
   }
 
-  if (
-    context.authEnv &&
-    EnvironmentUtils.isDevelopment(context.authEnv.environment) &&
-    context.dbService
-  ) {
+  if (context.authEnv && context.dbService) {
     await new DatabaseSeedingBootStrapper(
-      new DatabaseSeedingService(context.dbService.prisma)
+      databaseSeedingFactory(context.dbService.prisma)
     ).bootstrap();
   }
 

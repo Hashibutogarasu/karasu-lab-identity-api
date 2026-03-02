@@ -5,6 +5,7 @@ import { authConfig } from "../config/auth.env.js";
 import { ConfigService } from "../shared/config/config.service.js";
 import { authConfigFactory } from "../services/auth/auth-config.service.js";
 import { socialProviderConfigFactory } from "../services/auth/social-provider-config.service.js";
+import { adminConfigFactory } from "../services/auth/admin-config.service.js";
 
 export class InitializeConfig implements IBetterAuthBootStrapper {
   constructor(private context: AuthBootstrapContext) {}
@@ -15,5 +16,6 @@ export class InitializeConfig implements IBetterAuthBootStrapper {
     this.context.configService = new ConfigService(authConfig.NODE_ENV);
     this.context.authConfigInstance = authConfigFactory(this.context.configService);
     this.context.socialProviderConfigInstance = socialProviderConfigFactory(this.context.configService);
+    this.context.adminConfigInstance = adminConfigFactory();
   }
 }

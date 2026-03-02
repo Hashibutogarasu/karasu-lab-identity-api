@@ -8,11 +8,15 @@ import { passkeyAuthFactory } from '../../src/plugins/passkey/passkey.service.js
 import { authConfigFactory } from '../../src/services/auth/auth-config.service.js';
 import { socialProviderConfigFactory } from '../../src/services/auth/social-provider-config.service.js';
 
+import { DatabaseSeedingConstants } from '../../src/shared/database/seeding.service.interface.js';
+import { MockAdminConfig } from '../mocks/admin-config.mock.js';
+import { MockDatabaseSeedingService } from '../mocks/database-seeding.service.mock.js';
+
 export let testDbService: MemoryDatabaseService;
 export let testNotificationService: MockAuthNotificationService;
 export let testAuth: ReturnType<typeof createAuth>;
 
-beforeAll(() => {
+beforeAll(async () => {
   const configService = new MockConfigService({
     BETTER_AUTH_URL: 'http://localhost:3000/api/auth',
     BETTER_AUTH_SECRET: 'super-secret-test-key',
@@ -24,8 +28,9 @@ beforeAll(() => {
   const passkeyAuth = passkeyAuthFactory(configService);
   const authConfig = authConfigFactory(configService);
   const socialProviderConfig = socialProviderConfigFactory(configService);
+  const adminConfig = new MockAdminConfig([DatabaseSeedingConstants.DUMMY_USER_ID]);
 
-  testAuth = createAuth(configService, testDbService, testNotificationService, passkeyAuth, authConfig, socialProviderConfig, {
+  testAuth = createAuth(configService, testDbService, testNotificationService, passkeyAuth, authConfig, socialProviderConfig, adminConfig, {
     rateLimit: { enabled: false },
     plugins: [
       genericOAuth({
@@ -42,6 +47,9 @@ beforeAll(() => {
       })
     ]
   });
+
+  const mockSeeding = new MockDatabaseSeedingService(testAuth);
+  await mockSeeding.seed();
 });
 
 afterAll(async () => {
