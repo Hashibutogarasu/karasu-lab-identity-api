@@ -17,6 +17,8 @@
     "test:cov": "vitest run --coverage",
     "test:debug": "vitest --inspect-brk",
     "test:e2e": "vitest run --config ./vitest.config.ts",
+    "emulator:start": "firebase emulators:start --only firestore",
+    "emulator:exec": "firebase emulators:exec --only firestore \"pnpm run test:e2e\"",
     "lint": "eslint src test",
     "lint:fix": "eslint src test --fix",
     "format": "prettier --write --ignore-path .gitignore './**/*.{js,ts,json}'",

@@ -4,25 +4,23 @@ import { ErrorDefinition } from '../../src/shared/errors/error.codes.js';
 import { getPrisma } from '../../src/prisma.js';
 import { NullObjectStorageService } from '../mocks/null-object-storage.service.js';
 import { BlogService, MAX_ATTACHMENT_SIZE } from '../../src/blogs/blog.service.js';
-import { FirebaseAdminProvider } from '../../src/shared/firebase/firebase-admin.provider.js';
-import { configServiceFactory } from '../../src/shared/config/config.service.js';
-import { IConfigService } from '../../src/shared/config/config.service.interface.js';
+import { IFirebaseAdminProvider } from '../../src/shared/firebase/firebase-admin.provider.interface.js';
+import { MockFirebaseAdminProvider } from '../mocks/firebase-admin.provider.mock.js';
 
 /**
  * BlogService E2E tests.
  *
  * Runs against the real PostgreSQL database for users,
- * and uses the real Firestore (sandbox-5879e) for Blog/Attachment metadata.
+ * and uses the real Firestore for Blog/Attachment metadata.
  * Object storage calls are handled by NullObjectStorageService (no-op stub).
  * All test data is cleaned up in afterAll.
  */
 describe('BlogService (E2E)', () => {
 	let service: BlogService;
 	let storage: NullObjectStorageService;
-	let firebaseProvider: FirebaseAdminProvider;
+	let firebaseProvider: IFirebaseAdminProvider;
 	const prisma = getPrisma();
 
-	// Unique suffix keeps parallel runs from colliding.
 	const suffix = Date.now();
 	const ownerUserId = `e2e-blog-owner-${suffix}`;
 	const otherUserId = `e2e-blog-other-${suffix}`;
@@ -36,13 +34,10 @@ describe('BlogService (E2E)', () => {
 	beforeAll(async () => {
 		storage = new NullObjectStorageService();
 
-		const configService: IConfigService = configServiceFactory();
-		firebaseProvider = new FirebaseAdminProvider(configService);
-		firebaseProvider.onModuleInit();
+		firebaseProvider = new MockFirebaseAdminProvider();
+		await firebaseProvider.onModuleInit();
 
 		service = new BlogService(storage, firebaseProvider);
-
-		// Create two test users directly so FK constraints are satisfied.
 		await prisma.user.createMany({
 			data: [
 				{
@@ -66,19 +61,16 @@ describe('BlogService (E2E)', () => {
 	});
 
 	afterAll(async () => {
-		// Delete all Firestore blog/attachment documents created during this test run.
-		const db = firebaseProvider.db;
-		const [blogsSnap, attachSnap] = await Promise.all([
-			db.collection('blogs').where('authorId', '==', ownerUserId).get(),
-			db.collection('attachments').where('authorId', '==', ownerUserId).get(),
-		]);
+		// Clear Firestore emulator data for this project
+		try {
+			await fetch(
+				`http://127.0.0.1:8080/emulator/v1/projects/${IFirebaseAdminProvider.DUMMY_PROJECT_ID}/databases/(default)/documents`,
+				{ method: 'DELETE' }
+			);
+		} catch {
+			// ignore
+		}
 
-		const batch = db.batch();
-		blogsSnap.docs.forEach((doc) => batch.delete(doc.ref));
-		attachSnap.docs.forEach((doc) => batch.delete(doc.ref));
-		await batch.commit();
-
-		// Clean up PostgreSQL test data.
 		await prisma.user.deleteMany({
 			where: { id: { in: [ownerUserId, otherUserId] } },
 		});
@@ -96,7 +88,7 @@ describe('BlogService (E2E)', () => {
         status: 'published',
       });
 
-      const blogs = await service.listBlogs(); // no userId → anonymous
+      const blogs = await service.listBlogs();
       const ids = blogs.data.map((b) => b.id);
       expect(ids).toContain(published.id);
       expect(ids).not.toContain(draft.id);
@@ -133,7 +125,7 @@ describe('BlogService (E2E)', () => {
         status: 'published',
       });
 
-      const blogs = await service.listBlogs(otherUserId); // different user
+      const blogs = await service.listBlogs(otherUserId);
       const ids = blogs.data.map((b) => b.id);
       expect(ids).toContain(published.id);
       expect(ids).not.toContain(draft.id);
@@ -172,12 +164,11 @@ describe('BlogService (E2E)', () => {
         status: 'published',
       });
 
-      const attachments = await service.listAttachments(); // no userId → anonymous
+      const attachments = await service.listAttachments();
       const ids = attachments.map((a) => a.id);
       expect(ids).toContain(publishedAttachment.id);
       expect(ids).not.toContain(draftAttachment.id);
 
-      // Clean up
       await service.deleteAttachment(draftAttachment.id, ownerUserId);
       await service.deleteAttachment(publishedAttachment.id, ownerUserId);
     });
@@ -203,7 +194,6 @@ describe('BlogService (E2E)', () => {
       expect(ids).toContain(publishedAttachment.id);
       expect(ids).toContain(archivedAttachment.id);
 
-      // Clean up
       await service.deleteAttachment(draftAttachment.id, ownerUserId);
       await service.deleteAttachment(publishedAttachment.id, ownerUserId);
       await service.deleteAttachment(archivedAttachment.id, ownerUserId);
@@ -219,7 +209,6 @@ describe('BlogService (E2E)', () => {
       });
       expect(attachment.status).toBe('published');
 
-      // Clean up
       await service.deleteAttachment(attachment.id, ownerUserId);
     });
 
@@ -236,7 +225,6 @@ describe('BlogService (E2E)', () => {
       });
       expect(updated.status).toBe('published');
 
-      // Clean up
       await service.deleteAttachment(attachment.id, ownerUserId);
     });
 
@@ -453,7 +441,6 @@ describe('BlogService (E2E)', () => {
       await expect(
         service.updateAttachment(attachment.id, otherUserId, smallFile, {}),
       ).rejects.toThrow(ErrorDefinition);
-      // Clean up
       await service.deleteAttachment(attachment.id, ownerUserId);
     });
   });
@@ -489,7 +476,6 @@ describe('BlogService (E2E)', () => {
       expect(attachment.size).toBe(smallFile.size);
       expect(attachment.key).toContain(blog.id);
 
-      // Clean up
       await service.deleteAttachment(attachment.id, ownerUserId);
     });
 
@@ -509,7 +495,6 @@ describe('BlogService (E2E)', () => {
       expect(result.url).toMatch(/^https?:\/\//);
       expect(result.metadata.id).toBe(attachment.id);
 
-      // Clean up
       await service.deleteAttachment(attachment.id, ownerUserId);
     });
 
@@ -529,7 +514,6 @@ describe('BlogService (E2E)', () => {
       expect(updated.contentType).toBe('image/jpeg');
       expect(updated.size).toBe(12);
 
-      // Clean up
       await service.deleteAttachment(attachment.id, ownerUserId);
     });
   });
@@ -622,7 +606,6 @@ describe('BlogService (E2E)', () => {
         service.updateAttachment(attachment.id, ownerUserId, oversizedFile, {}),
       ).rejects.toThrow(ErrorDefinition);
 
-      // Clean up
       await service.deleteAttachment(attachment.id, ownerUserId);
     });
   });

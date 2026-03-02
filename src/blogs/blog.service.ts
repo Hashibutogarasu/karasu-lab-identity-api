@@ -1,8 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import cuid from 'cuid';
 import { FieldValue, DocumentSnapshot } from 'firebase-admin/firestore';
-
-import { FirebaseAdminProvider } from '../shared/firebase/firebase-admin.provider.js';
+import { IFirebaseAdminProvider } from '../shared/firebase/firebase-admin.provider.interface.js';
 import { ErrorCodes } from '../shared/errors/error.codes.js';
 import { IObjectStorageService } from '../storage/object-storage.interface.js';
 import type { IObjectStorage } from '../storage/object-storage.interface.js';
@@ -59,8 +58,9 @@ export interface BlogData {
 export class BlogService {
 	constructor(
 		@Inject(IObjectStorageService) private readonly storage: IObjectStorage,
-		private readonly firebase: FirebaseAdminProvider
+		private readonly firebase: IFirebaseAdminProvider
 	) {}
+
 
 	private readonly prisma: PrismaClient = getPrisma();
 
