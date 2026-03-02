@@ -10,7 +10,6 @@ import { MemoryDatabaseService } from '../mocks/memory-database.service.js';
 import { passkeyAuthFactory } from '../../src/plugins/passkey/passkey.service.js';
 import { authConfigFactory } from '../../src/services/auth/config/auth-config.service.js';
 import { socialProviderConfigFactory } from '../../src/services/auth/socialProvider/social-provider-config.service.js';
-
 import { DatabaseSeedingConstants } from '../../src/shared/database/seeding.service.interface.js';
 import { MockAdminConfig } from '../mocks/admin-config.mock.js';
 import { MockRateLimitConfig } from '../mocks/rate-limit-config.mock.js';
