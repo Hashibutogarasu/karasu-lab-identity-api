@@ -3,6 +3,7 @@ import { Global, Module } from "@nestjs/common";
 import { IObjectStorageService } from "./object-storage.interface.js";
 import { ObjectStorageService } from "./object-storage.service.js";
 
+
 /**
  * Cloudflare R2 object storage module.
  * Decorated with @Global() so it is available throughout the application

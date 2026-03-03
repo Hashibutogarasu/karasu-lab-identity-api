@@ -1,3 +1,7 @@
+import { dotEnvService } from "../shared/config/dotenv.service.js";
+
+dotEnvService.init();
+
 import { z } from "zod";
 
 export const storageEnvSchema = z.object({
