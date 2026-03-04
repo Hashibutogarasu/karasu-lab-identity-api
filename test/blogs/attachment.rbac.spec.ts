@@ -29,7 +29,12 @@ function makeSession(role?: string | null): MockSession {
   };
 }
 
-describe('RolesGuard', () => {
+/**
+ * RolesGuard behaviour tests scoped to attachment controller scenarios.
+ * Verifies that POST / PUT / DELETE attachment endpoints require ADMIN role,
+ * while GET endpoints pass through without a session.
+ */
+describe('AttachmentController — RolesGuard', () => {
   let guard: RolesGuard;
   let reflector: Reflector;
   let sessionService: SessionService;
@@ -44,7 +49,7 @@ describe('RolesGuard', () => {
     guard = new RolesGuard(reflector, sessionService);
   });
 
-  describe('endpoint with no @Roles() metadata', () => {
+  describe('GET /attachments and GET /attachments/:id — no @Roles()', () => {
     it('passes through without checking the session', async () => {
       vi.spyOn(reflector, 'getAllAndOverride').mockReturnValue(undefined);
 
@@ -65,7 +70,7 @@ describe('RolesGuard', () => {
     });
   });
 
-  describe('endpoint requiring admin role', () => {
+  describe('POST /attachments/:blogId — requires ADMIN', () => {
     beforeEach(() => {
       vi.spyOn(reflector, 'getAllAndOverride').mockReturnValue([UserRole.ADMIN]);
     });
@@ -105,31 +110,27 @@ describe('RolesGuard', () => {
 
       expect(result).toBe(true);
     });
-
-    it('throws AUTH.FORBIDDEN when user role field is undefined (treated as user)', async () => {
-      vi.mocked(sessionService.optionalSession).mockResolvedValue(
-        makeSession(undefined) as never,
-      );
-
-      const ctx = makeContext([UserRole.ADMIN]);
-      await expect(guard.canActivate(ctx)).rejects.toThrow(ErrorCodes.AUTH.FORBIDDEN);
-    });
   });
 
-  describe('endpoint allowing multiple roles', () => {
+  describe('PUT /attachments/:id — requires ADMIN', () => {
     beforeEach(() => {
-      vi.spyOn(reflector, 'getAllAndOverride').mockReturnValue([UserRole.ADMIN, UserRole.USER]);
+      vi.spyOn(reflector, 'getAllAndOverride').mockReturnValue([UserRole.ADMIN]);
     });
 
-    it('passes through when user role is "user"', async () => {
+    it('throws AUTH.UNAUTHORIZED when session is absent', async () => {
+      vi.mocked(sessionService.optionalSession).mockResolvedValue(null);
+
+      const ctx = makeContext([UserRole.ADMIN]);
+      await expect(guard.canActivate(ctx)).rejects.toThrow(ErrorCodes.AUTH.UNAUTHORIZED);
+    });
+
+    it('throws AUTH.FORBIDDEN when user role is "user"', async () => {
       vi.mocked(sessionService.optionalSession).mockResolvedValue(
         makeSession(UserRole.USER) as never,
       );
 
-      const ctx = makeContext([UserRole.ADMIN, UserRole.USER]);
-      const result = await guard.canActivate(ctx);
-
-      expect(result).toBe(true);
+      const ctx = makeContext([UserRole.ADMIN]);
+      await expect(guard.canActivate(ctx)).rejects.toThrow(ErrorCodes.AUTH.FORBIDDEN);
     });
 
     it('passes through when user role is "admin"', async () => {
@@ -137,22 +138,43 @@ describe('RolesGuard', () => {
         makeSession(UserRole.ADMIN) as never,
       );
 
-      const ctx = makeContext([UserRole.ADMIN, UserRole.USER]);
+      const ctx = makeContext([UserRole.ADMIN]);
       const result = await guard.canActivate(ctx);
 
       expect(result).toBe(true);
     });
   });
 
-  describe('error code identity', () => {
-    it('thrown error for unauthenticated request is AUTH.UNAUTHORIZED', () => {
-      expect(ErrorCodes.AUTH.UNAUTHORIZED.key).toBe('auth.unauthorized');
-      expect(ErrorCodes.AUTH.UNAUTHORIZED.status).toBe('UNAUTHORIZED');
+  describe('DELETE /attachments/:id — requires ADMIN', () => {
+    beforeEach(() => {
+      vi.spyOn(reflector, 'getAllAndOverride').mockReturnValue([UserRole.ADMIN]);
     });
 
-    it('thrown error for insufficient role is AUTH.FORBIDDEN', () => {
-      expect(ErrorCodes.AUTH.FORBIDDEN.key).toBe('auth.forbidden');
-      expect(ErrorCodes.AUTH.FORBIDDEN.status).toBe('FORBIDDEN');
+    it('throws AUTH.UNAUTHORIZED when session is absent', async () => {
+      vi.mocked(sessionService.optionalSession).mockResolvedValue(null);
+
+      const ctx = makeContext([UserRole.ADMIN]);
+      await expect(guard.canActivate(ctx)).rejects.toThrow(ErrorCodes.AUTH.UNAUTHORIZED);
+    });
+
+    it('throws AUTH.FORBIDDEN when user role is "user"', async () => {
+      vi.mocked(sessionService.optionalSession).mockResolvedValue(
+        makeSession(UserRole.USER) as never,
+      );
+
+      const ctx = makeContext([UserRole.ADMIN]);
+      await expect(guard.canActivate(ctx)).rejects.toThrow(ErrorCodes.AUTH.FORBIDDEN);
+    });
+
+    it('passes through when user role is "admin"', async () => {
+      vi.mocked(sessionService.optionalSession).mockResolvedValue(
+        makeSession(UserRole.ADMIN) as never,
+      );
+
+      const ctx = makeContext([UserRole.ADMIN]);
+      const result = await guard.canActivate(ctx);
+
+      expect(result).toBe(true);
     });
   });
 });

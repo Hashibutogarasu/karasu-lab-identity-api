@@ -8,13 +8,17 @@ import {
   Put,
   Req,
   UploadedFile,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AllowAnonymous } from '@thallesp/nestjs-better-auth';
+import { UserRole } from '@hashibutogarasu/common';
 import type { Request } from 'express';
 
+import { Roles } from '../shared/auth/roles.decorator.js';
+import { RolesGuard } from '../shared/auth/roles.guard.js';
 import { SessionService } from '../shared/auth/session.service.js';
 import { ZodValidationPipe } from '../shared/pipes/zod-validation.pipe.js';
 import { BlogService, MAX_ATTACHMENT_SIZE } from '../blogs/blog.service.js';
@@ -30,6 +34,7 @@ import {
 } from '../blogs/dto/update-attachment.dto.js';
 import { SuccessResponseDto } from '../blogs/dto/success-response.dto.js';
 
+@UseGuards(RolesGuard)
 @ApiTags('Attachments')
 @Controller('attachments')
 export class AttachmentController {
@@ -58,9 +63,10 @@ export class AttachmentController {
 
   /**
    * Upload an attachment to a blog post.
-   * `:blogId` is the blog ID. Requires authentication. Max file size: 8 MB.
+   * `:blogId` is the blog ID. Requires ADMIN role. Max file size: 8 MB.
    * Accepts an optional `status` form field (archived | draft | published).
    */
+  @Roles(UserRole.ADMIN)
   @ApiOperation({ summary: 'Upload an attachment' })
   @ApiResponse({
     status: 201,
@@ -106,8 +112,9 @@ export class AttachmentController {
 
   /**
    * Replace an attachment's file and optionally update its status.
-   * `:id` is the attachment ID. Requires authentication and ownership.
+   * `:id` is the attachment ID. Requires ADMIN role.
    */
+  @Roles(UserRole.ADMIN)
   @ApiOperation({ summary: 'Update an attachment' })
   @ApiResponse({
     status: 200,
@@ -131,8 +138,9 @@ export class AttachmentController {
 
   /**
    * Delete an attachment.
-   * `:id` is the attachment ID. Requires authentication and ownership.
+   * `:id` is the attachment ID. Requires ADMIN role.
    */
+  @Roles(UserRole.ADMIN)
   @ApiOperation({ summary: 'Delete an attachment' })
   @ApiResponse({
     status: 200,
