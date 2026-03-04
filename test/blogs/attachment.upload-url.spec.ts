@@ -6,11 +6,12 @@ import { MockFirebaseAdminProvider } from '../mocks/firebase-admin.provider.mock
 import { ErrorDefinition } from '../../src/shared/errors/error.codes.js';
 
 /**
- * Unit tests for BlogService.issueAttachmentUploadUrl and
- * BlogService.syncAttachmentFromStorage.
+ * Service tests for the two-step direct-upload flow:
+ *  1. issueAttachmentUploadUrl  — issues a presigned PUT URL, no Firestore write
+ *  2. syncAttachmentFromStorage — verifies the object in R2, then writes Firestore
  *
- * Uses NullObjectStorageService (in-memory) and MockFirebaseAdminProvider
- * (Firestore emulator) so no real cloud resources are required.
+ * Object storage is handled by NullObjectStorageService (in-memory stub).
+ * Firestore operations target the local Firestore emulator via MockFirebaseAdminProvider.
  */
 describe('BlogService — presigned upload URL and sync', () => {
   let service: BlogService;
@@ -33,7 +34,7 @@ describe('BlogService — presigned upload URL and sync', () => {
         { method: 'DELETE' },
       );
     } catch {
-      // ignore — emulator may not be available in all environments
+      // Firestore emulator may not be available in all environments.
     }
   });
 
@@ -54,6 +55,23 @@ describe('BlogService — presigned upload URL and sync', () => {
       expect(typeof result.attachmentId).toBe('string');
       expect(result.key).toBe(`blogs/${blog.id}/attachments/${result.attachmentId}`);
       expect(result.expiresIn).toBe(UPLOAD_PRESIGNED_URL_EXPIRES_IN);
+    });
+
+    it('the upload URL is usable: uploading through it makes the object visible in storage', async () => {
+      const blog = await service.createBlog(authorId, {
+        content: 'Upload flow blog',
+        status: 'published',
+      });
+
+      const { uploadUrl, key } = await service.issueAttachmentUploadUrl(blog.id, authorId, {
+        contentType: 'image/png',
+      });
+
+      await storage.simulateUploadViaPresignedUrl(uploadUrl, Buffer.from('fake png data'));
+
+      const meta = await storage.getObjectMetadata(key);
+      expect(meta).not.toBeNull();
+      expect(meta?.contentType).toBe('image/png');
     });
 
     it('throws BLOG.NOT_FOUND when the blog does not exist', async () => {
@@ -77,7 +95,7 @@ describe('BlogService — presigned upload URL and sync', () => {
       ).rejects.toBeInstanceOf(ErrorDefinition);
     });
 
-    it('does not create a Firestore attachment document', async () => {
+    it('does not create a Firestore attachment document before the file is uploaded', async () => {
       const blog = await service.createBlog(authorId, {
         content: 'No doc blog',
         status: 'published',
@@ -94,17 +112,19 @@ describe('BlogService — presigned upload URL and sync', () => {
   });
 
   describe('syncAttachmentFromStorage', () => {
-    it('creates a Firestore attachment document for an object that exists in storage', async () => {
+    it('syncs to Firestore after uploading via the presigned URL', async () => {
       const blog = await service.createBlog(authorId, {
         content: 'Sync blog',
         status: 'published',
       });
 
-      const { attachmentId, key } = await service.issueAttachmentUploadUrl(blog.id, authorId, {
-        contentType: 'image/png',
-      });
+      const { uploadUrl, attachmentId, key } = await service.issueAttachmentUploadUrl(
+        blog.id,
+        authorId,
+        { contentType: 'image/png' },
+      );
 
-      await storage.putObject(key, Buffer.from('fake image data'), 'image/png');
+      await storage.simulateUploadViaPresignedUrl(uploadUrl, Buffer.from('fake image data'));
 
       const attachment = await service.syncAttachmentFromStorage(
         attachmentId,
@@ -127,11 +147,13 @@ describe('BlogService — presigned upload URL and sync', () => {
         status: 'published',
       });
 
-      const { attachmentId, key } = await service.issueAttachmentUploadUrl(blog.id, authorId, {
-        contentType: 'image/webp',
-      });
+      const { uploadUrl, attachmentId } = await service.issueAttachmentUploadUrl(
+        blog.id,
+        authorId,
+        { contentType: 'image/webp' },
+      );
 
-      await storage.putObject(key, Buffer.from('data'), 'image/webp');
+      await storage.simulateUploadViaPresignedUrl(uploadUrl, Buffer.from('data'));
 
       const attachment = await service.syncAttachmentFromStorage(
         attachmentId,
@@ -141,6 +163,23 @@ describe('BlogService — presigned upload URL and sync', () => {
       );
 
       expect(attachment.status).toBe('published');
+    });
+
+    it('throws BLOG.ATTACHMENT_NOT_FOUND when the file was never uploaded via the presigned URL', async () => {
+      const blog = await service.createBlog(authorId, {
+        content: 'Missing upload blog',
+        status: 'published',
+      });
+
+      const { attachmentId } = await service.issueAttachmentUploadUrl(blog.id, authorId, {
+        contentType: 'image/png',
+      });
+
+      await expect(
+        service.syncAttachmentFromStorage(attachmentId, blog.id, authorId, {
+          blogId: blog.id,
+        }),
+      ).rejects.toBeInstanceOf(ErrorDefinition);
     });
 
     it('throws BLOG.NOT_FOUND when the blog does not exist', async () => {
@@ -159,23 +198,6 @@ describe('BlogService — presigned upload URL and sync', () => {
 
       await expect(
         service.syncAttachmentFromStorage('any-id', blog.id, authorId, {
-          blogId: blog.id,
-        }),
-      ).rejects.toBeInstanceOf(ErrorDefinition);
-    });
-
-    it('throws BLOG.ATTACHMENT_NOT_FOUND when no object exists in storage', async () => {
-      const blog = await service.createBlog(authorId, {
-        content: 'Missing object blog',
-        status: 'published',
-      });
-
-      const { attachmentId } = await service.issueAttachmentUploadUrl(blog.id, authorId, {
-        contentType: 'image/png',
-      });
-
-      await expect(
-        service.syncAttachmentFromStorage(attachmentId, blog.id, authorId, {
           blogId: blog.id,
         }),
       ).rejects.toBeInstanceOf(ErrorDefinition);
