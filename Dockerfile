@@ -1,4 +1,4 @@
-FROM node:20-bookworm-slim AS builder
+FROM node:22-bookworm-slim AS builder
 
 RUN corepack enable && corepack prepare pnpm@latest --activate
 RUN apt-get update && apt-get install -y openssl ca-certificates git build-essential python3 && rm -rf /var/lib/apt/lists/*
@@ -16,7 +16,7 @@ RUN DATABASE_URL="postgresql://build:dummy@localhost:5432/dummy" npx prisma gene
 RUN pnpm run build
 RUN pnpm prune --prod
 
-FROM node:20-bookworm-slim AS runner
+FROM node:22-bookworm-slim AS runner
 
 ENV NODE_ENV production
 WORKDIR /app
