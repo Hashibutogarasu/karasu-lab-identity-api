@@ -14,6 +14,7 @@
 		"attachment_not_found": "Attachment not found",
 		"forbidden": "You do not have permission to perform this action",
 		"locked": "This blog post is locked and cannot be modified",
+		"mine_requires_auth": "Authentication is required to list your own posts",
 		"attachment_too_large": "Attachment exceeds the maximum allowed size"
 	},
 	"system": {

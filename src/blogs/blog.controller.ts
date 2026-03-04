@@ -2,7 +2,6 @@ import {
   Body,
   Controller,
   Delete,
-  ForbiddenException,
   Get,
   Param,
   Post,
@@ -20,6 +19,7 @@ import { SessionService } from '../shared/auth/session.service.js';
 import { Roles } from '../shared/auth/roles.decorator.js';
 import { RolesGuard } from '../shared/auth/roles.guard.js';
 import { ZodValidationPipe } from '../shared/pipes/zod-validation.pipe.js';
+import { ErrorCodes } from '../shared/errors/error.codes.js';
 import { BlogService } from './blog.service.js';
 import {
   BlogResponseDto,
@@ -64,7 +64,7 @@ export class BlogController {
   ) {
     const session = await this.sessionService.optionalSession(req);
     if (query.mine && !session) {
-      throw new ForbiddenException('Authentication required to list own posts.');
+      throw ErrorCodes.BLOG.MINE_REQUIRES_AUTH;
     }
     return this.blogService.listBlogs(session?.user.id, query);
   }

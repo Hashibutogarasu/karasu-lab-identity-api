@@ -14,6 +14,7 @@
 		"attachment_not_found": "添付ファイルが見つかりません",
 		"forbidden": "この操作を行う権限がありません",
 		"locked": "このブログ記事はロックされており、変更できません",
+		"mine_requires_auth": "自分の記事一覧を取得するには認証が必要です",
 		"attachment_too_large": "添付ファイルが最大許容サイズを超えています"
 	},
 	"system": {
