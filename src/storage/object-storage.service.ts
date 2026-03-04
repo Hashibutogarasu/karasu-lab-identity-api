@@ -7,6 +7,7 @@ import {
   S3Client,
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import type { PutObjectCommandInput } from "@aws-sdk/client-s3";
 import { Injectable } from "@nestjs/common";
 
 import { storageConfig } from "../config/storage.env.js";
@@ -32,6 +33,46 @@ export class ObjectStorageService implements IObjectStorage {
   async getPresignedUrl(key: string, expiresIn = 3600): Promise<string> {
     const command = new GetObjectCommand({ Bucket: this.bucket, Key: key });
     return getSignedUrl(this.client, command, { expiresIn });
+  }
+
+  /**
+   * Issues a presigned URL that allows a client to PUT an object directly into
+   * the bucket without going through the application server.
+   * @param key         Object key
+   * @param contentType MIME type that the client must use when uploading
+   * @param expiresIn   Expiry duration in seconds. Defaults to 3600.
+   */
+  async getPresignedUploadUrl(
+    key: string,
+    contentType: string,
+    expiresIn = 3600,
+  ): Promise<string> {
+    const input: PutObjectCommandInput = {
+      Bucket: this.bucket,
+      Key: key,
+      ContentType: contentType,
+    };
+    const command = new PutObjectCommand(input);
+    return getSignedUrl(this.client, command, { expiresIn });
+  }
+
+  /**
+   * Returns the content type and byte size of the stored object.
+   * Returns null when the object does not exist or the HEAD request fails.
+   * @param key Object key
+   */
+  async getObjectMetadata(
+    key: string,
+  ): Promise<{ contentType: string; size: number } | null> {
+    try {
+      const res = await this.client.send(
+        new HeadObjectCommand({ Bucket: this.bucket, Key: key }),
+      );
+      if (!res.ContentType || res.ContentLength === undefined) return null;
+      return { contentType: res.ContentType, size: res.ContentLength };
+    } catch {
+      return null;
+    }
   }
 
   async putObject(
