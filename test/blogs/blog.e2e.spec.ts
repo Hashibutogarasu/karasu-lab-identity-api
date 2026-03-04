@@ -263,7 +263,6 @@ describe('BlogService (E2E)', () => {
       expect(blog.id).toBeDefined();
       expect(blog.content).toBe('Hello World');
       expect(blog.status).toBe('draft');
-      expect(blog.locked).toBe(false);
       expect(blog.authorId).toBe(ownerUserId);
       expect(blog.attachments).toEqual([]);
     });
@@ -355,7 +354,7 @@ describe('BlogService (E2E)', () => {
     it('prevents updating a locked blog', async () => {
       const blog = await service.createBlog(ownerUserId, {
         content: 'Locked post',
-        locked: true,
+        status: 'locked',
       });
       await expect(
         service.updateBlog(blog.id, ownerUserId, { content: 'Changed' }),
@@ -365,7 +364,7 @@ describe('BlogService (E2E)', () => {
     it('prevents uploading an attachment to a locked blog', async () => {
       const blog = await service.createBlog(ownerUserId, {
         content: 'Locked for attachments',
-        locked: true,
+        status: 'locked',
       });
       await expect(
         service.createAttachment(blog.id, ownerUserId, smallFile, {}),
@@ -375,7 +374,7 @@ describe('BlogService (E2E)', () => {
     it('prevents deleting a locked blog', async () => {
       const blog = await service.createBlog(ownerUserId, {
         content: 'Locked delete',
-        locked: true,
+        status: 'locked',
       });
       await expect(service.deleteBlog(blog.id, ownerUserId)).rejects.toMatchObject({
         status: 'FORBIDDEN',
@@ -387,7 +386,7 @@ describe('BlogService (E2E)', () => {
         content: 'Locked for attachment update',
       });
       const attachment = await service.createAttachment(blog.id, ownerUserId, smallFile, {});
-      await service.updateBlog(blog.id, ownerUserId, { locked: true });
+      await service.updateBlog(blog.id, ownerUserId, { status: 'locked' });
 
       await expect(
         service.updateAttachment(attachment.id, ownerUserId, smallFile, {}),
@@ -399,7 +398,7 @@ describe('BlogService (E2E)', () => {
         content: 'Locked for attachment delete',
       });
       const attachment = await service.createAttachment(blog.id, ownerUserId, smallFile, {});
-      await service.updateBlog(blog.id, ownerUserId, { locked: true });
+      await service.updateBlog(blog.id, ownerUserId, { status: 'locked' });
 
       await expect(
         service.deleteAttachment(attachment.id, ownerUserId),

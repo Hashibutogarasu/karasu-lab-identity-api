@@ -8,7 +8,6 @@ export const blogResponseSchema = z.object({
 	content: z.string(),
 	authorId: z.string(),
 	status: statusSchema,
-	locked: z.boolean(),
 	createdAt: z.string(),
 	updatedAt: z.string(),
 	attachments: z.array(attachmentResponseSchema).optional(),

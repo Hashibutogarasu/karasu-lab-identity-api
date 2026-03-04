@@ -48,7 +48,6 @@ export interface BlogData {
 	content: string;
 	authorId: string;
 	status: Status;
-	locked: boolean;
 	createdAt: Date;
 	updatedAt: Date;
 	attachments?: AttachmentData[];
@@ -96,21 +95,31 @@ export class BlogService {
 
 	/**
 	 * List blogs.
-	 * - Authenticated: own posts (all statuses) + published posts from others.
-	 * - Anonymous: published posts only.
+	 * - If mine=true & userId present: return own posts only, then apply status filter.
+	 * - Authenticated: own posts (all statuses) + published posts from others, then apply status filter.
+	 * - Anonymous: published posts only, then apply status filter.
 	 */
 	async listBlogs(
 		userId?: string,
 		query: ListBlogsQueryDto = { page: 1, limit: 10, sort: 'desc' },
 	): Promise<PaginatedResult<BlogData>> {
-		const { page, limit, sort } = query;
+		const { page, limit, sort, status, mine } = query;
 		const snapshot = await this.blogsCol.orderBy('createdAt', sort).get();
 		const allBlogs = snapshot.docs.map((d) => this.mapDoc<BlogData>(d));
 
-		const filtered = allBlogs.filter((blog) => {
-			if (userId && blog.authorId === userId) return true;
-			return blog.status === 'published';
-		});
+		let filtered: BlogData[];
+		if (mine && userId) {
+			filtered = allBlogs.filter((blog) => blog.authorId === userId);
+		} else {
+			filtered = allBlogs.filter((blog) => {
+				if (userId && blog.authorId === userId) return true;
+				return blog.status === 'published';
+			});
+		}
+
+		if (status) {
+			filtered = filtered.filter((blog) => blog.status === status);
+		}
 
 		const total = filtered.length;
 		const totalPages = Math.ceil(total / limit);
@@ -135,18 +144,24 @@ export class BlogService {
 	}
 
 	/**
-	 * List only the authenticated user's own blog posts (all statuses).
+	 * List only the authenticated user's own blog posts.
+	 * Supports optional status filter.
+	 * @deprecated Use GET /blogs?mine=true instead.
 	 */
 	async listMyBlogs(
 		userId: string,
 		query: ListBlogsQueryDto = { page: 1, limit: 10, sort: 'desc' },
 	): Promise<PaginatedResult<BlogData>> {
-		const { page, limit, sort } = query;
+		const { page, limit, sort, status } = query;
 		const snapshot = await this.blogsCol
 			.where('authorId', '==', userId)
 			.orderBy('createdAt', sort)
 			.get();
-		const allBlogs = snapshot.docs.map((d) => this.mapDoc<BlogData>(d));
+		let allBlogs = snapshot.docs.map((d) => this.mapDoc<BlogData>(d));
+
+		if (status) {
+			allBlogs = allBlogs.filter((blog) => blog.status === status);
+		}
 
 		const total = allBlogs.length;
 		const totalPages = Math.ceil(total / limit);
@@ -189,7 +204,6 @@ export class BlogService {
 		const data = {
 			authorId,
 			status: dto.status ?? 'draft',
-			locked: dto.locked ?? false,
 			createdAt: now,
 			updatedAt: now,
 		};
@@ -229,13 +243,12 @@ export class BlogService {
 
 		const blog = doc.data();
 		if (blog?.['authorId'] !== authorId) throw ErrorCodes.BLOG.FORBIDDEN;
-		if (blog?.['locked']) throw ErrorCodes.BLOG.LOCKED;
+		if (blog?.['status'] === 'locked') throw ErrorCodes.BLOG.LOCKED;
 
 		const updateData: Record<string, unknown> = {
 			updatedAt: FieldValue.serverTimestamp(),
 		};
 		if (dto.status !== undefined) updateData['status'] = dto.status;
-		if (dto.locked !== undefined) updateData['locked'] = dto.locked;
 
 		const ops: Promise<unknown>[] = [this.blogsCol.doc(id).update(updateData)];
 		if (dto.content !== undefined) {
@@ -251,7 +264,7 @@ export class BlogService {
 
 		const blog = doc.data();
 		if (blog?.['authorId'] !== authorId) throw ErrorCodes.BLOG.FORBIDDEN;
-		if (blog?.['locked']) throw ErrorCodes.BLOG.LOCKED;
+		if (blog?.['status'] === 'locked') throw ErrorCodes.BLOG.LOCKED;
 
 		const attachmentsSnapshot = await this.attachmentsCol.where('blogId', '==', id).get();
 		const attachments = attachmentsSnapshot.docs.map((d) => d.data());
@@ -275,7 +288,7 @@ export class BlogService {
 	): Promise<AttachmentData> {
 		const blogDoc = await this.blogsCol.doc(blogId).get();
 		if (!blogDoc.exists) throw ErrorCodes.BLOG.NOT_FOUND;
-		if (blogDoc.data()?.['locked']) throw ErrorCodes.BLOG.LOCKED;
+		if (blogDoc.data()?.['status'] === 'locked') throw ErrorCodes.BLOG.LOCKED;
 		if (file.size > MAX_ATTACHMENT_SIZE) throw ErrorCodes.BLOG.ATTACHMENT_TOO_LARGE;
 
 		const attachmentId = cuid();
@@ -322,7 +335,7 @@ export class BlogService {
 		if (metadata?.['authorId'] !== authorId) throw ErrorCodes.BLOG.FORBIDDEN;
 
 		const blogDoc = await this.blogsCol.doc(metadata?.['blogId'] as string).get();
-		if (blogDoc.data()?.['locked']) throw ErrorCodes.BLOG.LOCKED;
+		if (blogDoc.data()?.['status'] === 'locked') throw ErrorCodes.BLOG.LOCKED;
 
 		if (file.size > MAX_ATTACHMENT_SIZE) throw ErrorCodes.BLOG.ATTACHMENT_TOO_LARGE;
 
@@ -348,7 +361,7 @@ export class BlogService {
 		if (metadata?.['authorId'] !== authorId) throw ErrorCodes.BLOG.FORBIDDEN;
 
 		const blogDoc = await this.blogsCol.doc(metadata?.['blogId'] as string).get();
-		if (blogDoc.data()?.['locked']) throw ErrorCodes.BLOG.LOCKED;
+		if (blogDoc.data()?.['status'] === 'locked') throw ErrorCodes.BLOG.LOCKED;
 
 		await this.storage.deleteObject(metadata?.['key'] as string);
 		await this.attachmentsCol.doc(id).delete();

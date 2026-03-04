@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Delete,
+  ForbiddenException,
   Get,
   Param,
   Post,
@@ -45,6 +46,7 @@ export class BlogController {
 
   /**
    * List blog posts. Public route, but auth changes the result set:
+   * - mine=true: own posts only (all statuses). Requires authentication.
    * - Authenticated: own posts (all statuses) + published posts from others.
    * - Anonymous: published posts only.
    */
@@ -61,6 +63,9 @@ export class BlogController {
     @Query(new ZodValidationPipe(listBlogsQuerySchema)) query: ListBlogsQueryDto,
   ) {
     const session = await this.sessionService.optionalSession(req);
+    if (query.mine && !session) {
+      throw new ForbiddenException('Authentication required to list own posts.');
+    }
     return this.blogService.listBlogs(session?.user.id, query);
   }
 
@@ -84,8 +89,9 @@ export class BlogController {
   /**
    * List only the authenticated user's own blog posts (all statuses).
    * Defined before :id to avoid route shadowing.
+   * @deprecated Use GET /blogs?mine=true instead.
    */
-  @ApiOperation({ summary: 'List own blog posts' })
+  @ApiOperation({ summary: 'List own blog posts', deprecated: true })
   @ApiResponse({
     status: 200,
     description: 'Return a list of own blog posts.',
