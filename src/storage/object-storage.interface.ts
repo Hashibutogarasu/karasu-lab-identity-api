@@ -14,6 +14,28 @@ export interface IObjectStorage {
   getPresignedUrl(key: string, expiresIn?: number): Promise<string>;
 
   /**
+   * Issues a temporary presigned URL for uploading an object to the given key.
+   * The caller must supply the exact Content-Type that will be used when uploading.
+   * @param key         Object key
+   * @param contentType MIME type of the object to be uploaded
+   * @param expiresIn   Expiry duration in seconds. Defaults to 3600.
+   */
+  getPresignedUploadUrl(
+    key: string,
+    contentType: string,
+    expiresIn?: number,
+  ): Promise<string>;
+
+  /**
+   * Returns metadata (content type and byte size) for the given object.
+   * Returns null if the object does not exist or an error occurs.
+   * @param key Object key
+   */
+  getObjectMetadata(
+    key: string,
+  ): Promise<{ contentType: string; size: number } | null>;
+
+  /**
    * Writes an object to the bucket.
    * @param key         Object key
    * @param body        Data to upload
