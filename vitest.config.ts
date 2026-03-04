@@ -7,10 +7,16 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 export default defineConfig({
+  server: {
+    watch: {
+      ignored: ['**/dist/**'],
+    },
+  },
   test: {
     globals: true,
     environment: 'node',
     include: ['**/*.spec.ts', '**/*.e2e-spec.ts'],
+    watchExclude: ['**/dist/**', '**/node_modules/**'],
     setupFiles: ['./test/auth/auth.setup.ts'],
     testTimeout: 30000,
     hookTimeout: 30000,
