@@ -398,6 +398,8 @@ export class BlogService {
 		dto: CreateAttachmentUploadUrlDto,
 	): Promise<AttachmentUploadUrlResult> {
 		const blogDoc = await this.blogsCol.doc(blogId).get();
+		if (!blogDoc.exists) throw ErrorCodes.BLOG.NOT_FOUND;
+		
 		const blogData = blogDoc.data();
   		if (blogData?.authorId !== authorId) {
     		throw ErrorCodes.BLOG.FORBIDDEN;
@@ -438,7 +440,13 @@ export class BlogService {
 	): Promise<AttachmentData> {
 		const blogDoc = await this.blogsCol.doc(blogId).get();
 		if (!blogDoc.exists) throw ErrorCodes.BLOG.NOT_FOUND;
-		if (blogDoc.data()?.['status'] === 'locked') throw ErrorCodes.BLOG.LOCKED;
+		
+		const blogData = blogDoc.data();
+		if (blogData?.authorId !== authorId) {
+			throw ErrorCodes.BLOG.FORBIDDEN;
+		}
+		
+		if (blogData?.['status'] === 'locked') throw ErrorCodes.BLOG.LOCKED;
 
 		const key = `blogs/${blogId}/attachments/${attachmentId}`;
 		const objectMeta = await this.storage.getObjectMetadata(key);
