@@ -15,6 +15,7 @@ import type { CreateAttachmentUploadUrlDto } from './dto/create-attachment-uploa
 import type { SyncAttachmentDto } from './dto/sync-attachment.dto.js';
 import { PrismaClient } from '@prisma/client';
 import getPrisma from '../prisma.js';
+import { BlogStatus } from '@hashibutogarasu/common';
 
 /** Maximum allowed attachment size: 8 MB (fits a 4K JPEG/PNG/WebP image). */
 export const MAX_ATTACHMENT_SIZE = 8 * 1024 * 1024;
@@ -397,8 +398,12 @@ export class BlogService {
 		dto: CreateAttachmentUploadUrlDto,
 	): Promise<AttachmentUploadUrlResult> {
 		const blogDoc = await this.blogsCol.doc(blogId).get();
-		if (!blogDoc.exists) throw ErrorCodes.BLOG.NOT_FOUND;
-		if (blogDoc.data()?.['status'] === 'locked') throw ErrorCodes.BLOG.LOCKED;
+		const blogData = blogDoc.data();
+  		if (blogData?.authorId !== authorId) {
+    		throw ErrorCodes.BLOG.FORBIDDEN;
+  		}
+  
+  		if (blogData?.status as BlogStatus === 'locked') throw ErrorCodes.BLOG.LOCKED;
 
 		const attachmentId = cuid();
 		const key = `blogs/${blogId}/attachments/${attachmentId}`;
