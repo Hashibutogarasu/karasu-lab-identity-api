@@ -71,6 +71,70 @@ export class AttachmentController {
   }
 
   /**
+   * Issue a presigned URL for uploading an attachment directly to R2 storage.
+   * The caller must supply the MIME type of the file to be uploaded so the
+   * presigned URL can enforce it.  After the upload the caller must invoke
+   * `POST /attachments/:id/sync` to register the file in Firestore.
+   * Requires ADMIN role.
+   */
+  @Roles(UserRole.ADMIN)
+  @ApiOperation({
+    summary: 'Issue a presigned upload URL for a blog attachment',
+    description:
+      'Returns a presigned PUT URL valid for 15 minutes. ' +
+      'Upload the file using that URL, then call POST /attachments/:id/sync to register it.',
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'Presigned upload URL issued successfully.',
+    type: AttachmentUploadUrlResponseDto,
+  })
+  @Post(':blogId/upload-url')
+  async issueAttachmentUploadUrl(
+    @Req() req: Request,
+    @Param('blogId') blogId: string,
+    @Body(new ZodValidationPipe(createAttachmentUploadUrlSchema))
+    body: CreateAttachmentUploadUrlDto,
+  ) {
+    const { user } = await this.sessionService.requireSession(req);
+    return this.blogService.issueAttachmentUploadUrl(blogId, user.id, body);
+  }
+
+  /**
+   * Sync an attachment from R2 storage into Firestore after a direct upload.
+   * The server verifies that the object exists at the expected key before
+   * creating the Firestore metadata document.
+   * `:id` is the attachment ID returned by `POST /attachments/:blogId/upload-url`.
+   * Requires ADMIN role.
+   */
+  @Roles(UserRole.ADMIN)
+  @ApiOperation({
+    summary: 'Sync a directly-uploaded attachment from R2 into Firestore',
+    description:
+      'Verifies that the object exists in R2 and then creates the attachment ' +
+      'metadata document in Firestore. Use the attachment ID from the upload-url response.',
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'Attachment metadata synced to Firestore.',
+    type: AttachmentResponseDto,
+  })
+  @Post(':id/sync')
+  async syncAttachmentFromStorage(
+    @Req() req: Request,
+    @Param('id') attachmentId: string,
+    @Body(new ZodValidationPipe(syncAttachmentSchema)) body: SyncAttachmentDto,
+  ) {
+    const { user } = await this.sessionService.requireSession(req);
+    return this.blogService.syncAttachmentFromStorage(
+      attachmentId,
+      body.blogId,
+      user.id,
+      body,
+    );
+  }
+
+  /**
    * Upload an attachment to a blog post.
    * `:blogId` is the blog ID. Requires ADMIN role. Max file size: 8 MB.
    * Accepts an optional `status` form field (archived | draft | published).
@@ -160,69 +224,5 @@ export class AttachmentController {
   async deleteAttachment(@Req() req: Request, @Param('id') id: string) {
     const { user } = await this.sessionService.requireSession(req);
     return this.blogService.deleteAttachment(id, user.id);
-  }
-
-  /**
-   * Issue a presigned URL for uploading an attachment directly to R2 storage.
-   * The caller must supply the MIME type of the file to be uploaded so the
-   * presigned URL can enforce it.  After the upload the caller must invoke
-   * `POST /attachments/:id/sync` to register the file in Firestore.
-   * Requires ADMIN role.
-   */
-  @Roles(UserRole.ADMIN)
-  @ApiOperation({
-    summary: 'Issue a presigned upload URL for a blog attachment',
-    description:
-      'Returns a presigned PUT URL valid for 15 minutes. ' +
-      'Upload the file using that URL, then call POST /attachments/:id/sync to register it.',
-  })
-  @ApiResponse({
-    status: 201,
-    description: 'Presigned upload URL issued successfully.',
-    type: AttachmentUploadUrlResponseDto,
-  })
-  @Post(':blogId/upload-url')
-  async issueAttachmentUploadUrl(
-    @Req() req: Request,
-    @Param('blogId') blogId: string,
-    @Body(new ZodValidationPipe(createAttachmentUploadUrlSchema))
-    body: CreateAttachmentUploadUrlDto,
-  ) {
-    const { user } = await this.sessionService.requireSession(req);
-    return this.blogService.issueAttachmentUploadUrl(blogId, user.id, body);
-  }
-
-  /**
-   * Sync an attachment from R2 storage into Firestore after a direct upload.
-   * The server verifies that the object exists at the expected key before
-   * creating the Firestore metadata document.
-   * `:id` is the attachment ID returned by `POST /attachments/:blogId/upload-url`.
-   * Requires ADMIN role.
-   */
-  @Roles(UserRole.ADMIN)
-  @ApiOperation({
-    summary: 'Sync a directly-uploaded attachment from R2 into Firestore',
-    description:
-      'Verifies that the object exists in R2 and then creates the attachment ' +
-      'metadata document in Firestore. Use the attachment ID from the upload-url response.',
-  })
-  @ApiResponse({
-    status: 201,
-    description: 'Attachment metadata synced to Firestore.',
-    type: AttachmentResponseDto,
-  })
-  @Post(':id/sync')
-  async syncAttachmentFromStorage(
-    @Req() req: Request,
-    @Param('id') attachmentId: string,
-    @Body(new ZodValidationPipe(syncAttachmentSchema)) body: SyncAttachmentDto,
-  ) {
-    const { user } = await this.sessionService.requireSession(req);
-    return this.blogService.syncAttachmentFromStorage(
-      attachmentId,
-      body.blogId,
-      user.id,
-      body,
-    );
   }
 }
