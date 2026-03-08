@@ -21,8 +21,9 @@ import { Roles } from '../shared/auth/roles.decorator.js';
 import { RolesGuard } from '../shared/auth/roles.guard.js';
 import { SessionService } from '../shared/auth/session.service.js';
 import { ZodValidationPipe } from '../shared/pipes/zod-validation.pipe.js';
-import { BlogService, MAX_ATTACHMENT_SIZE } from '../blogs/blog.service.js';
-import type { AttachmentFile } from '../blogs/blog.service.js';
+import { MAX_ATTACHMENT_SIZE } from '../attachments/attachment.service.js';
+import type { AttachmentFile } from '../attachments/attachment.service.js';
+import { AttachmentService } from './attachment.service.js';
 import { AttachmentResponseDto } from '../blogs/dto/attachment-response.dto.js';
 import {
   CreateAttachmentDto,
@@ -48,7 +49,7 @@ import {
 @Controller('attachments')
 export class AttachmentController {
   constructor(
-    private readonly blogService: BlogService,
+    private readonly attachmentService: AttachmentService,
     private readonly sessionService: SessionService,
   ) {}
 
@@ -67,7 +68,7 @@ export class AttachmentController {
   @Get()
   async listAttachments(@Req() req: Request) {
     const session = await this.sessionService.optionalSession(req);
-    return this.blogService.listAttachments(session?.user.id);
+    return this.attachmentService.listAttachments(session?.user.id);
   }
 
   /**
@@ -97,7 +98,7 @@ export class AttachmentController {
     body: CreateAttachmentUploadUrlDto,
   ) {
     const { user } = await this.sessionService.requireSession(req);
-    return this.blogService.issueAttachmentUploadUrl(blogId, user.id, body);
+    return this.attachmentService.issueAttachmentUploadUrl(blogId, user.id, body);
   }
 
   /**
@@ -126,7 +127,7 @@ export class AttachmentController {
     @Body(new ZodValidationPipe(syncAttachmentSchema)) body: SyncAttachmentDto,
   ) {
     const { user } = await this.sessionService.requireSession(req);
-    return this.blogService.syncAttachmentFromStorage(
+    return this.attachmentService.syncAttachmentFromStorage(
       attachmentId,
       body.blogId,
       user.id,
@@ -158,7 +159,7 @@ export class AttachmentController {
     body: CreateAttachmentDto,
   ) {
     const { user } = await this.sessionService.requireSession(req);
-    return this.blogService.createAttachment(blogId, user.id, file, body);
+    return this.attachmentService.createAttachment(blogId, user.id, file, body);
   }
 
   /**
@@ -180,7 +181,7 @@ export class AttachmentController {
   })
   @Get(':id')
   getAttachment(@Param('id') id: string) {
-    return this.blogService.getAttachment(id);
+    return this.attachmentService.getAttachment(id);
   }
 
   /**
@@ -206,7 +207,7 @@ export class AttachmentController {
     body: UpdateAttachmentDto,
   ) {
     const { user } = await this.sessionService.requireSession(req);
-    return this.blogService.updateAttachment(id, user.id, file, body);
+    return this.attachmentService.updateAttachment(id, user.id, file, body);
   }
 
   /**
@@ -223,6 +224,6 @@ export class AttachmentController {
   @Delete(':id')
   async deleteAttachment(@Req() req: Request, @Param('id') id: string) {
     const { user } = await this.sessionService.requireSession(req);
-    return this.blogService.deleteAttachment(id, user.id);
+    return this.attachmentService.deleteAttachment(id, user.id);
   }
 }

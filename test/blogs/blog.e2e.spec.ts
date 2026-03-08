@@ -2,7 +2,8 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { ErrorDefinition } from '../../src/shared/errors/error.codes.js';
 import { getPrisma } from '../../src/prisma.js';
 import { NullObjectStorageService } from '../mocks/null-object-storage.service.js';
-import { BlogService, MAX_ATTACHMENT_SIZE } from '../../src/blogs/blog.service.js';
+import { BlogService } from '../../src/blogs/blog.service.js';
+import { AttachmentService, MAX_ATTACHMENT_SIZE } from '../../src/attachments/attachment.service.js';
 import { IFirebaseAdminProvider } from '../../src/shared/firebase/firebase-admin.provider.interface.js';
 import { MockFirebaseAdminProvider } from '../mocks/firebase-admin.provider.mock.js';
 
@@ -16,6 +17,7 @@ import { MockFirebaseAdminProvider } from '../mocks/firebase-admin.provider.mock
  */
 describe('BlogService (E2E)', () => {
 	let service: BlogService;
+	let attachmentService: AttachmentService;
 	let storage: NullObjectStorageService;
 	let firebaseProvider: IFirebaseAdminProvider;
 	const prisma = getPrisma();
@@ -36,7 +38,8 @@ describe('BlogService (E2E)', () => {
 		firebaseProvider = new MockFirebaseAdminProvider();
 		await firebaseProvider.onModuleInit();
 
-		service = new BlogService(storage, firebaseProvider);
+		attachmentService = new AttachmentService(storage, firebaseProvider);
+		service = new BlogService(storage, firebaseProvider, attachmentService);
 		await prisma.user.createMany({
 			data: [
 				{
@@ -156,20 +159,20 @@ describe('BlogService (E2E)', () => {
         content: 'Attachment visibility',
         status: 'published',
       });
-      const draftAttachment = await service.createAttachment(blog.id, ownerUserId, smallFile, {
+      const draftAttachment = await attachmentService.createAttachment(blog.id, ownerUserId, smallFile, {
         status: 'draft',
       });
-      const publishedAttachment = await service.createAttachment(blog.id, ownerUserId, smallFile, {
+      const publishedAttachment = await attachmentService.createAttachment(blog.id, ownerUserId, smallFile, {
         status: 'published',
       });
 
-      const attachments = await service.listAttachments();
+      const attachments = await attachmentService.listAttachments();
       const ids = attachments.map((a) => a.id);
       expect(ids).toContain(publishedAttachment.id);
       expect(ids).not.toContain(draftAttachment.id);
 
-      await service.deleteAttachment(draftAttachment.id, ownerUserId);
-      await service.deleteAttachment(publishedAttachment.id, ownerUserId);
+      await attachmentService.deleteAttachment(draftAttachment.id, ownerUserId);
+      await attachmentService.deleteAttachment(publishedAttachment.id, ownerUserId);
     });
 
     it('authenticated owner: sees own attachments of all statuses', async () => {
@@ -177,25 +180,25 @@ describe('BlogService (E2E)', () => {
         content: 'For owner attachment list',
         status: 'published',
       });
-      const draftAttachment = await service.createAttachment(blog.id, ownerUserId, smallFile, {
+      const draftAttachment = await attachmentService.createAttachment(blog.id, ownerUserId, smallFile, {
         status: 'draft',
       });
-      const publishedAttachment = await service.createAttachment(blog.id, ownerUserId, smallFile, {
+      const publishedAttachment = await attachmentService.createAttachment(blog.id, ownerUserId, smallFile, {
         status: 'published',
       });
-      const archivedAttachment = await service.createAttachment(blog.id, ownerUserId, smallFile, {
+      const archivedAttachment = await attachmentService.createAttachment(blog.id, ownerUserId, smallFile, {
         status: 'archived',
       });
 
-      const attachments = await service.listAttachments(ownerUserId);
+      const attachments = await attachmentService.listAttachments(ownerUserId);
       const ids = attachments.map((a) => a.id);
       expect(ids).toContain(draftAttachment.id);
       expect(ids).toContain(publishedAttachment.id);
       expect(ids).toContain(archivedAttachment.id);
 
-      await service.deleteAttachment(draftAttachment.id, ownerUserId);
-      await service.deleteAttachment(publishedAttachment.id, ownerUserId);
-      await service.deleteAttachment(archivedAttachment.id, ownerUserId);
+      await attachmentService.deleteAttachment(draftAttachment.id, ownerUserId);
+      await attachmentService.deleteAttachment(publishedAttachment.id, ownerUserId);
+      await attachmentService.deleteAttachment(archivedAttachment.id, ownerUserId);
     });
 
     it('status is persisted on create', async () => {
@@ -203,12 +206,12 @@ describe('BlogService (E2E)', () => {
         content: 'Status persist check',
         status: 'published',
       });
-      const attachment = await service.createAttachment(blog.id, ownerUserId, smallFile, {
+      const attachment = await attachmentService.createAttachment(blog.id, ownerUserId, smallFile, {
         status: 'published',
       });
       expect(attachment.status).toBe('published');
 
-      await service.deleteAttachment(attachment.id, ownerUserId);
+      await attachmentService.deleteAttachment(attachment.id, ownerUserId);
     });
 
     it('status is updated on updateAttachment', async () => {
@@ -216,19 +219,19 @@ describe('BlogService (E2E)', () => {
         content: 'Status update check',
         status: 'published',
       });
-      const attachment = await service.createAttachment(blog.id, ownerUserId, smallFile, {
+      const attachment = await attachmentService.createAttachment(blog.id, ownerUserId, smallFile, {
         status: 'draft',
       });
-      const updated = await service.updateAttachment(attachment.id, ownerUserId, smallFile, {
+      const updated = await attachmentService.updateAttachment(attachment.id, ownerUserId, smallFile, {
         status: 'published',
       });
       expect(updated.status).toBe('published');
 
-      await service.deleteAttachment(attachment.id, ownerUserId);
+      await attachmentService.deleteAttachment(attachment.id, ownerUserId);
     });
 
     it('returns results in descending createdAt order', async () => {
-      const attachments = await service.listAttachments(ownerUserId);
+      const attachments = await attachmentService.listAttachments(ownerUserId);
       for (let i = 1; i < attachments.length; i++) {
         expect(attachments[i - 1].createdAt.getTime()).toBeGreaterThanOrEqual(
           attachments[i].createdAt.getTime(),
@@ -241,15 +244,15 @@ describe('BlogService (E2E)', () => {
         content: 'Attachment visibility',
         status: 'published',
       });
-      const draftAttachment = await service.createAttachment(blog.id, ownerUserId, smallFile, {
+      const draftAttachment = await attachmentService.createAttachment(blog.id, ownerUserId, smallFile, {
         status: 'draft',
       });
 
-      const attachments = await service.listAttachments(otherUserId);
+      const attachments = await attachmentService.listAttachments(otherUserId);
       const ids = attachments.map((a) => a.id);
       expect(ids).not.toContain(draftAttachment.id);
 
-      await service.deleteAttachment(draftAttachment.id, ownerUserId);
+      await attachmentService.deleteAttachment(draftAttachment.id, ownerUserId);
     });
   });
 
@@ -367,7 +370,7 @@ describe('BlogService (E2E)', () => {
         status: 'locked',
       });
       await expect(
-        service.createAttachment(blog.id, ownerUserId, smallFile, {}),
+        attachmentService.createAttachment(blog.id, ownerUserId, smallFile, {}),
       ).rejects.toMatchObject({ status: 'FORBIDDEN' });
     });
 
@@ -385,11 +388,11 @@ describe('BlogService (E2E)', () => {
       const blog = await service.createBlog(ownerUserId, {
         content: 'Locked for attachment update',
       });
-      const attachment = await service.createAttachment(blog.id, ownerUserId, smallFile, {});
+      const attachment = await attachmentService.createAttachment(blog.id, ownerUserId, smallFile, {});
       await service.updateBlog(blog.id, ownerUserId, { status: 'locked' });
 
       await expect(
-        service.updateAttachment(attachment.id, ownerUserId, smallFile, {}),
+        attachmentService.updateAttachment(attachment.id, ownerUserId, smallFile, {}),
       ).rejects.toMatchObject({ status: 'FORBIDDEN' });
     });
 
@@ -397,11 +400,11 @@ describe('BlogService (E2E)', () => {
       const blog = await service.createBlog(ownerUserId, {
         content: 'Locked for attachment delete',
       });
-      const attachment = await service.createAttachment(blog.id, ownerUserId, smallFile, {});
+      const attachment = await attachmentService.createAttachment(blog.id, ownerUserId, smallFile, {});
       await service.updateBlog(blog.id, ownerUserId, { status: 'locked' });
 
       await expect(
-        service.deleteAttachment(attachment.id, ownerUserId),
+        attachmentService.deleteAttachment(attachment.id, ownerUserId),
       ).rejects.toMatchObject({ status: 'FORBIDDEN' });
     });
   });
@@ -425,21 +428,21 @@ describe('BlogService (E2E)', () => {
 
     it('prevents a non-owner from deleting an attachment', async () => {
       const blog = await service.createBlog(ownerUserId, { content: 'With attachment' });
-      const attachment = await service.createAttachment(blog.id, ownerUserId, smallFile, {});
-      await expect(service.deleteAttachment(attachment.id, otherUserId)).rejects.toThrow(
+      const attachment = await attachmentService.createAttachment(blog.id, ownerUserId, smallFile, {});
+      await expect(attachmentService.deleteAttachment(attachment.id, otherUserId)).rejects.toThrow(
         ErrorDefinition,
       );
       // Clean up
-      await service.deleteAttachment(attachment.id, ownerUserId);
+      await attachmentService.deleteAttachment(attachment.id, ownerUserId);
     });
 
     it('prevents a non-owner from updating an attachment', async () => {
       const blog = await service.createBlog(ownerUserId, { content: 'Attachment owner' });
-      const attachment = await service.createAttachment(blog.id, ownerUserId, smallFile, {});
+      const attachment = await attachmentService.createAttachment(blog.id, ownerUserId, smallFile, {});
       await expect(
-        service.updateAttachment(attachment.id, otherUserId, smallFile, {}),
+        attachmentService.updateAttachment(attachment.id, otherUserId, smallFile, {}),
       ).rejects.toThrow(ErrorDefinition);
-      await service.deleteAttachment(attachment.id, ownerUserId);
+      await attachmentService.deleteAttachment(attachment.id, ownerUserId);
     });
   });
 
@@ -466,7 +469,7 @@ describe('BlogService (E2E)', () => {
   describe('createAttachment', () => {
     it('uploads an attachment and returns metadata', async () => {
       const blog = await service.createBlog(ownerUserId, { content: 'With file' });
-      const attachment = await service.createAttachment(blog.id, ownerUserId, smallFile, {});
+      const attachment = await attachmentService.createAttachment(blog.id, ownerUserId, smallFile, {});
 
       expect(attachment.id).toBeDefined();
       expect(attachment.blogId).toBe(blog.id);
@@ -474,12 +477,12 @@ describe('BlogService (E2E)', () => {
       expect(attachment.size).toBe(smallFile.size);
       expect(attachment.key).toContain(blog.id);
 
-      await service.deleteAttachment(attachment.id, ownerUserId);
+      await attachmentService.deleteAttachment(attachment.id, ownerUserId);
     });
 
     it('throws NOT_FOUND when the blog does not exist', async () => {
       await expect(
-        service.createAttachment('no-such-blog', ownerUserId, smallFile, {}),
+        attachmentService.createAttachment('no-such-blog', ownerUserId, smallFile, {}),
       ).rejects.toThrow(ErrorDefinition);
     });
   });
@@ -487,42 +490,42 @@ describe('BlogService (E2E)', () => {
   describe('getAttachment', () => {
     it('returns a presigned URL and metadata for an existing attachment', async () => {
       const blog = await service.createBlog(ownerUserId, { content: 'For presign' });
-      const attachment = await service.createAttachment(blog.id, ownerUserId, smallFile, {});
+      const attachment = await attachmentService.createAttachment(blog.id, ownerUserId, smallFile, {});
 
-      const result = await service.getAttachment(attachment.id);
+      const result = await attachmentService.getAttachment(attachment.id);
       expect(result.url).toMatch(/^https?:\/\//);
       expect(result.metadata.id).toBe(attachment.id);
 
-      await service.deleteAttachment(attachment.id, ownerUserId);
+      await attachmentService.deleteAttachment(attachment.id, ownerUserId);
     });
 
     it('throws ATTACHMENT_NOT_FOUND for a non-existent attachment', async () => {
-      await expect(service.getAttachment('ghost-attachment')).rejects.toThrow(ErrorDefinition);
+      await expect(attachmentService.getAttachment('ghost-attachment')).rejects.toThrow(ErrorDefinition);
     });
   });
 
   describe('updateAttachment', () => {
     it('replaces the file and updates metadata', async () => {
       const blog = await service.createBlog(ownerUserId, { content: 'Update attachment' });
-      const attachment = await service.createAttachment(blog.id, ownerUserId, smallFile, {});
+      const attachment = await attachmentService.createAttachment(blog.id, ownerUserId, smallFile, {});
 
       const newFile = { buffer: Buffer.from('updated data'), mimetype: 'image/jpeg', size: 12 };
-      const updated = await service.updateAttachment(attachment.id, ownerUserId, newFile, {});
+      const updated = await attachmentService.updateAttachment(attachment.id, ownerUserId, newFile, {});
 
       expect(updated.contentType).toBe('image/jpeg');
       expect(updated.size).toBe(12);
 
-      await service.deleteAttachment(attachment.id, ownerUserId);
+      await attachmentService.deleteAttachment(attachment.id, ownerUserId);
     });
   });
 
   describe('deleteAttachment', () => {
     it('removes the attachment from the database', async () => {
       const blog = await service.createBlog(ownerUserId, { content: 'Delete attachment' });
-      const attachment = await service.createAttachment(blog.id, ownerUserId, smallFile, {});
+      const attachment = await attachmentService.createAttachment(blog.id, ownerUserId, smallFile, {});
 
-      await service.deleteAttachment(attachment.id, ownerUserId);
-      await expect(service.getAttachment(attachment.id)).rejects.toThrow(ErrorDefinition);
+      await attachmentService.deleteAttachment(attachment.id, ownerUserId);
+      await expect(attachmentService.getAttachment(attachment.id)).rejects.toThrow(ErrorDefinition);
     });
   });
 
@@ -533,28 +536,28 @@ describe('BlogService (E2E)', () => {
   describe('attachment Firestore presence', () => {
     it('returns FORBIDDEN when a non-owner attempts to delete an attachment', async () => {
       const blog = await service.createBlog(ownerUserId, { content: 'perm test' });
-      const att = await service.createAttachment(blog.id, ownerUserId, smallFile, {});
-      await expect(service.deleteAttachment(att.id, otherUserId)).rejects.toMatchObject({
+      const att = await attachmentService.createAttachment(blog.id, ownerUserId, smallFile, {});
+      await expect(attachmentService.deleteAttachment(att.id, otherUserId)).rejects.toMatchObject({
         status: 'FORBIDDEN',
         key: 'blog.forbidden',
       });
-      await service.deleteAttachment(att.id, ownerUserId);
+      await attachmentService.deleteAttachment(att.id, ownerUserId);
     });
 
     it('persists the attachment document in Firestore after createAttachment', async () => {
       const blog = await service.createBlog(ownerUserId, { content: 'firestore check' });
-      const att = await service.createAttachment(blog.id, ownerUserId, smallFile, {});
+      const att = await attachmentService.createAttachment(blog.id, ownerUserId, smallFile, {});
       const doc = await firebaseProvider.db.collection('attachments').doc(att.id).get();
       expect(doc.exists).toBe(true);
       expect(doc.data()?.blogId).toBe(blog.id);
       expect(doc.data()?.authorId).toBe(ownerUserId);
-      await service.deleteAttachment(att.id, ownerUserId);
+      await attachmentService.deleteAttachment(att.id, ownerUserId);
     });
 
     it('removes the attachment document from Firestore after deleteAttachment', async () => {
       const blog = await service.createBlog(ownerUserId, { content: 'delete check' });
-      const att = await service.createAttachment(blog.id, ownerUserId, smallFile, {});
-      await service.deleteAttachment(att.id, ownerUserId);
+      const att = await attachmentService.createAttachment(blog.id, ownerUserId, smallFile, {});
+      await attachmentService.deleteAttachment(att.id, ownerUserId);
       const doc = await firebaseProvider.db.collection('attachments').doc(att.id).get();
       expect(doc.exists).toBe(false);
     });
@@ -572,11 +575,11 @@ describe('BlogService (E2E)', () => {
         mimetype: 'image/png',
         size: MAX_ATTACHMENT_SIZE,
       };
-      const attachment = await service.createAttachment(blog.id, ownerUserId, exactFile, {});
+      const attachment = await attachmentService.createAttachment(blog.id, ownerUserId, exactFile, {});
       expect(attachment.size).toBe(MAX_ATTACHMENT_SIZE);
 
       // Clean up
-      await service.deleteAttachment(attachment.id, ownerUserId);
+      await attachmentService.deleteAttachment(attachment.id, ownerUserId);
     });
 
     it('rejects a file one byte over the limit', async () => {
@@ -587,13 +590,13 @@ describe('BlogService (E2E)', () => {
         size: MAX_ATTACHMENT_SIZE + 1,
       };
       await expect(
-        service.createAttachment(blog.id, ownerUserId, oversizedFile, {}),
+        attachmentService.createAttachment(blog.id, ownerUserId, oversizedFile, {}),
       ).rejects.toThrow(ErrorDefinition);
     });
 
     it('rejects an oversized replacement file in updateAttachment', async () => {
       const blog = await service.createBlog(ownerUserId, { content: 'Update size check' });
-      const attachment = await service.createAttachment(blog.id, ownerUserId, smallFile, {});
+      const attachment = await attachmentService.createAttachment(blog.id, ownerUserId, smallFile, {});
 
       const oversizedFile = {
         buffer: Buffer.alloc(MAX_ATTACHMENT_SIZE + 1),
@@ -601,10 +604,10 @@ describe('BlogService (E2E)', () => {
         size: MAX_ATTACHMENT_SIZE + 1,
       };
       await expect(
-        service.updateAttachment(attachment.id, ownerUserId, oversizedFile, {}),
+        attachmentService.updateAttachment(attachment.id, ownerUserId, oversizedFile, {}),
       ).rejects.toThrow(ErrorDefinition);
 
-      await service.deleteAttachment(attachment.id, ownerUserId);
+      await attachmentService.deleteAttachment(attachment.id, ownerUserId);
     });
   });
 });

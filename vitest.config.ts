@@ -19,9 +19,10 @@ export default defineConfig({
     setupFiles: ['./test/auth/auth.setup.ts'],
     testTimeout: 30000,
     hookTimeout: 30000,
+    fileParallelism: false,
     alias: {
       // TODO: Add a common package to api submodule for CI tests
-      '@hashibutogarasu/common': resolve(__dirname, '../common/src/index.ts'),
+      '@hashibutogarasu/common': resolve(__dirname, './packages/common/src/index.ts'),
     },
     server: {
       deps: {

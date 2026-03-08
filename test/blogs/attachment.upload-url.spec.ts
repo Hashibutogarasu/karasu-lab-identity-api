@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { NullObjectStorageService } from '../mocks/null-object-storage.service.js';
-import { BlogService, UPLOAD_PRESIGNED_URL_EXPIRES_IN } from '../../src/blogs/blog.service.js';
+import { BlogService } from '../../src/blogs/blog.service.js';
+import { AttachmentService, UPLOAD_PRESIGNED_URL_EXPIRES_IN } from '../../src/attachments/attachment.service.js';
 import { IFirebaseAdminProvider } from '../../src/shared/firebase/firebase-admin.provider.interface.js';
 import { MockFirebaseAdminProvider } from '../mocks/firebase-admin.provider.mock.js';
 import { ErrorDefinition } from '../../src/shared/errors/error.codes.js';
@@ -15,6 +16,7 @@ import { ErrorDefinition } from '../../src/shared/errors/error.codes.js';
  */
 describe('BlogService — presigned upload URL and sync', () => {
   let service: BlogService;
+  let attachmentService: AttachmentService;
   let storage: NullObjectStorageService;
   let firebaseProvider: IFirebaseAdminProvider;
 
@@ -24,7 +26,8 @@ describe('BlogService — presigned upload URL and sync', () => {
     storage = new NullObjectStorageService();
     firebaseProvider = new MockFirebaseAdminProvider();
     await firebaseProvider.onModuleInit();
-    service = new BlogService(storage, firebaseProvider);
+    attachmentService = new AttachmentService(storage, firebaseProvider);
+    service = new BlogService(storage, firebaseProvider, attachmentService);
   });
 
   afterEach(async () => {
@@ -45,7 +48,7 @@ describe('BlogService — presigned upload URL and sync', () => {
         status: 'published',
       });
 
-      const result = await service.issueAttachmentUploadUrl(blog.id, authorId, {
+      const result = await attachmentService.issueAttachmentUploadUrl(blog.id, authorId, {
         contentType: 'image/png',
       });
 
@@ -63,7 +66,7 @@ describe('BlogService — presigned upload URL and sync', () => {
         status: 'published',
       });
 
-      const { uploadUrl, key } = await service.issueAttachmentUploadUrl(blog.id, authorId, {
+      const { uploadUrl, key } = await attachmentService.issueAttachmentUploadUrl(blog.id, authorId, {
         contentType: 'image/png',
       });
 
@@ -76,7 +79,7 @@ describe('BlogService — presigned upload URL and sync', () => {
 
     it('throws BLOG.NOT_FOUND when the blog does not exist', async () => {
       await expect(
-        service.issueAttachmentUploadUrl('nonexistent-blog', authorId, {
+        attachmentService.issueAttachmentUploadUrl('nonexistent-blog', authorId, {
           contentType: 'image/png',
         }),
       ).rejects.toBeInstanceOf(ErrorDefinition);
@@ -89,7 +92,7 @@ describe('BlogService — presigned upload URL and sync', () => {
       });
 
       await expect(
-        service.issueAttachmentUploadUrl(blog.id, authorId, {
+        attachmentService.issueAttachmentUploadUrl(blog.id, authorId, {
           contentType: 'image/png',
         }),
       ).rejects.toBeInstanceOf(ErrorDefinition);
@@ -101,11 +104,11 @@ describe('BlogService — presigned upload URL and sync', () => {
         status: 'published',
       });
 
-      const result = await service.issueAttachmentUploadUrl(blog.id, authorId, {
+      const result = await attachmentService.issueAttachmentUploadUrl(blog.id, authorId, {
         contentType: 'image/jpeg',
       });
 
-      const attachments = await service.listAttachments(authorId);
+      const attachments = await attachmentService.listAttachments(authorId);
       const ids = attachments.map((a) => a.id);
       expect(ids).not.toContain(result.attachmentId);
     });
@@ -118,7 +121,7 @@ describe('BlogService — presigned upload URL and sync', () => {
         status: 'published',
       });
 
-      const { uploadUrl, attachmentId, key } = await service.issueAttachmentUploadUrl(
+      const { uploadUrl, attachmentId, key } = await attachmentService.issueAttachmentUploadUrl(
         blog.id,
         authorId,
         { contentType: 'image/png' },
@@ -126,7 +129,7 @@ describe('BlogService — presigned upload URL and sync', () => {
 
       await storage.simulateUploadViaPresignedUrl(uploadUrl, Buffer.from('fake image data'));
 
-      const attachment = await service.syncAttachmentFromStorage(
+      const attachment = await attachmentService.syncAttachmentFromStorage(
         attachmentId,
         blog.id,
         authorId,
@@ -147,7 +150,7 @@ describe('BlogService — presigned upload URL and sync', () => {
         status: 'published',
       });
 
-      const { uploadUrl, attachmentId } = await service.issueAttachmentUploadUrl(
+      const { uploadUrl, attachmentId } = await attachmentService.issueAttachmentUploadUrl(
         blog.id,
         authorId,
         { contentType: 'image/webp' },
@@ -155,7 +158,7 @@ describe('BlogService — presigned upload URL and sync', () => {
 
       await storage.simulateUploadViaPresignedUrl(uploadUrl, Buffer.from('data'));
 
-      const attachment = await service.syncAttachmentFromStorage(
+      const attachment = await attachmentService.syncAttachmentFromStorage(
         attachmentId,
         blog.id,
         authorId,
@@ -171,12 +174,12 @@ describe('BlogService — presigned upload URL and sync', () => {
         status: 'published',
       });
 
-      const { attachmentId } = await service.issueAttachmentUploadUrl(blog.id, authorId, {
+      const { attachmentId } = await attachmentService.issueAttachmentUploadUrl(blog.id, authorId, {
         contentType: 'image/png',
       });
 
       await expect(
-        service.syncAttachmentFromStorage(attachmentId, blog.id, authorId, {
+        attachmentService.syncAttachmentFromStorage(attachmentId, blog.id, authorId, {
           blogId: blog.id,
         }),
       ).rejects.toBeInstanceOf(ErrorDefinition);
@@ -184,7 +187,7 @@ describe('BlogService — presigned upload URL and sync', () => {
 
     it('throws BLOG.NOT_FOUND when the blog does not exist', async () => {
       await expect(
-        service.syncAttachmentFromStorage('any-id', 'nonexistent-blog', authorId, {
+        attachmentService.syncAttachmentFromStorage('any-id', 'nonexistent-blog', authorId, {
           blogId: 'nonexistent-blog',
         }),
       ).rejects.toBeInstanceOf(ErrorDefinition);
@@ -197,7 +200,7 @@ describe('BlogService — presigned upload URL and sync', () => {
       });
 
       await expect(
-        service.syncAttachmentFromStorage('any-id', blog.id, authorId, {
+        attachmentService.syncAttachmentFromStorage('any-id', blog.id, authorId, {
           blogId: blog.id,
         }),
       ).rejects.toBeInstanceOf(ErrorDefinition);
