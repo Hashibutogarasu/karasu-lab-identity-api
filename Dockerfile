@@ -15,7 +15,7 @@ COPY . .
 
 RUN DATABASE_URL="postgresql://build:dummy@localhost:5432/dummy" npx prisma generate
 
-RUN cd packages/common && pnpm run build
+RUN pnpm --filter="@hashibutogarasu/common" run build
 RUN pnpm run build
 RUN pnpm prune --prod
 
