@@ -55,6 +55,7 @@ export const ErrorCodes = createErrorMap({
 		LOCKED: ['blog.locked', 'FORBIDDEN'],
 		MINE_REQUIRES_AUTH: ['blog.mine_requires_auth', 'UNAUTHORIZED'],
 		ATTACHMENT_TOO_LARGE: ['blog.attachment_too_large', 'BAD_REQUEST'],
+		NOT_IMPLEMENTED: ['blog.not_implemented', 'BAD_REQUEST'],
 	},
 } as const);
 

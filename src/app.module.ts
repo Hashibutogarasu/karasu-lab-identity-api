@@ -6,6 +6,7 @@ import { II18nService } from "./shared/i18n/i18n.service.interface.js";
 import { I18nService } from "./shared/i18n/i18n.service.js";
 import { StorageModule } from "./storage/storage.module.js";
 import { BlogModule } from "./blogs/blog.module.js";
+import { AuthorModule } from "./authors/author.module.js";
 import { AttachmentModule } from "./attachments/attachment.module.js";
 import { OpenApiModule } from "./shared/openapi/openapi.module.js";
 import { AuthMiddlewareModule } from "./shared/auth/auth-middleware.module.js";
@@ -16,6 +17,7 @@ import { DotEnvServiceProvider } from "./shared/config/dotenv.service.js";
   imports: [
     StorageModule,
     BlogModule,
+    AuthorModule,
     AttachmentModule,
     OpenApiModule,
     AuthMiddlewareModule.forRoot({ path: '/api/auth' }),

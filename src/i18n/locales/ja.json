@@ -15,7 +15,8 @@
 		"forbidden": "この操作を行う権限がありません",
 		"locked": "このブログ記事はロックされており、変更できません",
 		"mine_requires_auth": "自分の記事一覧を取得するには認証が必要です",
-		"attachment_too_large": "添付ファイルが最大許容サイズを超えています"
+		"attachment_too_large": "添付ファイルが最大許容サイズを超えています",
+		"not_implemented": "この機能は実装されていません"
 	},
 	"system": {
 		"resend_api_key_required": "本番環境ではRESEND_API_KEYが必要です。",
