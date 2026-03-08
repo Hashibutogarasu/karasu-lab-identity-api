@@ -122,22 +122,5 @@
         }
       ]
     }
-  },
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "@firebase/util",
-      "@hashibutogarasu/common",
-      "@nestjs/core",
-      "@prisma/client",
-      "@prisma/engines",
-      "@scarf/scarf",
-      "@swc/core",
-      "better-sqlite3",
-      "esbuild",
-      "prisma",
-      "protobufjs",
-      "unrs-resolver",
-      "@thallesp/nestjs-better-auth"
-    ]
   }
 }
