@@ -6,6 +6,7 @@ RUN apt-get update && apt-get install -y openssl ca-certificates git build-essen
 WORKDIR /app
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY packages ./packages/
 COPY prisma ./prisma/
 RUN --mount=type=cache,id=pnpm,target=/root/.local/share/pnpm/store pnpm install --frozen-lockfile
 
