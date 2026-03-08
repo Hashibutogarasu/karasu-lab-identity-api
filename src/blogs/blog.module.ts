@@ -6,9 +6,10 @@ import { FirebaseAdminServiceProvider } from '../shared/firebase/firebase-admin.
 import { ConfigServiceProvider } from '../shared/config/config.service.js';
 import { SessionModule } from '../shared/auth/session.module.js';
 import { RolesGuard } from '../shared/auth/roles.guard.js';
+import { AttachmentModule } from '../attachments/attachment.module.js';
 
 @Module({
-	imports: [SessionModule],
+	imports: [SessionModule, AttachmentModule],
 	controllers: [BlogController],
 	providers: [BlogService, FirebaseAdminServiceProvider, ConfigServiceProvider, RolesGuard],
 	exports: [BlogService],
