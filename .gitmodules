@@ -3,4 +3,4 @@
 	url = https://github.com/Hashibutogarasu/karasu-lab-api-common.git
 [submodule "packages/yultyyev/better-auth-firebase-auth"]
 	path = packages/yultyyev/better-auth-firebase-auth
-	url = https://github.com/yultyyev/better-auth-firebase-auth.git
+	url = https://github.com/Hashibutogarasu/better-auth-firebase-auth.git
