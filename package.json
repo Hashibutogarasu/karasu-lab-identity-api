@@ -31,6 +31,7 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.999.0",
     "@aws-sdk/s3-request-presigner": "^3.999.0",
+    "@better-auth/api-key": "^1.5.4",
     "@better-auth/passkey": "^1.5.4",
     "@hashibutogarasu/common": "workspace:*",
     "@nestjs/common": "^11.1.14",

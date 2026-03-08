@@ -1,5 +1,7 @@
 import { Auth as BetterAuthType, BetterAuthOptions } from "better-auth";
-import { admin, apiKey, bearer, createAuthMiddleware, deviceAuthorization, emailOTP, magicLink, oidcProvider, organization, twoFactor } from "better-auth/plugins";
+import { createAuthMiddleware } from "better-auth/api";
+import { admin, bearer, deviceAuthorization, emailOTP, magicLink, oidcProvider, organization, twoFactor } from "better-auth/plugins";
+import { apiKey } from "@better-auth/api-key";
 import { firebaseAuthPlugin as firebaseAuth } from "better-auth-firebase-auth/server";
 import { initializeApp, getApps, cert } from "firebase-admin/app";
 import { getAuth } from "firebase-admin/auth";
@@ -115,7 +117,7 @@ export function createAuth(
     })
     .auth.setSocialProviders(socialProviders)
     .auth.setHooks({
-      after: createAuthMiddleware((context) => {
+      after: createAuthMiddleware(async (context) => {
         if (context.path === "/oauth2/consent" || context.path === "/sign-out") {
           const expiredDate = new Date(0).toUTCString();
           const oidcCookies = ["oidc_login_prompt", "oidc_consent_prompt"];
@@ -124,14 +126,15 @@ export function createAuth(
             context.setHeader("Set-Cookie", setCookie);
           });
         }
-        return Promise.resolve();
+        await Promise.resolve();
+        return context;
       }),
     })
     .user.setUser({
       deleteUser: { enabled: true },
       changeEmail: {
         enabled: true,
-        sendChangeEmailVerification: async ({ newEmail, url }) => {
+        sendChangeEmailConfirmation: async ({ newEmail, url }) => {
           await notificationService.sendChangeEmailVerification({ newEmail, url });
         },
       },
