@@ -13,3 +13,6 @@ onlyBuiltDependencies:
   - prisma
   - unrs-resolver
   - '@hashibutogarasu/common'
+  - '@thallesp/nestjs-better-auth'
+  - 'protobufjs'
+  - '@firebase/util'
