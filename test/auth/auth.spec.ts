@@ -1,29 +1,61 @@
+/* eslint-disable @typescript-eslint/require-await */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { User, Session } from "better-auth";
 import { testAuth, testNotificationService } from './auth.setup.js';
 
 const BASE_URL = 'http://localhost:3000/api/auth';
 
-async function makeRequest(path: string, options: RequestInit = {}) {
+interface MockResponse {
+  status: number;
+  json: <T>() => Promise<T>;
+  text: () => Promise<string>;
+  headers: {
+    get: (name: string) => string | null;
+  };
+  clone: () => {
+    text: () => Promise<string>;
+  };
+}
+
+async function makeRequest(path: string, options: RequestInit = {}): Promise<MockResponse | Response> {
   const cleanPath = path.startsWith('/') ? path : `/${path}`;
   const url = new URL(BASE_URL.replace(/\/$/, '') + cleanPath);
   const req = new Request(url.toString(), {
     headers: { 
       'Content-Type': 'application/json',
       'Host': 'localhost:3000',
-      'Origin': 'http://localhost:3000'
+      'Origin': 'http://localhost:3000',
     },
     ...options,
   });
   
   const res = await testAuth.handler(req);
-  if (res.status === 404) {
-     console.error("404 Request URL:", url.toString());
-     console.error("404 Response text:", await res.clone().text());
+  
+  if (!(res instanceof Response)) {
+    const context = res as unknown as {
+      returned: unknown;
+      status?: number;
+      responseHeaders?: Record<string, string>;
+    };
+    const body = context.returned;
+    const status = context.status || 200;
+    
+    return {
+      status,
+      json: async <T>() => body as T,
+      text: async () => JSON.stringify(body),
+      headers: {
+        get: (name: string) => {
+          const headers = context.responseHeaders;
+          return headers?.[name] || null;
+        }
+      },
+      clone: () => ({
+        text: async () => JSON.stringify(body)
+      })
+    };
   }
-  if (res.status === 500) {
-     console.error("500 Request URL:", url.toString());
-     console.error("500 Response text:", await res.clone().text());
-  }
+
   return res;
 }
 
@@ -65,13 +97,16 @@ describe('Better Auth Integration Tests', () => {
         name: 'Test Login User',
       }),
     });
+    
     expect(signupRes.status).toBe(200);
-    const signupBody = await signupRes.json() as { user: { id: string } };
-
+    const signupBody = await signupRes.json() as { user: User; session: Session };
+    
     const ctx = await testAuth.$context;
+    const userId = signupBody.user.id;
+
     await ctx.adapter.update({
       model: "user",
-      where: [{ field: "id", value: signupBody.user.id }],
+      where: [{ field: "id", value: userId }],
       update: { emailVerified: true }
     });
 
@@ -84,9 +119,9 @@ describe('Better Auth Integration Tests', () => {
     });
 
     expect(loginRes.status).toBe(200);
-    const body = await loginRes.json() as { user?: { email: string } };
-    expect(body.user).toBeDefined();
-    expect(body.user?.email).toBe('testlogin@example.com');
+    const loginBody = await loginRes.json() as { user: User; session: Session };
+    expect(loginBody.user).toBeDefined();
+    expect(loginBody.user.email).toBe('testlogin@example.com');
   });
 
   it('Test 3: OAuth Authentication using a dummy external provider', async () => {
@@ -100,7 +135,7 @@ describe('Better Auth Integration Tests', () => {
     
     const body = await signinRes.json() as { url?: string };
     expect(body.url).toBeDefined();
-    expect(body.url).toContain('https://dummy.com/auth');
+    expect(body.url?.includes('https://dummy.com/auth')).toBe(true);
 
     const cookies = signinRes.headers.get('set-cookie');
 

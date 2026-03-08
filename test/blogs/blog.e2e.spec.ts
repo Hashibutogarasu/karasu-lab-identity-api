@@ -27,6 +27,9 @@ describe('BlogService (E2E)', () => {
 	const otherUserId = `e2e-blog-other-${suffix}`;
 
 	const smallFile = {
+		fieldname: 'file',
+		originalname: 'test.png',
+		encoding: '7bit',
 		buffer: Buffer.from('fake image data'),
 		mimetype: 'image/png',
 		size: 15,
@@ -530,7 +533,14 @@ describe('BlogService (E2E)', () => {
       const blog = await service.createBlog(ownerUserId, { title: 'Test Blog', content: 'Update attachment' });
       const attachment = await attachmentService.createAttachment(blog.id, ownerUserId, smallFile, {});
 
-      const newFile = { buffer: Buffer.from('updated data'), mimetype: 'image/jpeg', size: 12 };
+      const newFile = {
+        fieldname: 'file',
+        originalname: 'updated.jpg',
+        encoding: '7bit',
+        buffer: Buffer.from('updated data'),
+        mimetype: 'image/jpeg',
+        size: 12
+      };
       const updated = await attachmentService.updateAttachment(attachment.id, ownerUserId, newFile, {});
 
       expect(updated.contentType).toBe('image/jpeg');
@@ -592,6 +602,9 @@ describe('BlogService (E2E)', () => {
     it('accepts a file exactly at the limit', async () => {
       const blog = await service.createBlog(ownerUserId, { title: 'Test Blog', content: 'Size boundary' });
       const exactFile = {
+        fieldname: 'file',
+        originalname: 'exact.png',
+        encoding: '7bit',
         buffer: Buffer.alloc(MAX_ATTACHMENT_SIZE),
         mimetype: 'image/png',
         size: MAX_ATTACHMENT_SIZE,
@@ -606,6 +619,9 @@ describe('BlogService (E2E)', () => {
     it('rejects a file one byte over the limit', async () => {
       const blog = await service.createBlog(ownerUserId, { title: 'Test Blog', content: 'Too large' });
       const oversizedFile = {
+        fieldname: 'file',
+        originalname: 'oversized.png',
+        encoding: '7bit',
         buffer: Buffer.alloc(MAX_ATTACHMENT_SIZE + 1),
         mimetype: 'image/png',
         size: MAX_ATTACHMENT_SIZE + 1,
@@ -620,6 +636,9 @@ describe('BlogService (E2E)', () => {
       const attachment = await attachmentService.createAttachment(blog.id, ownerUserId, smallFile, {});
 
       const oversizedFile = {
+        fieldname: 'file',
+        originalname: 'oversized.png',
+        encoding: '7bit',
         buffer: Buffer.alloc(MAX_ATTACHMENT_SIZE + 1),
         mimetype: 'image/png',
         size: MAX_ATTACHMENT_SIZE + 1,

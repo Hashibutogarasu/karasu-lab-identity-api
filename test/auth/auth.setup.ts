@@ -36,6 +36,10 @@ beforeAll(async () => {
 
   testAuth = createAuth(configService, testDbService, testNotificationService, passkeyAuth, authConfig, socialProviderConfig, adminConfig, rateLimitConfig, {
     rateLimit: { enabled: false },
+    trustedOrigins: ['http://localhost:3000'],
+    advanced: {
+      disableCSRFCheck: true,
+    },
 
     plugins: [
       genericOAuth({

@@ -100,7 +100,10 @@ export function createAuth(
     .basic.setBasePath('/api/auth')
     .basic.setSecret(env.BETTER_AUTH_SECRET)
     .basic.setAppName("Karasu Lab")
-    .basic.setTrustedOrigins(authConfig.getTrustedOrigins())
+    .basic.setTrustedOrigins([
+      ...authConfig.getTrustedOrigins(),
+      ...(Array.isArray(overrides.trustedOrigins) ? overrides.trustedOrigins : []),
+    ])
     .basic.setAdvanced({ crossSubDomainCookies: authConfig.getCrossSubDomainCookies() })
     .basic.setLogger({
       level: EnvironmentUtils.isProduction(authEnv.environment) ? "info" : "debug",
@@ -127,7 +130,6 @@ export function createAuth(
           });
         }
         await Promise.resolve();
-        return context;
       }),
     })
     .user.setUser({
