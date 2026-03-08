@@ -8,13 +8,14 @@ WORKDIR /app
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY packages ./packages/
 COPY prisma ./prisma/
+
 RUN --mount=type=cache,id=pnpm,target=/root/.local/share/pnpm/store pnpm install --frozen-lockfile
 
 COPY . .
 
 RUN DATABASE_URL="postgresql://build:dummy@localhost:5432/dummy" npx prisma generate
 
-RUN pnpm --filter="@hashibutogarasu/common" build
+RUN cd packages/common && pnpm run build
 RUN pnpm run build
 RUN pnpm prune --prod
 
