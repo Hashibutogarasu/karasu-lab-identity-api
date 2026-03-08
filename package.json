@@ -45,7 +45,7 @@
     "@simplewebauthn/server": "^13.2.3",
     "@thallesp/nestjs-better-auth": "github:ThallesP/nestjs-better-auth",
     "better-auth": "^1.5.4",
-    "better-auth-firebase-auth": "^2.0.1",
+    "better-auth-firebase-auth": "workspace:*",
     "cross-env": "^10.1.0",
     "cuid": "^3.0.0",
     "dotenv": "^17.3.1",
