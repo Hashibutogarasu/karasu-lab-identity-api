@@ -1,6 +1,7 @@
 FROM node:22-bookworm-slim AS builder
 
 RUN corepack enable && corepack prepare pnpm@latest --activate
+RUN npm install -g bun
 RUN apt-get update && apt-get install -y openssl ca-certificates git build-essential python3 && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
