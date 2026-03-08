@@ -109,19 +109,4 @@ describe('AuthorController (e2e)', () => {
     expect(response.status).toBe(200);
     expect(response.body).toEqual({});
   });
-
-  it('POST /author - should return 400 NOT_IMPLEMENTED', async () => {
-    const response = await request(app.getHttpServer()).post('/author').send({});
-    expect(response.status).toBe(400);
-  });
-
-  it('PUT /author/:id - should return 400 NOT_IMPLEMENTED', async () => {
-    const response = await request(app.getHttpServer()).put(`/author/${testUserId}`).send({});
-    expect(response.status).toBe(400);
-  });
-
-  it('DELETE /author/:id - should return 400 NOT_IMPLEMENTED', async () => {
-    const response = await request(app.getHttpServer()).delete(`/author/${testUserId}`);
-    expect(response.status).toBe(400);
-  });
 });

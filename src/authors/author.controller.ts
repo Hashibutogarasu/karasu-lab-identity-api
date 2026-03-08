@@ -1,11 +1,7 @@
 import {
   Controller,
   Get,
-  Post,
-  Put,
-  Delete,
   Param,
-  Body,
   UseGuards,
 } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
@@ -48,32 +44,5 @@ export class AuthorController {
   @Get(':id')
   async getAuthor(@Param('id') id: string) {
     return this.authorService.getById(id);
-  }
-
-  /**
-   * Create an author (Not Implemented).
-   */
-  @ApiOperation({ summary: 'Create an author (Not Implemented)' })
-  @Post()
-  async createAuthor(@Body() dto: any) {
-    return this.authorService.create('', dto);
-  }
-
-  /**
-   * Update an author (Not Implemented).
-   */
-  @ApiOperation({ summary: 'Update an author (Not Implemented)' })
-  @Put(':id')
-  async updateAuthor(@Param('id') id: string, @Body() dto: any) {
-    return this.authorService.update(id, dto);
-  }
-
-  /**
-   * Delete an author (Not Implemented).
-   */
-  @ApiOperation({ summary: 'Delete an author (Not Implemented)' })
-  @Delete(':id')
-  async deleteAuthor(@Param('id') id: string) {
-    return this.authorService.delete(id);
   }
 }

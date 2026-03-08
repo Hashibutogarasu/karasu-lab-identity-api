@@ -12,7 +12,8 @@
 			{
 				"name": "@nestjs/swagger",
 				"options": {
-					"classValidatorShim": false
+					"classValidatorShim": false,
+					"esmCompatible": true
 				}
 			}
 		]

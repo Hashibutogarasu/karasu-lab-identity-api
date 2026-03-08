@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/require-await */
 import { Injectable } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
@@ -13,7 +14,6 @@ export class AuthorService extends AbstractRepository<UserResponseDto> implement
   private readonly prisma: PrismaClient = getPrisma();
 
   constructor(firebase: IFirebaseAdminProvider) {
-    // We pass 'users' as a placeholder collection name, but we will mostly use Prisma for this service
     super(firebase, 'users');
   }
 
@@ -64,9 +64,7 @@ export class AuthorService extends AbstractRepository<UserResponseDto> implement
    * Create is not implemented for authors via this API.
    */
   override async create(
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     _id: string,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     _data: Partial<UserResponseDto>,
   ): Promise<UserResponseDto> {
     throw ErrorCodes.BLOG.NOT_IMPLEMENTED;
@@ -76,9 +74,7 @@ export class AuthorService extends AbstractRepository<UserResponseDto> implement
    * Update is not implemented for authors via this API.
    */
   override async update(
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     _id: string,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     _data: Partial<UserResponseDto>,
   ): Promise<UserResponseDto> {
     throw ErrorCodes.BLOG.NOT_IMPLEMENTED;
@@ -88,7 +84,6 @@ export class AuthorService extends AbstractRepository<UserResponseDto> implement
    * Delete is not implemented for authors via this API.
    */
   override async delete(
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     _id: string,
   ): Promise<void> {
     throw ErrorCodes.BLOG.NOT_IMPLEMENTED;
