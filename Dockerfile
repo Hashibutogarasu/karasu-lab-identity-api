@@ -17,7 +17,7 @@ RUN DATABASE_URL="postgresql://build:dummy@localhost:5432/dummy" npx prisma gene
 
 RUN pnpm --filter="@hashibutogarasu/common" run build
 RUN pnpm run build
-RUN CI=true pnpm prune --prod
+RUN CI=true pnpm prune --prod --ignore-scripts
 
 FROM node:22-bookworm-slim AS runner
 
