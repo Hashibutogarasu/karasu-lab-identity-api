@@ -1,6 +1,7 @@
 import {
   Controller,
   Get,
+  Inject,
   Param,
   UseGuards,
 } from '@nestjs/common';
@@ -14,7 +15,7 @@ import { RolesGuard } from '../shared/auth/roles.guard.js';
 @ApiTags('Authors')
 @Controller('author')
 export class AuthorController {
-  constructor(private readonly authorService: AuthorService) {}
+  constructor(@Inject(AuthorService) private readonly authorService: AuthorService) {}
 
   /**
    * List all authors.

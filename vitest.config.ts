@@ -1,7 +1,6 @@
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
 import { defineConfig } from 'vitest/config';
-import swc from 'unplugin-swc';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -21,7 +20,6 @@ export default defineConfig({
     hookTimeout: 30000,
     fileParallelism: false,
     alias: {
-      // TODO: Add a common package to api submodule for CI tests
       '@hashibutogarasu/common': resolve(__dirname, './packages/common/src/index.ts'),
     },
     server: {
@@ -30,5 +28,4 @@ export default defineConfig({
       },
     },
   },
-  plugins: [swc.vite()],
 });

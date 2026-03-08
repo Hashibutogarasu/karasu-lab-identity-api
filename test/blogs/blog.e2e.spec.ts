@@ -84,8 +84,9 @@ describe('BlogService (E2E)', () => {
 
   describe('listBlogs', () => {
     it('anonymous: returns only published blogs', async () => {
-      const draft = await service.createBlog(ownerUserId, { content: 'Draft', status: 'draft' });
+      const draft = await service.createBlog(ownerUserId, { title: 'Test Blog', content: 'Draft', status: 'draft' });
       const published = await service.createBlog(ownerUserId, {
+        title: 'Test Blog',
         content: 'Published',
         status: 'published',
       });
@@ -98,14 +99,17 @@ describe('BlogService (E2E)', () => {
 
     it('authenticated owner: sees own posts of all statuses', async () => {
       const draft = await service.createBlog(ownerUserId, {
+        title: 'Test Blog',
         content: 'My draft',
         status: 'draft',
       });
       const archived = await service.createBlog(ownerUserId, {
+        title: 'Test Blog',
         content: 'My archived',
         status: 'archived',
       });
       const published = await service.createBlog(ownerUserId, {
+        title: 'Test Blog',
         content: 'My published',
         status: 'published',
       });
@@ -119,10 +123,12 @@ describe('BlogService (E2E)', () => {
 
     it('authenticated non-owner: sees only published posts from others', async () => {
       const draft = await service.createBlog(ownerUserId, {
+        title: 'Test Blog',
         content: 'Owner draft',
         status: 'draft',
       });
       const published = await service.createBlog(ownerUserId, {
+        title: 'Test Blog',
         content: 'Owner published',
         status: 'published',
       });
@@ -135,6 +141,7 @@ describe('BlogService (E2E)', () => {
 
     it('each entry includes attachments array', async () => {
       const blog = await service.createBlog(ownerUserId, {
+        title: 'Test Blog',
         content: 'With attachments field',
         status: 'published',
       });
@@ -146,8 +153,8 @@ describe('BlogService (E2E)', () => {
     it('returns results in descending createdAt order', async () => {
       const blogs = await service.listBlogs(ownerUserId);
       for (let i = 1; i < blogs.data.length; i++) {
-        expect(blogs.data[i - 1].createdAt.getTime()).toBeGreaterThanOrEqual(
-          blogs.data[i].createdAt.getTime(),
+        expect(new Date(blogs.data[i - 1].createdAt).getTime()).toBeGreaterThanOrEqual(
+          new Date(blogs.data[i].createdAt).getTime(),
         );
       }
     });
@@ -156,6 +163,7 @@ describe('BlogService (E2E)', () => {
   describe('listAttachments', () => {
     it('anonymous: returns only published attachments', async () => {
       const blog = await service.createBlog(ownerUserId, {
+        title: 'Test Blog',
         content: 'Attachment visibility',
         status: 'published',
       });
@@ -177,6 +185,7 @@ describe('BlogService (E2E)', () => {
 
     it('authenticated owner: sees own attachments of all statuses', async () => {
       const blog = await service.createBlog(ownerUserId, {
+        title: 'Test Blog',
         content: 'For owner attachment list',
         status: 'published',
       });
@@ -203,6 +212,7 @@ describe('BlogService (E2E)', () => {
 
     it('status is persisted on create', async () => {
       const blog = await service.createBlog(ownerUserId, {
+        title: 'Test Blog',
         content: 'Status persist check',
         status: 'published',
       });
@@ -216,6 +226,7 @@ describe('BlogService (E2E)', () => {
 
     it('status is updated on updateAttachment', async () => {
       const blog = await service.createBlog(ownerUserId, {
+        title: 'Test Blog',
         content: 'Status update check',
         status: 'published',
       });
@@ -233,14 +244,15 @@ describe('BlogService (E2E)', () => {
     it('returns results in descending createdAt order', async () => {
       const attachments = await attachmentService.listAttachments(ownerUserId);
       for (let i = 1; i < attachments.length; i++) {
-        expect(attachments[i - 1].createdAt.getTime()).toBeGreaterThanOrEqual(
-          attachments[i].createdAt.getTime(),
+        expect(new Date(attachments[i - 1].createdAt).getTime()).toBeGreaterThanOrEqual(
+          new Date(attachments[i].createdAt).getTime(),
         );
       }
     });
 
     it('authenticated non-owner: cannot see draft attachments from others', async () => {
       const blog = await service.createBlog(ownerUserId, {
+        title: 'Test Blog',
         content: 'Attachment visibility',
         status: 'published',
       });
@@ -262,7 +274,7 @@ describe('BlogService (E2E)', () => {
 
   describe('createBlog', () => {
     it('creates a blog with default draft status', async () => {
-      const blog = await service.createBlog(ownerUserId, { content: 'Hello World' });
+      const blog = await service.createBlog(ownerUserId, { title: 'Test Blog', content: 'Hello World' });
       expect(blog.id).toBeDefined();
       expect(blog.content).toBe('Hello World');
       expect(blog.status).toBe('draft');
@@ -272,6 +284,7 @@ describe('BlogService (E2E)', () => {
 
     it('creates a blog with an explicit status', async () => {
       const blog = await service.createBlog(ownerUserId, {
+        title: 'Test Blog',
         content: 'Published post',
         status: 'published',
       });
@@ -281,7 +294,7 @@ describe('BlogService (E2E)', () => {
 
   describe('getBlog', () => {
     it('returns an existing blog with its attachments', async () => {
-      const created = await service.createBlog(ownerUserId, { content: 'Fetch me' });
+      const created = await service.createBlog(ownerUserId, { title: 'Test Blog', content: 'Fetch me' });
       const fetched = await service.getBlog(created.id, ownerUserId);
       expect(fetched.id).toBe(created.id);
       expect(fetched.attachments).toBeInstanceOf(Array);
@@ -292,13 +305,14 @@ describe('BlogService (E2E)', () => {
     });
 
     it('draft: owner can fetch own draft', async () => {
-      const draft = await service.createBlog(ownerUserId, { content: 'My draft', status: 'draft' });
+      const draft = await service.createBlog(ownerUserId, { title: 'Test Blog', content: 'My draft', status: 'draft' });
       const fetched = await service.getBlog(draft.id, ownerUserId);
       expect(fetched.id).toBe(draft.id);
     });
 
     it('draft: non-owner cannot fetch draft → FORBIDDEN', async () => {
       const draft = await service.createBlog(ownerUserId, {
+        title: 'Test Blog',
         content: 'Hidden draft',
         status: 'draft',
       });
@@ -309,6 +323,7 @@ describe('BlogService (E2E)', () => {
 
     it('draft: anonymous cannot fetch draft → FORBIDDEN', async () => {
       const draft = await service.createBlog(ownerUserId, {
+        title: 'Test Blog',
         content: 'Anon hidden draft',
         status: 'draft',
       });
@@ -324,13 +339,14 @@ describe('BlogService (E2E)', () => {
 
   describe('status changes', () => {
     it('transitions from draft to published', async () => {
-      const blog = await service.createBlog(ownerUserId, { content: 'Draft content' });
+      const blog = await service.createBlog(ownerUserId, { title: 'Test Blog', content: 'Draft content' });
       const updated = await service.updateBlog(blog.id, ownerUserId, { status: 'published' });
       expect(updated.status).toBe('published');
     });
 
     it('transitions from published to archived', async () => {
       const blog = await service.createBlog(ownerUserId, {
+        title: 'Test Blog',
         content: 'Going to archive',
         status: 'published',
       });
@@ -339,7 +355,7 @@ describe('BlogService (E2E)', () => {
     });
 
     it('updates content along with status', async () => {
-      const blog = await service.createBlog(ownerUserId, { content: 'Old content' });
+      const blog = await service.createBlog(ownerUserId, { title: 'Test Blog', content: 'Old content' });
       const updated = await service.updateBlog(blog.id, ownerUserId, {
         content: 'New content',
         status: 'published',
@@ -356,6 +372,7 @@ describe('BlogService (E2E)', () => {
   describe('locked blog', () => {
     it('prevents updating a locked blog', async () => {
       const blog = await service.createBlog(ownerUserId, {
+        title: 'Test Blog',
         content: 'Locked post',
         status: 'locked',
       });
@@ -366,6 +383,7 @@ describe('BlogService (E2E)', () => {
 
     it('prevents uploading an attachment to a locked blog', async () => {
       const blog = await service.createBlog(ownerUserId, {
+        title: 'Test Blog',
         content: 'Locked for attachments',
         status: 'locked',
       });
@@ -376,6 +394,7 @@ describe('BlogService (E2E)', () => {
 
     it('prevents deleting a locked blog', async () => {
       const blog = await service.createBlog(ownerUserId, {
+        title: 'Test Blog',
         content: 'Locked delete',
         status: 'locked',
       });
@@ -386,6 +405,7 @@ describe('BlogService (E2E)', () => {
 
     it('prevents updating an attachment on a locked blog', async () => {
       const blog = await service.createBlog(ownerUserId, {
+        title: 'Test Blog',
         content: 'Locked for attachment update',
       });
       const attachment = await attachmentService.createAttachment(blog.id, ownerUserId, smallFile, {});
@@ -398,6 +418,7 @@ describe('BlogService (E2E)', () => {
 
     it('prevents deleting an attachment on a locked blog', async () => {
       const blog = await service.createBlog(ownerUserId, {
+        title: 'Test Blog',
         content: 'Locked for attachment delete',
       });
       const attachment = await attachmentService.createAttachment(blog.id, ownerUserId, smallFile, {});
@@ -415,19 +436,19 @@ describe('BlogService (E2E)', () => {
 
   describe('permissions', () => {
     it('prevents a non-owner from updating a blog', async () => {
-      const blog = await service.createBlog(ownerUserId, { content: 'Owner only' });
+      const blog = await service.createBlog(ownerUserId, { title: 'Test Blog', content: 'Owner only' });
       await expect(
         service.updateBlog(blog.id, otherUserId, { content: 'Hacked' }),
       ).rejects.toThrow(ErrorDefinition);
     });
 
     it('prevents a non-owner from deleting a blog', async () => {
-      const blog = await service.createBlog(ownerUserId, { content: 'Cannot delete' });
+      const blog = await service.createBlog(ownerUserId, { title: 'Test Blog', content: 'Cannot delete' });
       await expect(service.deleteBlog(blog.id, otherUserId)).rejects.toThrow(ErrorDefinition);
     });
 
     it('prevents a non-owner from deleting an attachment', async () => {
-      const blog = await service.createBlog(ownerUserId, { content: 'With attachment' });
+      const blog = await service.createBlog(ownerUserId, { title: 'Test Blog', content: 'With attachment' });
       const attachment = await attachmentService.createAttachment(blog.id, ownerUserId, smallFile, {});
       await expect(attachmentService.deleteAttachment(attachment.id, otherUserId)).rejects.toThrow(
         ErrorDefinition,
@@ -437,7 +458,7 @@ describe('BlogService (E2E)', () => {
     });
 
     it('prevents a non-owner from updating an attachment', async () => {
-      const blog = await service.createBlog(ownerUserId, { content: 'Attachment owner' });
+      const blog = await service.createBlog(ownerUserId, { title: 'Test Blog', content: 'Attachment owner' });
       const attachment = await attachmentService.createAttachment(blog.id, ownerUserId, smallFile, {});
       await expect(
         attachmentService.updateAttachment(attachment.id, otherUserId, smallFile, {}),
@@ -452,7 +473,7 @@ describe('BlogService (E2E)', () => {
 
   describe('deleteBlog', () => {
     it('deletes a blog and makes it unretrievable', async () => {
-      const blog = await service.createBlog(ownerUserId, { content: 'To be deleted' });
+      const blog = await service.createBlog(ownerUserId, { title: 'Test Blog', content: 'To be deleted' });
       await service.deleteBlog(blog.id, ownerUserId);
       await expect(service.getBlog(blog.id)).rejects.toThrow(ErrorDefinition);
     });
@@ -468,7 +489,7 @@ describe('BlogService (E2E)', () => {
 
   describe('createAttachment', () => {
     it('uploads an attachment and returns metadata', async () => {
-      const blog = await service.createBlog(ownerUserId, { content: 'With file' });
+      const blog = await service.createBlog(ownerUserId, { title: 'Test Blog', content: 'With file' });
       const attachment = await attachmentService.createAttachment(blog.id, ownerUserId, smallFile, {});
 
       expect(attachment.id).toBeDefined();
@@ -489,7 +510,7 @@ describe('BlogService (E2E)', () => {
 
   describe('getAttachment', () => {
     it('returns a presigned URL and metadata for an existing attachment', async () => {
-      const blog = await service.createBlog(ownerUserId, { content: 'For presign' });
+      const blog = await service.createBlog(ownerUserId, { title: 'Test Blog', content: 'For presign' });
       const attachment = await attachmentService.createAttachment(blog.id, ownerUserId, smallFile, {});
 
       const result = await attachmentService.getAttachment(attachment.id);
@@ -506,7 +527,7 @@ describe('BlogService (E2E)', () => {
 
   describe('updateAttachment', () => {
     it('replaces the file and updates metadata', async () => {
-      const blog = await service.createBlog(ownerUserId, { content: 'Update attachment' });
+      const blog = await service.createBlog(ownerUserId, { title: 'Test Blog', content: 'Update attachment' });
       const attachment = await attachmentService.createAttachment(blog.id, ownerUserId, smallFile, {});
 
       const newFile = { buffer: Buffer.from('updated data'), mimetype: 'image/jpeg', size: 12 };
@@ -521,7 +542,7 @@ describe('BlogService (E2E)', () => {
 
   describe('deleteAttachment', () => {
     it('removes the attachment from the database', async () => {
-      const blog = await service.createBlog(ownerUserId, { content: 'Delete attachment' });
+      const blog = await service.createBlog(ownerUserId, { title: 'Test Blog', content: 'Delete attachment' });
       const attachment = await attachmentService.createAttachment(blog.id, ownerUserId, smallFile, {});
 
       await attachmentService.deleteAttachment(attachment.id, ownerUserId);
@@ -535,7 +556,7 @@ describe('BlogService (E2E)', () => {
 
   describe('attachment Firestore presence', () => {
     it('returns FORBIDDEN when a non-owner attempts to delete an attachment', async () => {
-      const blog = await service.createBlog(ownerUserId, { content: 'perm test' });
+      const blog = await service.createBlog(ownerUserId, { title: 'Test Blog', content: 'perm test' });
       const att = await attachmentService.createAttachment(blog.id, ownerUserId, smallFile, {});
       await expect(attachmentService.deleteAttachment(att.id, otherUserId)).rejects.toMatchObject({
         status: 'FORBIDDEN',
@@ -545,7 +566,7 @@ describe('BlogService (E2E)', () => {
     });
 
     it('persists the attachment document in Firestore after createAttachment', async () => {
-      const blog = await service.createBlog(ownerUserId, { content: 'firestore check' });
+      const blog = await service.createBlog(ownerUserId, { title: 'Test Blog', content: 'firestore check' });
       const att = await attachmentService.createAttachment(blog.id, ownerUserId, smallFile, {});
       const doc = await firebaseProvider.db.collection('attachments').doc(att.id).get();
       expect(doc.exists).toBe(true);
@@ -555,7 +576,7 @@ describe('BlogService (E2E)', () => {
     });
 
     it('removes the attachment document from Firestore after deleteAttachment', async () => {
-      const blog = await service.createBlog(ownerUserId, { content: 'delete check' });
+      const blog = await service.createBlog(ownerUserId, { title: 'Test Blog', content: 'delete check' });
       const att = await attachmentService.createAttachment(blog.id, ownerUserId, smallFile, {});
       await attachmentService.deleteAttachment(att.id, ownerUserId);
       const doc = await firebaseProvider.db.collection('attachments').doc(att.id).get();
@@ -569,7 +590,7 @@ describe('BlogService (E2E)', () => {
 
   describe('file size boundary', () => {
     it('accepts a file exactly at the limit', async () => {
-      const blog = await service.createBlog(ownerUserId, { content: 'Size boundary' });
+      const blog = await service.createBlog(ownerUserId, { title: 'Test Blog', content: 'Size boundary' });
       const exactFile = {
         buffer: Buffer.alloc(MAX_ATTACHMENT_SIZE),
         mimetype: 'image/png',
@@ -583,7 +604,7 @@ describe('BlogService (E2E)', () => {
     });
 
     it('rejects a file one byte over the limit', async () => {
-      const blog = await service.createBlog(ownerUserId, { content: 'Too large' });
+      const blog = await service.createBlog(ownerUserId, { title: 'Test Blog', content: 'Too large' });
       const oversizedFile = {
         buffer: Buffer.alloc(MAX_ATTACHMENT_SIZE + 1),
         mimetype: 'image/png',
@@ -595,7 +616,7 @@ describe('BlogService (E2E)', () => {
     });
 
     it('rejects an oversized replacement file in updateAttachment', async () => {
-      const blog = await service.createBlog(ownerUserId, { content: 'Update size check' });
+      const blog = await service.createBlog(ownerUserId, { title: 'Test Blog', content: 'Update size check' });
       const attachment = await attachmentService.createAttachment(blog.id, ownerUserId, smallFile, {});
 
       const oversizedFile = {

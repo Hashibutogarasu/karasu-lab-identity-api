@@ -1,17 +1,8 @@
 import { z } from 'zod';
 import { createZodDto } from 'nestjs-zod'
-import { attachmentResponseSchema } from './attachment-response.dto.js';
-import { statusSchema } from './status.schema.js';
+import { blogDataSchema } from '@hashibutogarasu/common';
 
-export const blogResponseSchema = z.object({
-	id: z.string(),
-	content: z.string(),
-	authorId: z.string(),
-	status: statusSchema,
-	createdAt: z.string(),
-	updatedAt: z.string(),
-	attachments: z.array(attachmentResponseSchema).optional(),
-});
+export const blogResponseSchema = blogDataSchema;
 
 export class BlogResponseDto extends createZodDto(blogResponseSchema) { }
 

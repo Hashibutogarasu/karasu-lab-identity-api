@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/require-await */
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
 import getPrisma from '../prisma.js';
 import { AbstractRepository } from '../shared/repository/abstract.repository.js';
@@ -13,7 +13,7 @@ import { IRepository } from '../shared/repository/repository.interface.js';
 export class AuthorService extends AbstractRepository<UserResponseDto> implements IRepository<UserResponseDto> {
   private readonly prisma: PrismaClient = getPrisma();
 
-  constructor(firebase: IFirebaseAdminProvider) {
+  constructor(@Inject(IFirebaseAdminProvider) firebase: IFirebaseAdminProvider) {
     super(firebase, 'users');
   }
 

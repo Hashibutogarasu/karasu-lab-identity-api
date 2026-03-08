@@ -1,6 +1,7 @@
 import { DocumentSnapshot, FieldValue } from 'firebase-admin/firestore';
 import { IRepository } from './repository.interface.js';
 import { IFirebaseAdminProvider } from '../firebase/firebase-admin.provider.interface.js';
+import { toDateString } from '../../utils/date.util.js';
 
 /**
  * Abstract implementation of a Firestore repository.
@@ -31,16 +32,12 @@ export abstract class AbstractRepository<T> implements IRepository<T> {
    */
   protected mapDoc(doc: DocumentSnapshot): T {
     const data = doc.data();
-    const toDate = (val: unknown): Date =>
-      val != null && typeof (val as { toDate?: unknown }).toDate === 'function'
-        ? (val as { toDate(): Date }).toDate()
-        : (val as Date);
 
     return {
       ...data,
       id: doc.id,
-      createdAt: toDate(data?.createdAt),
-      updatedAt: toDate(data?.updatedAt),
+      createdAt: toDateString(data?.createdAt),
+      updatedAt: toDateString(data?.updatedAt),
     } as unknown as T;
   }
 

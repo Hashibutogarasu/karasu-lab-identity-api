@@ -44,6 +44,7 @@ describe('BlogService — presigned upload URL and sync', () => {
   describe('issueAttachmentUploadUrl', () => {
     it('returns a presigned upload URL with the expected shape', async () => {
       const blog = await service.createBlog(authorId, {
+        title: 'Test Blog',
         content: 'Test blog',
         status: 'published',
       });
@@ -62,6 +63,7 @@ describe('BlogService — presigned upload URL and sync', () => {
 
     it('the upload URL is usable: uploading through it makes the object visible in storage', async () => {
       const blog = await service.createBlog(authorId, {
+        title: 'Test Blog',
         content: 'Upload flow blog',
         status: 'published',
       });
@@ -87,6 +89,7 @@ describe('BlogService — presigned upload URL and sync', () => {
 
     it('throws BLOG.LOCKED when the blog status is locked', async () => {
       const blog = await service.createBlog(authorId, {
+        title: 'Test Blog',
         content: 'Locked blog',
         status: 'locked',
       });
@@ -100,6 +103,7 @@ describe('BlogService — presigned upload URL and sync', () => {
 
     it('does not create a Firestore attachment document before the file is uploaded', async () => {
       const blog = await service.createBlog(authorId, {
+        title: 'Test Blog',
         content: 'No doc blog',
         status: 'published',
       });
@@ -117,6 +121,7 @@ describe('BlogService — presigned upload URL and sync', () => {
   describe('syncAttachmentFromStorage', () => {
     it('syncs to Firestore after uploading via the presigned URL', async () => {
       const blog = await service.createBlog(authorId, {
+        title: 'Test Blog',
         content: 'Sync blog',
         status: 'published',
       });
@@ -146,6 +151,7 @@ describe('BlogService — presigned upload URL and sync', () => {
 
     it('respects the optional status field when provided', async () => {
       const blog = await service.createBlog(authorId, {
+        title: 'Test Blog',
         content: 'Status sync blog',
         status: 'published',
       });
@@ -170,6 +176,7 @@ describe('BlogService — presigned upload URL and sync', () => {
 
     it('throws BLOG.ATTACHMENT_NOT_FOUND when the file was never uploaded via the presigned URL', async () => {
       const blog = await service.createBlog(authorId, {
+        title: 'Test Blog',
         content: 'Missing upload blog',
         status: 'published',
       });
@@ -195,6 +202,7 @@ describe('BlogService — presigned upload URL and sync', () => {
 
     it('throws BLOG.LOCKED when the blog status is locked', async () => {
       const blog = await service.createBlog(authorId, {
+        title: 'Test Blog',
         content: 'Locked for sync',
         status: 'locked',
       });

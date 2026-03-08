@@ -53,14 +53,13 @@ describe('AuthorController (e2e)', () => {
             get: (key: string) => (key === 'auth.roles' ? [] : null),
           },
         },
-        {
-          provide: RolesGuard,
-          useValue: {
-            canActivate: () => Promise.resolve(true),
-          },
-        },
       ],
-    }).compile();
+    })
+    .overrideGuard(RolesGuard)
+    .useValue({
+      canActivate: () => Promise.resolve(true),
+    })
+    .compile();
 
     await setupI18n();
 

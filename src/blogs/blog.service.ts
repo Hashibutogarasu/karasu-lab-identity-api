@@ -1,17 +1,25 @@
 import { Inject, Injectable } from '@nestjs/common';
 import cuid from 'cuid';
 import { FieldValue } from 'firebase-admin/firestore';
-import { IFirebaseAdminProvider } from '../shared/firebase/firebase-admin.provider.interface.js';
+
+import { BlogData, BlogStatus } from '@hashibutogarasu/common';
+import { PrismaClient } from '@prisma/client';
+
+import { AbstractRepository } from '../shared/repository/abstract.repository.js';
+import { AttachmentService } from '../attachments/attachment.service.js';
 import { ErrorCodes } from '../shared/errors/error.codes.js';
+import { getPrisma } from '../prisma.js';
+import { IFirebaseAdminProvider } from '../shared/firebase/firebase-admin.provider.interface.js';
 import { IObjectStorageService } from '../storage/object-storage.interface.js';
 import type { IObjectStorage } from '../storage/object-storage.interface.js';
 import type { CreateBlogDto } from './dto/create-blog.dto.js';
-import type { ListBlogsQueryDto } from './dto/list-blogs-query.dto.js';
-import type { Status } from './dto/status.schema.js';
 import type { UpdateBlogDto } from './dto/update-blog.dto.js';
-import { PrismaClient } from '@prisma/client';
-import getPrisma from '../prisma.js';
+import type { ListBlogsQueryDto } from './dto/list-blogs-query.dto.js';
+import { mapAttachments } from '../utils/attachment.util.js';
 
+/**
+ * Paginated result wrapper.
+ */
 export interface PaginatedResult<T> {
 	data: T[];
 	total: number;
@@ -19,19 +27,6 @@ export interface PaginatedResult<T> {
 	limit: number;
 	totalPages: number;
 }
-
-export interface BlogData {
-	id: string;
-	content: string;
-	authorId: string;
-	status: Status;
-	createdAt: Date;
-	updatedAt: Date;
-	attachments?: any[];
-}
-
-import { AbstractRepository } from '../shared/repository/abstract.repository.js';
-import { AttachmentService } from '../attachments/attachment.service.js';
 
 @Injectable()
 export class BlogService extends AbstractRepository<BlogData> {
@@ -42,7 +37,6 @@ export class BlogService extends AbstractRepository<BlogData> {
 	) {
 		super(firebase, 'blogs');
 	}
-
 
 	private readonly prisma: PrismaClient = getPrisma();
 
@@ -72,13 +66,13 @@ export class BlogService extends AbstractRepository<BlogData> {
 		const snapshot = await this.collection.orderBy('createdAt', sort).get();
 		const allBlogs = snapshot.docs.map((d) => this.mapDoc(d));
 
-		let filtered: BlogData[];
+		let filtered: BlogData[] = allBlogs as unknown as BlogData[];
 		if (mine && userId) {
-			filtered = allBlogs.filter((blog) => blog.authorId === userId);
+			filtered = filtered.filter((blog) => blog.authorId === userId);
 		} else {
-			filtered = allBlogs.filter((blog) => {
+			filtered = filtered.filter((blog) => {
 				if (userId && blog.authorId === userId) return true;
-				return blog.status === 'published';
+				return blog.status === BlogStatus.PUBLISHED;
 			});
 		}
 
@@ -97,21 +91,11 @@ export class BlogService extends AbstractRepository<BlogData> {
 					this.storage.getObject(`blogs/${blog.id}/content`),
 					this.attachmentsCol.where('blogId', '==', blog.id).get(),
 				]);
-				const toDate = (val: unknown): Date =>
-					val != null && typeof (val as { toDate?: unknown }).toDate === 'function'
-						? (val as { toDate(): Date }).toDate()
-						: (val as Date);
-				
 				return {
 					...blog,
 					content: contentBuffer?.toString('utf-8') ?? '',
-					attachments: attachmentsSnapshot.docs.map((d) => ({
-						id: d.id,
-						...d.data(),
-						createdAt: toDate(d.data()?.createdAt),
-						updatedAt: toDate(d.data()?.updatedAt),
-					})),
-				};
+					attachments: mapAttachments(attachmentsSnapshot),
+				} as BlogData;
 			}),
 		);
 
@@ -132,7 +116,7 @@ export class BlogService extends AbstractRepository<BlogData> {
 			.where('authorId', '==', userId)
 			.orderBy('createdAt', sort)
 			.get();
-		let allBlogs = snapshot.docs.map((d) => this.mapDoc(d));
+		let allBlogs: BlogData[] = snapshot.docs.map((d) => this.mapDoc(d)) as unknown as BlogData[];
 
 		if (status) {
 			allBlogs = allBlogs.filter((blog) => blog.status === status);
@@ -149,42 +133,32 @@ export class BlogService extends AbstractRepository<BlogData> {
 					this.storage.getObject(`blogs/${blog.id}/content`),
 					this.attachmentsCol.where('blogId', '==', blog.id).get(),
 				]);
-				const toDate = (val: unknown): Date =>
-					val != null && typeof (val as { toDate?: unknown }).toDate === 'function'
-						? (val as { toDate(): Date }).toDate()
-						: (val as Date);
-				
 				return {
 					...blog,
 					content: contentBuffer?.toString('utf-8') ?? '',
-					attachments: attachmentsSnapshot.docs.map((d) => ({
-						id: d.id,
-						...d.data(),
-						createdAt: toDate(d.data()?.createdAt),
-						updatedAt: toDate(d.data()?.updatedAt),
-					})),
-				};
+					attachments: mapAttachments(attachmentsSnapshot),
+				} as BlogData;
 			}),
 		);
 
 		return { data, total, page, limit, totalPages };
 	}
 
-
-
 	async createBlog(authorId: string, dto: CreateBlogDto): Promise<BlogData> {
 		const id = cuid();
 		const now = FieldValue.serverTimestamp();
 		const data = {
 			authorId,
-			status: dto.status ?? 'draft',
+			title: dto.title,
+			tags: dto.tags ?? [],
+			status: dto.status ?? BlogStatus.DRAFT,
 			createdAt: now,
 			updatedAt: now,
 		};
 
 		await Promise.all([
 			this.collection.doc(id).set(data),
-			this.storage.putObject(`blogs/${id}/content`, Buffer.from(dto.content), 'text/plain; charset=utf-8'),
+			this.storage.putObject(`blogs/${id}/content`, Buffer.from(dto.content ?? ''), 'text/plain; charset=utf-8'),
 		]);
 		return this.getBlog(id, authorId);
 	}
@@ -193,10 +167,9 @@ export class BlogService extends AbstractRepository<BlogData> {
 		const doc = await this.collection.doc(id).get();
 		if (!doc.exists) throw ErrorCodes.BLOG.NOT_FOUND;
 
-		const blog = this.mapDoc(doc);
-		const PUBLISHED: Status = 'published';
+		const blog = this.mapDoc(doc) as unknown as BlogData;
 
-		if (blog.status !== PUBLISHED && blog.authorId !== userId) {
+		if (blog.status !== BlogStatus.PUBLISHED && blog.authorId !== userId) {
 			throw ErrorCodes.BLOG.FORBIDDEN;
 		}
 
@@ -206,17 +179,7 @@ export class BlogService extends AbstractRepository<BlogData> {
 		]);
 
 		blog.content = contentBuffer?.toString('utf-8') ?? '';
-		const toDate = (val: unknown): Date =>
-			val != null && typeof (val as { toDate?: unknown }).toDate === 'function'
-				? (val as { toDate(): Date }).toDate()
-				: (val as Date);
-
-		blog.attachments = attachmentsSnapshot.docs.map((d) => ({
-			id: d.id,
-			...d.data(),
-			createdAt: toDate(d.data()?.createdAt),
-			updatedAt: toDate(d.data()?.updatedAt),
-		}));
+		blog.attachments = mapAttachments(attachmentsSnapshot);
 
 		return blog;
 	}
@@ -227,12 +190,14 @@ export class BlogService extends AbstractRepository<BlogData> {
 
 		const blog = doc.data();
 		if (blog?.['authorId'] !== authorId) throw ErrorCodes.BLOG.FORBIDDEN;
-		if (blog?.['status'] === 'locked') throw ErrorCodes.BLOG.LOCKED;
+		if (blog?.['status'] === BlogStatus.LOCKED) throw ErrorCodes.BLOG.LOCKED;
 
 		const updateData: Record<string, unknown> = {
 			updatedAt: FieldValue.serverTimestamp(),
 		};
 		if (dto.status !== undefined) updateData['status'] = dto.status;
+		if (dto.title !== undefined) updateData['title'] = dto.title;
+		if (dto.tags !== undefined) updateData['tags'] = dto.tags;
 
 		const ops: Promise<unknown>[] = [this.collection.doc(id).update(updateData)];
 		if (dto.content !== undefined) {
@@ -248,7 +213,7 @@ export class BlogService extends AbstractRepository<BlogData> {
 
 		const blog = doc.data();
 		if (blog?.['authorId'] !== authorId) throw ErrorCodes.BLOG.FORBIDDEN;
-		if (blog?.['status'] === 'locked') throw ErrorCodes.BLOG.LOCKED;
+		if (blog?.['status'] === BlogStatus.LOCKED) throw ErrorCodes.BLOG.LOCKED;
 
 		const attachmentsSnapshot = await this.attachmentsCol.where('blogId', '==', id).get();
 		const attachments = attachmentsSnapshot.docs.map((d) => d.data());

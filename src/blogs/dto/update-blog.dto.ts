@@ -1,11 +1,11 @@
-import { z } from 'zod';
-import { createZodDto } from 'nestjs-zod'
+import { createZodDto } from 'nestjs-zod';
+import { blogDataSchema } from '@hashibutogarasu/common';
 
-import { statusSchema } from './status.schema.js';
-
-export const updateBlogSchema = z.object({
-  content: z.string().min(1).optional(),
-  status: statusSchema.optional(),
-});
+export const updateBlogSchema = blogDataSchema.pick({
+  title: true,
+  content: true,
+  tags: true,
+  status: true,
+}).partial();
 
 export class UpdateBlogDto extends createZodDto(updateBlogSchema) { }

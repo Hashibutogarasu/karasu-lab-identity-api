@@ -9,38 +9,35 @@ import type { SyncAttachmentDto } from '../blogs/dto/sync-attachment.dto.js';
 import type { CreateAttachmentDto } from '../blogs/dto/create-attachment.dto.js';
 import type { UpdateAttachmentDto } from '../blogs/dto/update-attachment.dto.js';
 import type { CreateAttachmentUploadUrlDto } from '../blogs/dto/create-attachment-upload-url.dto.js';
-import { Status } from '../blogs/dto/status.schema.js';
-import { BlogStatus } from '@hashibutogarasu/common';
+import { AttachmentData, BlogStatus } from '@hashibutogarasu/common';
 
-/** Maximum allowed attachment size: 8 MB (fits a 4K JPEG/PNG/WebP image). */
+export interface AttachmentFile {
+  fieldname: string;
+  originalname: string;
+  encoding: string;
+  mimetype: string;
+  size: number;
+  buffer: Buffer;
+}
+
+/**
+ * Maximum attachment size (8 MB).
+ */
 export const MAX_ATTACHMENT_SIZE = 8 * 1024 * 1024;
 
-/** Expiry duration in seconds for presigned upload URLs. */
-export const UPLOAD_PRESIGNED_URL_EXPIRES_IN = 900;
+/**
+ * Presigned upload URL expiration time (15 minutes).
+ */
+export const UPLOAD_PRESIGNED_URL_EXPIRES_IN = 15 * 60;
 
+/**
+ * Result of issuing a presigned upload URL.
+ */
 export interface AttachmentUploadUrlResult {
   uploadUrl: string;
   attachmentId: string;
   key: string;
   expiresIn: number;
-}
-
-export interface AttachmentFile {
-  buffer: Buffer;
-  mimetype: string;
-  size: number;
-}
-
-export interface AttachmentData {
-  id: string;
-  blogId: string;
-  key: string;
-  contentType: string;
-  size: number;
-  status: Status;
-  authorId: string;
-  createdAt: Date;
-  updatedAt: Date;
 }
 
 @Injectable()
@@ -173,11 +170,11 @@ export class AttachmentService extends AbstractRepository<AttachmentData> {
     if (!blogDoc.exists) throw ErrorCodes.BLOG.NOT_FOUND;
     
     const blogData = blogDoc.data();
-      if (blogData?.authorId !== authorId) {
-        throw ErrorCodes.BLOG.FORBIDDEN;
-      }
-  
-      if (blogData?.status as BlogStatus === 'locked') throw ErrorCodes.BLOG.LOCKED;
+    if (blogData?.authorId !== authorId) {
+      throw ErrorCodes.BLOG.FORBIDDEN;
+    }
+
+    if ((blogData?.status as BlogStatus) === 'locked') throw ErrorCodes.BLOG.LOCKED;
 
     const attachmentId = cuid();
     const key = `blogs/${blogId}/attachments/${attachmentId}`;
