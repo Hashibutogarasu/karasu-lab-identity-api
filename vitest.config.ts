@@ -12,7 +12,6 @@ export default defineConfig({
     },
   },
   test: {
-    watchExclude: ['**/node_modules/**', '**/dist/**'],
     globals: true,
     environment: 'node',
     include: ['**/*.spec.ts', '**/*.e2e-spec.ts'],
