@@ -1,7 +1,7 @@
 import { dotEnvService } from '../../src/shared/config/dotenv.service.js';
 dotEnvService.init();
 
-import { beforeAll, afterAll } from 'vitest';
+import { beforeAll, afterAll, beforeEach } from 'vitest';
 import { createAuth } from '../../src/auth.js';
 import { genericOAuth } from "better-auth/plugins";
 import { MockConfigService } from '../mocks/config.service.mock.js';
@@ -64,5 +64,12 @@ beforeAll(async () => {
 afterAll(async () => {
   if (testDbService) {
     await testDbService.close();
+  }
+});
+
+beforeEach(async () => {
+  if (testAuth) {
+    const ctx = await testAuth.$context;
+    ctx.session = null;
   }
 });

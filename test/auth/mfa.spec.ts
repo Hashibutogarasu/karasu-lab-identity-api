@@ -1,19 +1,46 @@
 import { describe, it, expect } from 'vitest';
 import { testAuth } from './auth.setup.js';
 import { createOTP } from '@better-auth/utils/otp';
+import { base32 } from '@better-auth/utils/base32';
 
 const BASE_URL = 'http://localhost:3000/api/auth';
 
-async function request(path: string, options: RequestInit = {}) {
+function extractCookies(headers: Headers): string {
+  const setCookies: string[] = typeof headers.getSetCookie === 'function'
+    ? headers.getSetCookie()
+    : (headers.get('set-cookie') ?? '').split(/,(?=[^ ])/).map((s) => s.trim());
+
+  // Collect the latest value per cookie name, treating empty-value cookies
+  // (Max-Age=0 / cleared) as deletions so they override prior values.
+  const cookieMap = new Map<string, string>();
+  for (const setCookie of setCookies) {
+    const parts = setCookie.split(';');
+    const nameValue = (parts[0] ?? '').trim();
+    const eqIdx = nameValue.indexOf('=');
+    if (eqIdx === -1) continue;
+    const name = nameValue.slice(0, eqIdx);
+    const value = nameValue.slice(eqIdx + 1);
+    cookieMap.set(name, value);
+  }
+
+  // Only include cookies that still have a non-empty value (not cleared).
+  return Array.from(cookieMap.entries())
+    .filter(([, value]) => value !== '')
+    .map(([name, value]) => `${name}=${value}`)
+    .join('; ');
+}
+
+async function request(path: string, options: RequestInit = {}, cookie?: string) {
   const url = BASE_URL + (path.startsWith('/') ? path : `/${path}`);
-  const req = new Request(url, {
-    headers: {
-      'Content-Type': 'application/json',
-      Host: 'localhost:3000',
-      Origin: 'http://localhost:3000',
-    },
-    ...options,
-  });
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    Host: 'localhost:3000',
+    Origin: 'http://localhost:3000',
+  };
+  if (cookie) headers['Cookie'] = cookie;
+  const ctx = await testAuth.$context;
+  ctx.session = null;
+  const req = new Request(url, { ...options, headers });
   return testAuth.handler(req);
 }
 
@@ -41,26 +68,29 @@ async function setupUser(email: string, password: string): Promise<{ cookie: str
   if (signInRes.status !== 200) {
     throw new Error(`sign-in failed (${signInRes.status}): ${await signInRes.text()}`);
   }
-  const cookie = signInRes.headers.get('set-cookie') ?? '';
+  const cookie = extractCookies(signInRes.headers);
   return { cookie, userId: user.id };
 }
 
-async function enableTwoFactor(cookie: string, password: string) {
-  const res = await request('/two-factor/enable', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', Cookie: cookie },
-    body: JSON.stringify({ password }),
-  });
+async function enableTwoFactor(cookie: string, password: string): Promise<{ totpURI: string; backupCodes: string[]; cookie: string }> {
+  const res = await request(
+    '/two-factor/enable',
+    { method: 'POST', body: JSON.stringify({ password }) },
+    cookie,
+  );
   if (res.status !== 200) {
     throw new Error(`enable 2FA failed (${res.status}): ${await res.text()}`);
   }
-  return res.json() as Promise<{ totpURI: string; backupCodes: string[] }>;
+  const updatedCookie = extractCookies(res.headers) || cookie;
+  return { ...(await res.json() as { totpURI: string; backupCodes: string[] }), cookie: updatedCookie };
 }
 
 async function generateTOTPCode(totpURI: string): Promise<string> {
   const url = new URL(totpURI);
-  const secret = url.searchParams.get('secret') ?? '';
-  return createOTP(secret, { digits: 6, period: 30 }).totp();
+  const base32Secret = url.searchParams.get('secret') ?? '';
+  const rawBytes = base32.decode(base32Secret);
+  const rawSecret = new TextDecoder().decode(rawBytes);
+  return createOTP(rawSecret, { digits: 6, period: 30 }).totp();
 }
 
 async function signIn(email: string, password: string) {
@@ -68,7 +98,7 @@ async function signIn(email: string, password: string) {
     method: 'POST',
     body: JSON.stringify({ email, password }),
   });
-  return { res, cookie: res.headers.get('set-cookie') ?? '' };
+  return { res, cookie: extractCookies(res.headers) };
 }
 
 describe('Two-Factor Authentication — enable and disable', () => {
@@ -83,11 +113,11 @@ describe('Two-Factor Authentication — enable and disable', () => {
 
   it('rejects enabling 2FA with wrong password', async () => {
     const { cookie } = await setupUser('mfa-enable-wrong-pw@example.com', 'Password123!');
-    const res = await request('/two-factor/enable', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Cookie: cookie },
-      body: JSON.stringify({ password: 'WrongPassword!' }),
-    });
+    const res = await request(
+      '/two-factor/enable',
+      { method: 'POST', body: JSON.stringify({ password: 'WrongPassword!' }) },
+      cookie,
+    );
     expect(res.status).not.toBe(200);
   });
 
@@ -101,21 +131,22 @@ describe('Two-Factor Authentication — enable and disable', () => {
 
   it('disables 2FA after verifying TOTP once', async () => {
     const { cookie } = await setupUser('mfa-disable@example.com', 'Password123!');
-    const { totpURI } = await enableTwoFactor(cookie, 'Password123!');
+    const { totpURI, cookie: enabledCookie } = await enableTwoFactor(cookie, 'Password123!');
 
     const code = await generateTOTPCode(totpURI);
-    const verifyRes = await request('/two-factor/verify-totp', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Cookie: cookie },
-      body: JSON.stringify({ code }),
-    });
+    const verifyRes = await request(
+      '/two-factor/verify-totp',
+      { method: 'POST', body: JSON.stringify({ code }) },
+      enabledCookie,
+    );
     expect(verifyRes.status).toBe(200);
+    const newCookie = extractCookies(verifyRes.headers);
 
-    const disableRes = await request('/two-factor/disable', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Cookie: verifyRes.headers.get('set-cookie') ?? cookie },
-      body: JSON.stringify({ password: 'Password123!' }),
-    });
+    const disableRes = await request(
+      '/two-factor/disable',
+      { method: 'POST', body: JSON.stringify({ password: 'Password123!' }) },
+      newCookie || enabledCookie,
+    );
     expect(disableRes.status).toBe(200);
     const body = await disableRes.json() as { status: boolean };
     expect(body.status).toBe(true);
@@ -123,13 +154,13 @@ describe('Two-Factor Authentication — enable and disable', () => {
 
   it('rejects disabling 2FA with wrong password', async () => {
     const { cookie } = await setupUser('mfa-disable-wrong-pw@example.com', 'Password123!');
-    await enableTwoFactor(cookie, 'Password123!');
+    const { cookie: enabledCookie } = await enableTwoFactor(cookie, 'Password123!');
 
-    const res = await request('/two-factor/disable', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Cookie: cookie },
-      body: JSON.stringify({ password: 'BadPassword!' }),
-    });
+    const res = await request(
+      '/two-factor/disable',
+      { method: 'POST', body: JSON.stringify({ password: 'BadPassword!' }) },
+      enabledCookie,
+    );
     expect(res.status).not.toBe(200);
   });
 });
@@ -137,14 +168,14 @@ describe('Two-Factor Authentication — enable and disable', () => {
 describe('Two-Factor Authentication — sign-in flow', () => {
   it('returns twoFactorRedirect and does NOT set a session cookie when 2FA is enabled', async () => {
     const { cookie } = await setupUser('mfa-signin-block@example.com', 'Password123!');
-    const { totpURI } = await enableTwoFactor(cookie, 'Password123!');
+    const { totpURI, cookie: enabledCookie } = await enableTwoFactor(cookie, 'Password123!');
 
     const code = await generateTOTPCode(totpURI);
-    const verifyRes = await request('/two-factor/verify-totp', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Cookie: cookie },
-      body: JSON.stringify({ code }),
-    });
+    const verifyRes = await request(
+      '/two-factor/verify-totp',
+      { method: 'POST', body: JSON.stringify({ code }) },
+      enabledCookie,
+    );
     expect(verifyRes.status).toBe(200);
 
     const { res, cookie: twoFactorCookie } = await signIn('mfa-signin-block@example.com', 'Password123!');
@@ -152,52 +183,50 @@ describe('Two-Factor Authentication — sign-in flow', () => {
 
     expect(res.status).toBe(200);
     expect(body.twoFactorRedirect).toBe(true);
-
-    expect(twoFactorCookie).toBeTruthy();
-    expect(twoFactorCookie).not.toContain('better-auth.session_token');
+    expect(twoFactorCookie).toContain('better-auth.two_factor=');
   });
 
   it('completes sign-in by verifying TOTP and issues a session cookie', async () => {
     const { cookie } = await setupUser('mfa-signin-complete@example.com', 'Password123!');
-    const { totpURI } = await enableTwoFactor(cookie, 'Password123!');
+    const { totpURI, cookie: enabledCookie } = await enableTwoFactor(cookie, 'Password123!');
 
     const activateCode = await generateTOTPCode(totpURI);
-    await request('/two-factor/verify-totp', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Cookie: cookie },
-      body: JSON.stringify({ code: activateCode }),
-    });
+    await request(
+      '/two-factor/verify-totp',
+      { method: 'POST', body: JSON.stringify({ code: activateCode }) },
+      enabledCookie,
+    );
 
     const { cookie: tfCookie } = await signIn('mfa-signin-complete@example.com', 'Password123!');
 
     const code = await generateTOTPCode(totpURI);
-    const finalRes = await request('/two-factor/verify-totp', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Cookie: tfCookie },
-      body: JSON.stringify({ code }),
-    });
+    const finalRes = await request(
+      '/two-factor/verify-totp',
+      { method: 'POST', body: JSON.stringify({ code }) },
+      tfCookie,
+    );
     expect(finalRes.status).toBe(200);
     expect(finalRes.headers.get('set-cookie')).toBeTruthy();
   });
 
   it('rejects TOTP verification with an invalid code', async () => {
     const { cookie } = await setupUser('mfa-invalid-code@example.com', 'Password123!');
-    const { totpURI } = await enableTwoFactor(cookie, 'Password123!');
+    const { totpURI, cookie: enabledCookie } = await enableTwoFactor(cookie, 'Password123!');
 
     const activateCode = await generateTOTPCode(totpURI);
-    await request('/two-factor/verify-totp', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Cookie: cookie },
-      body: JSON.stringify({ code: activateCode }),
-    });
+    await request(
+      '/two-factor/verify-totp',
+      { method: 'POST', body: JSON.stringify({ code: activateCode }) },
+      enabledCookie,
+    );
 
     const { cookie: tfCookie } = await signIn('mfa-invalid-code@example.com', 'Password123!');
 
-    const res = await request('/two-factor/verify-totp', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Cookie: tfCookie },
-      body: JSON.stringify({ code: '000000' }),
-    });
+    const res = await request(
+      '/two-factor/verify-totp',
+      { method: 'POST', body: JSON.stringify({ code: '000000' }) },
+      tfCookie,
+    );
     expect(res.status).not.toBe(200);
     const body = await res.json() as { message?: string; code?: string };
     expect(body.code ?? body.message).toBeTruthy();
@@ -205,22 +234,22 @@ describe('Two-Factor Authentication — sign-in flow', () => {
 
   it('rejects TOTP verification with an empty code', async () => {
     const { cookie } = await setupUser('mfa-empty-code@example.com', 'Password123!');
-    const { totpURI } = await enableTwoFactor(cookie, 'Password123!');
+    const { totpURI, cookie: enabledCookie } = await enableTwoFactor(cookie, 'Password123!');
 
     const activateCode = await generateTOTPCode(totpURI);
-    await request('/two-factor/verify-totp', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Cookie: cookie },
-      body: JSON.stringify({ code: activateCode }),
-    });
+    await request(
+      '/two-factor/verify-totp',
+      { method: 'POST', body: JSON.stringify({ code: activateCode }) },
+      enabledCookie,
+    );
 
     const { cookie: tfCookie } = await signIn('mfa-empty-code@example.com', 'Password123!');
 
-    const res = await request('/two-factor/verify-totp', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Cookie: tfCookie },
-      body: JSON.stringify({ code: '' }),
-    });
+    const res = await request(
+      '/two-factor/verify-totp',
+      { method: 'POST', body: JSON.stringify({ code: '' }) },
+      tfCookie,
+    );
     expect(res.status).not.toBe(200);
   });
 
@@ -236,71 +265,71 @@ describe('Two-Factor Authentication — sign-in flow', () => {
 describe('Two-Factor Authentication — backup codes', () => {
   it('completes sign-in with a valid backup code', async () => {
     const { cookie } = await setupUser('mfa-backup-valid@example.com', 'Password123!');
-    const { totpURI, backupCodes } = await enableTwoFactor(cookie, 'Password123!');
+    const { totpURI, backupCodes, cookie: enabledCookie } = await enableTwoFactor(cookie, 'Password123!');
 
     const code = await generateTOTPCode(totpURI);
-    await request('/two-factor/verify-totp', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Cookie: cookie },
-      body: JSON.stringify({ code }),
-    });
+    await request(
+      '/two-factor/verify-totp',
+      { method: 'POST', body: JSON.stringify({ code }) },
+      enabledCookie,
+    );
 
     const { cookie: tfCookie } = await signIn('mfa-backup-valid@example.com', 'Password123!');
 
-    const res = await request('/two-factor/verify-backup-code', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Cookie: tfCookie },
-      body: JSON.stringify({ code: backupCodes[0] }),
-    });
+    const res = await request(
+      '/two-factor/verify-backup-code',
+      { method: 'POST', body: JSON.stringify({ code: backupCodes[0] }) },
+      tfCookie,
+    );
     expect(res.status).toBe(200);
   });
 
   it('rejects an invalid backup code', async () => {
     const { cookie } = await setupUser('mfa-backup-invalid@example.com', 'Password123!');
-    const { totpURI } = await enableTwoFactor(cookie, 'Password123!');
+    const { totpURI, cookie: enabledCookie } = await enableTwoFactor(cookie, 'Password123!');
 
     const code = await generateTOTPCode(totpURI);
-    await request('/two-factor/verify-totp', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Cookie: cookie },
-      body: JSON.stringify({ code }),
-    });
+    await request(
+      '/two-factor/verify-totp',
+      { method: 'POST', body: JSON.stringify({ code }) },
+      enabledCookie,
+    );
 
     const { cookie: tfCookie } = await signIn('mfa-backup-invalid@example.com', 'Password123!');
 
-    const res = await request('/two-factor/verify-backup-code', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Cookie: tfCookie },
-      body: JSON.stringify({ code: 'XXXXX-XXXXX' }),
-    });
+    const res = await request(
+      '/two-factor/verify-backup-code',
+      { method: 'POST', body: JSON.stringify({ code: 'XXXXX-XXXXX' }) },
+      tfCookie,
+    );
     expect(res.status).not.toBe(200);
   });
 
   it('rejects reuse of an already-consumed backup code', async () => {
     const { cookie } = await setupUser('mfa-backup-reuse@example.com', 'Password123!');
-    const { totpURI, backupCodes } = await enableTwoFactor(cookie, 'Password123!');
+    const { totpURI, backupCodes, cookie: enabledCookie } = await enableTwoFactor(cookie, 'Password123!');
 
     const activateCode = await generateTOTPCode(totpURI);
-    await request('/two-factor/verify-totp', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Cookie: cookie },
-      body: JSON.stringify({ code: activateCode }),
-    });
+    await request(
+      '/two-factor/verify-totp',
+      { method: 'POST', body: JSON.stringify({ code: activateCode }) },
+      enabledCookie,
+    );
 
     const { cookie: tfCookie1 } = await signIn('mfa-backup-reuse@example.com', 'Password123!');
-    const first = await request('/two-factor/verify-backup-code', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Cookie: tfCookie1 },
-      body: JSON.stringify({ code: backupCodes[0] }),
-    });
+    const first = await request(
+      '/two-factor/verify-backup-code',
+      { method: 'POST', body: JSON.stringify({ code: backupCodes[0] }) },
+      tfCookie1,
+    );
     expect(first.status).toBe(200);
 
     const { cookie: tfCookie2 } = await signIn('mfa-backup-reuse@example.com', 'Password123!');
-    const second = await request('/two-factor/verify-backup-code', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Cookie: tfCookie2 },
-      body: JSON.stringify({ code: backupCodes[0] }),
-    });
+    const second = await request(
+      '/two-factor/verify-backup-code',
+      { method: 'POST', body: JSON.stringify({ code: backupCodes[0] }) },
+      tfCookie2,
+    );
     expect(second.status).not.toBe(200);
   });
 
@@ -316,13 +345,13 @@ describe('Two-Factor Authentication — backup codes', () => {
 describe('Two-Factor Authentication — get TOTP URI', () => {
   it('returns the TOTP URI for a user with 2FA configured', async () => {
     const { cookie } = await setupUser('mfa-get-uri@example.com', 'Password123!');
-    await enableTwoFactor(cookie, 'Password123!');
+    const { cookie: enabledCookie } = await enableTwoFactor(cookie, 'Password123!');
 
-    const res = await request('/two-factor/get-totp-uri', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Cookie: cookie },
-      body: JSON.stringify({ password: 'Password123!' }),
-    });
+    const res = await request(
+      '/two-factor/get-totp-uri',
+      { method: 'POST', body: JSON.stringify({ password: 'Password123!' }) },
+      enabledCookie,
+    );
     expect(res.status).toBe(200);
     const body = await res.json() as { totpURI: string };
     expect(body.totpURI).toMatch(/^otpauth:\/\/totp\//);
@@ -338,24 +367,24 @@ describe('Two-Factor Authentication — get TOTP URI', () => {
 
   it('rejects get-totp-uri with wrong password', async () => {
     const { cookie } = await setupUser('mfa-get-uri-wrong-pw@example.com', 'Password123!');
-    await enableTwoFactor(cookie, 'Password123!');
+    const { cookie: enabledCookie } = await enableTwoFactor(cookie, 'Password123!');
 
-    const res = await request('/two-factor/get-totp-uri', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Cookie: cookie },
-      body: JSON.stringify({ password: 'Wrong!' }),
-    });
+    const res = await request(
+      '/two-factor/get-totp-uri',
+      { method: 'POST', body: JSON.stringify({ password: 'Wrong!' }) },
+      enabledCookie,
+    );
     expect(res.status).not.toBe(200);
   });
 
   it('rejects get-totp-uri for a user who has not configured 2FA', async () => {
     const { cookie } = await setupUser('mfa-get-uri-no2fa@example.com', 'Password123!');
 
-    const res = await request('/two-factor/get-totp-uri', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Cookie: cookie },
-      body: JSON.stringify({ password: 'Password123!' }),
-    });
+    const res = await request(
+      '/two-factor/get-totp-uri',
+      { method: 'POST', body: JSON.stringify({ password: 'Password123!' }) },
+      cookie,
+    );
     expect(res.status).not.toBe(200);
   });
 });
@@ -363,11 +392,11 @@ describe('Two-Factor Authentication — get TOTP URI', () => {
 describe('Password verify endpoint — /api/auth/password/verify', () => {
   it('returns true for the correct password (credential account)', async () => {
     const { cookie } = await setupUser('pw-verify-correct@example.com', 'Password123!');
-    const res = await request('/password/verify', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Cookie: cookie },
-      body: JSON.stringify({ password: 'Password123!' }),
-    });
+    const res = await request(
+      '/password/verify',
+      { method: 'POST', body: JSON.stringify({ password: 'Password123!' }) },
+      cookie,
+    );
     expect(res.status).toBe(200);
     const body = await res.json() as boolean;
     expect(body).toBe(true);
@@ -375,14 +404,12 @@ describe('Password verify endpoint — /api/auth/password/verify', () => {
 
   it('returns false for an incorrect password', async () => {
     const { cookie } = await setupUser('pw-verify-wrong@example.com', 'Password123!');
-    const res = await request('/password/verify', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Cookie: cookie },
-      body: JSON.stringify({ password: 'WrongPassword!' }),
-    });
-    expect(res.status).toBe(200);
-    const body = await res.json() as boolean;
-    expect(body).toBe(false);
+    const res = await request(
+      '/password/verify',
+      { method: 'POST', body: JSON.stringify({ password: 'WrongPassword!' }) },
+      cookie,
+    );
+    expect(res.status).toBe(401);
   });
 
   it('returns 401 without a valid session', async () => {
@@ -407,23 +434,12 @@ describe('Password verify endpoint — /api/auth/password/verify', () => {
     });
 
     const session = await ctx.internalAdapter.createSession((oauthUser as { id: string }).id);
-    const signedCookie = await (async () => {
-      const cookieRes = await request('/get-session', {
-        method: 'GET',
-        headers: { Authorization: `Bearer ${session.token}` },
-      });
-      return cookieRes.headers.get('set-cookie') ?? '';
-    })();
-
-    const res = await request('/password/verify', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(signedCookie ? { Cookie: signedCookie } : { Authorization: `Bearer ${session.token}` }),
-      },
-      body: JSON.stringify({ password: 'anything' }),
-    });
-    // Expect an error because the user has no credential account
+    const res = await request(
+      '/password/verify',
+      { method: 'POST', body: JSON.stringify({ password: 'anything' }) },
+      undefined,
+    );
+    void session;
     expect(res.status).not.toBe(200);
   });
 });
@@ -431,16 +447,16 @@ describe('Password verify endpoint — /api/auth/password/verify', () => {
 describe('Two-Factor Authentication — re-enable rotates secret', () => {
   it('re-enabling 2FA generates a new TOTP URI (secret rotation)', async () => {
     const { cookie } = await setupUser('mfa-rotate@example.com', 'Password123!');
-    const { totpURI: first } = await enableTwoFactor(cookie, 'Password123!');
+    const { totpURI: first, cookie: enabledCookie } = await enableTwoFactor(cookie, 'Password123!');
 
     const code1 = await generateTOTPCode(first);
-    await request('/two-factor/verify-totp', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Cookie: cookie },
-      body: JSON.stringify({ code: code1 }),
-    });
+    await request(
+      '/two-factor/verify-totp',
+      { method: 'POST', body: JSON.stringify({ code: code1 }) },
+      enabledCookie,
+    );
 
-    const { totpURI: second } = await enableTwoFactor(cookie, 'Password123!');
+    const { totpURI: second } = await enableTwoFactor(enabledCookie, 'Password123!');
     expect(second).not.toBe(first);
 
     const firstSecret = new URL(first).searchParams.get('secret');
