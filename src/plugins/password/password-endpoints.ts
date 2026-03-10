@@ -45,7 +45,7 @@ export class VerifyPasswordEndpoint extends AbstractEndpoint<
         }
 
         const accounts = await context.internalAdapter.findAccountByUserId(user.id);
-        const account = accounts[0];
+        const account = accounts.find((a) => a.providerId === 'credential');
 
         if (!account || !account.password) {
             throw ErrorCodes.AUTH.PASSWORD_NOT_SET;
