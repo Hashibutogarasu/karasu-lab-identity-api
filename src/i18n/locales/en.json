@@ -4,6 +4,7 @@
 		"forbidden": "You do not have permission to perform this action",
 		"password_not_set": "User does not have a password set",
 		"password_already_set": "User already has a password set",
+		"password_invalid": "The password you entered is incorrect",
 		"not_found": "Resource not found"
 	},
 	"oauth": {

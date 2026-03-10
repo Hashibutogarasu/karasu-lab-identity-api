@@ -4,6 +4,7 @@
 		"forbidden": "この操作を行う権限がありません",
 		"password_not_set": "パスワードが設定されていません",
 		"password_already_set": "パスワードは既に設定されています",
+		"password_invalid": "パスワードが違います",
 		"not_found": "リソースが見つかりません"
 	},
 	"oauth": {

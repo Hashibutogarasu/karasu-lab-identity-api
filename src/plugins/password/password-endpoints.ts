@@ -56,7 +56,11 @@ export class VerifyPasswordEndpoint extends AbstractEndpoint<
             hash: account.password,
         });
 
-        return valid;
+        if (!valid) {
+            throw ErrorCodes.AUTH.PASSWORD_INVALID;
+        }
+
+        return true;
     };
 }
 

@@ -36,6 +36,7 @@ export const ErrorCodes = createErrorMap({
 		FORBIDDEN: ['auth.forbidden', 'FORBIDDEN'],
 		PASSWORD_NOT_SET: ['auth.password_not_set', 'BAD_REQUEST'],
 		PASSWORD_ALREADY_SET: ['auth.password_already_set', 'BAD_REQUEST'],
+		PASSWORD_INVALID: ['auth.password_invalid', 'UNAUTHORIZED'],
 	},
 	OAUTH: {
 		INVALID_CLIENT: ['oauth.invalid_client', 'UNAUTHORIZED'],
