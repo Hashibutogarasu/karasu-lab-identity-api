@@ -58,28 +58,6 @@ class GoogleProvider extends AbstractSocialProvider {
 }
 
 /**
- * X (formerly Twitter) OAuth provider
- */
-class XProvider extends AbstractSocialProvider {
-  readonly id = 'twitter'; // Better-auth uses 'twitter' as the provider ID
-
-  isEnabled(): boolean {
-    const env = this.configService.getAll();
-    return !!(env.X_CLIENT_ID && env.X_CLIENT_SECRET);
-  }
-
-  getCredentials(): { clientId: string; clientSecret: string } | null {
-    if (!this.isEnabled()) return null;
-
-    const env = this.configService.getAll();
-    return {
-      clientId: env.X_CLIENT_ID,
-      clientSecret: env.X_CLIENT_SECRET,
-    };
-  }
-}
-
-/**
  * Social provider configuration service
  * Aggregates all social providers and provides their configurations
  */
@@ -91,7 +69,6 @@ export class SocialProviderConfigService implements ISocialProviderConfig {
     this.providers = [
       new DiscordProvider(configService),
       new GoogleProvider(configService),
-      new XProvider(configService),
     ];
   }
 
