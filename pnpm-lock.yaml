@@ -52,7 +52,7 @@ importers:
         version: 13.2.3
       '@thallesp/nestjs-better-auth':
         specifier: github:ThallesP/nestjs-better-auth
-        version: https://codeload.github.com/ThallesP/nestjs-better-auth/tar.gz/064121d7513a81b002ed301a691269c32e1c9ada(6130fef76396c6e73ddd43bb00f0c9c4)
+        version: https://codeload.github.com/ThallesP/nestjs-better-auth/tar.gz/9a6b0fe38d42d279ec0bc34bd6944024896646fc(b9a5bf4cf9166bc5be1f7a596fc38a56)
       better-auth:
         specifier: ^1.5.4
         version: 1.5.4(@prisma/client@7.4.1(prisma@7.4.1(@types/react@19.2.14)(better-sqlite3@12.6.2)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(typescript@5.9.3))(typescript@5.9.3))(better-sqlite3@12.6.2)(drizzle-orm@0.45.1(@electric-sql/pglite@0.3.15)(@opentelemetry/api@1.9.0)(@prisma/client@7.4.1(prisma@7.4.1(@types/react@19.2.14)(better-sqlite3@12.6.2)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(typescript@5.9.3))(typescript@5.9.3))(@types/better-sqlite3@7.6.13)(@types/pg@8.16.0)(better-sqlite3@12.6.2)(kysely@0.28.11)(mysql2@3.15.3)(pg@8.18.0)(postgres@3.4.7)(prisma@7.4.1(@types/react@19.2.14)(better-sqlite3@12.6.2)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(typescript@5.9.3)))(mongodb@7.1.0)(mysql2@3.15.3)(pg@8.18.0)(prisma@7.4.1(@types/react@19.2.14)(better-sqlite3@12.6.2)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(typescript@5.9.3))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vitest@4.0.18(@opentelemetry/api@1.9.0)(@types/node@22.19.11)(jiti@2.6.1)(terser@5.46.0)(tsx@4.21.0))
@@ -2538,9 +2538,9 @@ packages:
   '@swc/types@0.1.25':
     resolution: {integrity: sha512-iAoY/qRhNH8a/hBvm3zKj9qQ4oc2+3w1unPJa2XvTK3XjeLXtzcCingVPw/9e5mn1+0yPqxcBGp9Jf0pkfMb1g==}
 
-  '@thallesp/nestjs-better-auth@https://codeload.github.com/ThallesP/nestjs-better-auth/tar.gz/064121d7513a81b002ed301a691269c32e1c9ada':
-    resolution: {tarball: https://codeload.github.com/ThallesP/nestjs-better-auth/tar.gz/064121d7513a81b002ed301a691269c32e1c9ada}
-    version: 2.4.0
+  '@thallesp/nestjs-better-auth@https://codeload.github.com/ThallesP/nestjs-better-auth/tar.gz/9a6b0fe38d42d279ec0bc34bd6944024896646fc':
+    resolution: {tarball: https://codeload.github.com/ThallesP/nestjs-better-auth/tar.gz/9a6b0fe38d42d279ec0bc34bd6944024896646fc}
+    version: 2.5.0
     engines: {node: '>=22.22.1 <23'}
     peerDependencies:
       '@nestjs/common': ^11.1.6
@@ -2550,6 +2550,7 @@ packages:
       better-auth: '>=1.5.0 <2.0.0'
       express: ^5.1.0
       graphql: ^16.11.0
+      qs: ^6.14.0
       typescript: ^5.9.2
     peerDependenciesMeta:
       '@nestjs/graphql':
@@ -2557,6 +2558,8 @@ packages:
       '@nestjs/websockets':
         optional: true
       graphql:
+        optional: true
+      qs:
         optional: true
 
   '@tokenizer/inflate@0.4.1':
@@ -10402,7 +10405,7 @@ snapshots:
     dependencies:
       '@swc/counter': 0.1.3
 
-  '@thallesp/nestjs-better-auth@https://codeload.github.com/ThallesP/nestjs-better-auth/tar.gz/064121d7513a81b002ed301a691269c32e1c9ada(6130fef76396c6e73ddd43bb00f0c9c4)':
+  '@thallesp/nestjs-better-auth@https://codeload.github.com/ThallesP/nestjs-better-auth/tar.gz/9a6b0fe38d42d279ec0bc34bd6944024896646fc(b9a5bf4cf9166bc5be1f7a596fc38a56)':
     dependencies:
       '@nestjs/common': 11.1.14(reflect-metadata@0.2.2)(rxjs@7.8.2)
       '@nestjs/core': 11.1.14(@nestjs/common@11.1.14(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/platform-express@11.1.14)(reflect-metadata@0.2.2)(rxjs@7.8.2)
@@ -10412,6 +10415,7 @@ snapshots:
     optionalDependencies:
       '@nestjs/graphql': 13.2.0(@nestjs/common@11.1.14(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.14)(graphql@16.12.0)(reflect-metadata@0.2.2)
       graphql: 16.12.0
+      qs: 6.15.0
 
   '@tokenizer/inflate@0.4.1':
     dependencies:
