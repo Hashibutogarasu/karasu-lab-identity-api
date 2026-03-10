@@ -1,6 +1,6 @@
 import { Auth as BetterAuthType, BetterAuthOptions } from "better-auth";
 import { createAuthMiddleware } from "better-auth/api";
-import { admin, bearer, deviceAuthorization, emailOTP, magicLink, oidcProvider, organization, twoFactor } from "better-auth/plugins";
+  import { admin, bearer, deviceAuthorization, emailOTP, magicLink, oidcProvider, organization, twoFactor, username } from "better-auth/plugins";
 import { apiKey } from "@better-auth/api-key";
 import { firebaseAuthPlugin as firebaseAuth } from "better-auth-firebase-auth/server";
 import { initializeApp, getApps, cert } from "firebase-admin/app";
@@ -64,6 +64,7 @@ export function createAuth(
     openAPIPlugin(),
     discoveryPlugin(),
     oidcProvider({ loginPage: "/login" }),
+    username(),
     passwordPlugin(),
     oauthApplicationPlugin(),
     passkeyPlugin(passkeyAuth),

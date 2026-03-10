@@ -23,7 +23,7 @@
     "format": "prettier --write --ignore-path .gitignore './**/*.{js,ts,json}'",
     "deploy": "sh scripts/deploy.sh",
     "setup": "sh scripts/setup.sh",
-    "prisma:generate": "npx @better-auth/cli@latest generate && npx prisma generate",
+    "prisma:generate": "npx prisma generate",
     "prisma:migrate": "npx prisma migrate dev",
     "prisma:push": "npx prisma db push",
     "prisma:pull": "npx prisma db pull"
