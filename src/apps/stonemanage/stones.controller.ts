@@ -20,7 +20,9 @@ import { CreateStoneDto, createStoneSchema } from './dto/create-stone.dto.js';
 import { UpdateStoneDto, updateStoneSchema } from './dto/update-stone.dto.js';
 import { StoneResponseDto } from './dto/stone-response.dto.js';
 import { SuccessResponseDto } from '../../blogs/dto/success-response.dto.js';
+import { AuthGuard } from '@thallesp/nestjs-better-auth';
 
+@UseGuards(AuthGuard)
 @UseGuards(RolesGuard)
 @ApiTags('Stone Manage Stones')
 @Controller('apps/stonemanage')

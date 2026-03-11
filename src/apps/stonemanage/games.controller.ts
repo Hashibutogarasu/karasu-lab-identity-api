@@ -20,7 +20,9 @@ import { CreateGameDto, createGameSchema } from './dto/create-game.dto.js';
 import { UpdateGameDto, updateGameSchema } from './dto/update-game.dto.js';
 import { GameResponseDto } from './dto/game-response.dto.js';
 import { SuccessResponseDto } from '../../blogs/dto/success-response.dto.js';
+import { AuthGuard } from '@thallesp/nestjs-better-auth';
 
+@UseGuards(AuthGuard)
 @UseGuards(RolesGuard)
 @ApiTags('Stone Manage Games')
 @Controller('apps/stonemanage')

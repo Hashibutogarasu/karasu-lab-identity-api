@@ -17,7 +17,9 @@ import {
   createImageUploadUrlSchema,
 } from './dto/create-image-upload-url.dto.js';
 import { ImageUploadUrlResponseDto } from './dto/image-upload-url-response.dto.js';
+import { AuthGuard } from '@thallesp/nestjs-better-auth';
 
+@UseGuards(AuthGuard)
 @UseGuards(RolesGuard)
 @ApiTags('Stone Manage Images')
 @Controller('apps/stonemanage')

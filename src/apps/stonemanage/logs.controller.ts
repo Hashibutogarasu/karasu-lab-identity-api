@@ -20,7 +20,9 @@ import { CreateLogDto, createLogSchema } from './dto/create-log.dto.js';
 import { UpdateLogDto, updateLogSchema } from './dto/update-log.dto.js';
 import { LogResponseDto } from './dto/log-response.dto.js';
 import { SuccessResponseDto } from '../../blogs/dto/success-response.dto.js';
+import { AuthGuard } from '@thallesp/nestjs-better-auth';
 
+@UseGuards(AuthGuard)
 @UseGuards(RolesGuard)
 @ApiTags('Stone Manage Logs')
 @Controller('apps/stonemanage')
