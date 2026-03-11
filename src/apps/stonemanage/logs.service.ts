@@ -34,6 +34,17 @@ export class LogsService {
   }
 
   /**
+   * Find the latest log for a stone, sorted by createdAt descending.
+   * @param stoneId The stone ID.
+   */
+  private async findLatestLog(stoneId: string): Promise<LogEntity | null> {
+    const logs = await this.logsRepo.findByStoneId(stoneId);
+    if (logs.length === 0) return null;
+    logs.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+    return logs[0];
+  }
+
+  /**
    * Retrieves all logs for a specific stone.
    * @param stoneId The stone ID.
    * @param userId The user's ID.
@@ -65,7 +76,7 @@ export class LogsService {
   }
 
   /**
-   * Creates a new log for a stone.
+   * Creates a new log for a stone, tracking currency deltas.
    * @param stoneId The stone ID.
    * @param userId The user ID.
    * @param dto The create dto containing the amount.
@@ -74,16 +85,26 @@ export class LogsService {
   async createLog(stoneId: string, userId: string, dto: CreateLogDto): Promise<LogEntity> {
     await this.validateStoneOwnership(stoneId, userId);
 
+    const latestLog = await this.findLatestLog(stoneId);
+
     const id = cuid();
-    return this.logsRepo.create(id, {
+    const created = await this.logsRepo.create(id, {
       userId,
       stoneId,
       amount: dto.amount,
+      previousAmount: latestLog ? latestLog.amount : undefined,
+      nextAmount: undefined,
     });
+
+    if (latestLog) {
+      await this.logsRepo.update(latestLog.id, { nextAmount: dto.amount });
+    }
+
+    return created;
   }
 
   /**
-   * Updates an existing log.
+   * Updates an existing log and recalculates adjacent currency deltas.
    * @param stoneId The stone ID.
    * @param logId The log ID.
    * @param userId The user ID.
@@ -96,8 +117,29 @@ export class LogsService {
     userId: string,
     dto: UpdateLogDto,
   ): Promise<LogEntity> {
-    await this.getLog(stoneId, logId, userId);
-    return this.logsRepo.update(logId, dto);
+    const currentLog = await this.getLog(stoneId, logId, userId);
+
+    const updatedLog = await this.logsRepo.update(logId, {
+      amount: dto.amount,
+    });
+
+    if (dto.amount !== undefined && dto.amount !== currentLog.amount) {
+      const allLogs = await this.logsRepo.findByStoneId(stoneId);
+      allLogs.sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+
+      const idx = allLogs.findIndex((l) => l.id === logId);
+
+      if (idx > 0) {
+        await this.logsRepo.update(allLogs[idx - 1].id, { nextAmount: dto.amount });
+      }
+
+      if (idx < allLogs.length - 1) {
+        await this.logsRepo.update(logId, { previousAmount: updatedLog.previousAmount });
+        await this.logsRepo.update(allLogs[idx + 1].id, { previousAmount: dto.amount });
+      }
+    }
+
+    return updatedLog;
   }
 
   /**

@@ -6,6 +6,8 @@ export const logResponseSchema = z.object({
   stoneId: z.string(),
   userId: z.string(),
   amount: z.number().int(),
+  previousAmount: z.number().int().optional(),
+  nextAmount: z.number().int().optional(),
   createdAt: z.string(),
   updatedAt: z.string(),
 });
