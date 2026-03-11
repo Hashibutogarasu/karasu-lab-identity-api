@@ -58,6 +58,12 @@ export const ErrorCodes = createErrorMap({
 		ATTACHMENT_TOO_LARGE: ['blog.attachment_too_large', 'BAD_REQUEST'],
 		NOT_IMPLEMENTED: ['blog.not_implemented', 'BAD_REQUEST'],
 	},
+	STONEMANAGE: {
+		GAME_NOT_FOUND: ['stonemanage.game_not_found', 'NOT_FOUND'],
+		STONE_NOT_FOUND: ['stonemanage.stone_not_found', 'NOT_FOUND'],
+		LOG_NOT_FOUND: ['stonemanage.log_not_found', 'NOT_FOUND'],
+		FORBIDDEN: ['stonemanage.forbidden', 'FORBIDDEN'],
+	},
 } as const);
 
 export const createAPIError = (error: ErrorDefinition, options?: Record<string, unknown>): APIError => {

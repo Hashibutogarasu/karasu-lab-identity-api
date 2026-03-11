@@ -24,5 +24,11 @@
 		"auth_initialization_failed": "認証の初期化に失敗しました。",
 		"openapi_uninitialized": "OpenAPIドキュメントが初期化されていません。先にsetup()を呼び出してください。",
 		"openapi_unauthorized": "ドキュメントを表示するには認証が必要です。"
+	},
+	"stonemanage": {
+		"game_not_found": "ゲームが見つかりません",
+		"stone_not_found": "ゲーム内通貨データが見つかりません",
+		"log_not_found": "石の記録が見つかりません",
+		"forbidden": "この操作を行う権限がありません"
 	}
 }

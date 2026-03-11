@@ -24,5 +24,11 @@
 		"auth_initialization_failed": "Auth initialization failed.",
 		"openapi_uninitialized": "OpenAPI document has not been initialized. Call setup() first.",
 		"openapi_unauthorized": "Authentication is required to view the documentation."
+	},
+	"stonemanage": {
+		"game_not_found": "Game not found",
+		"stone_not_found": "Stone data not found",
+		"log_not_found": "Stone log not found",
+		"forbidden": "You do not have permission to perform this action"
 	}
 }
