@@ -41,6 +41,7 @@ describe('GamesService', () => {
     };
 
     storage = {
+      getPublicUrl: vi.fn().mockResolvedValue('https://example.com/signed-url'),
       getPresignedUrl: vi.fn().mockResolvedValue('https://example.com/signed-url'),
       getPresignedUploadUrl: vi.fn().mockResolvedValue('https://example.com/upload-url'),
       getObjectMetadata: vi.fn().mockResolvedValue({ contentType: 'image/png', size: 1024 }),

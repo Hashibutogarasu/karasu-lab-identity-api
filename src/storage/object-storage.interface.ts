@@ -7,6 +7,12 @@ export const IObjectStorageService = "IObjectStorageService";
  */
 export interface IObjectStorage {
   /**
+   * Returns the public URL for the given object key.
+   * Falls back to a presigned URL if no public domain is configured.
+   */
+  getPublicUrl(key: string): Promise<string>;
+
+  /**
    * Issues a temporary presigned URL for the given object key.
    * @param key       Object key
    * @param expiresIn Expiry duration in seconds. Defaults to 3600.

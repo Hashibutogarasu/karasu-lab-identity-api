@@ -28,7 +28,7 @@ export class StonesService {
    */
   private async resolveStoneImage(stone: StoneEntity): Promise<StoneEntity & { image?: string }> {
     if (stone.imageKey) {
-      const url = await this.storage.getPresignedUrl(stone.imageKey);
+      const url = await this.storage.getPublicUrl(stone.imageKey);
       return { ...stone, image: url };
     }
     return stone;

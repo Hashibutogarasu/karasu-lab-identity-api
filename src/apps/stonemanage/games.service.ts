@@ -31,7 +31,7 @@ export class GamesService {
    */
   private async resolveGameImage(game: GameEntity): Promise<GameEntity & { image?: string }> {
     if (game.imageKey) {
-      const url = await this.storage.getPresignedUrl(game.imageKey);
+      const url = await this.storage.getPublicUrl(game.imageKey);
       return { ...game, image: url };
     }
     return game;

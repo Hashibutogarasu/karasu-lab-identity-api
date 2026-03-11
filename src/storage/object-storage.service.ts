@@ -8,38 +8,56 @@ import {
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import type { PutObjectCommandInput } from "@aws-sdk/client-s3";
-import { Injectable } from "@nestjs/common";
+import { Inject, Injectable } from "@nestjs/common";
 
-import { storageConfig } from "../config/storage.env.js";
+import { STORAGE_OPTIONS } from "./storage.constants.js";
+import type { StorageOptions } from "./storage-options.interface.js";
 import type { IObjectStorage } from "./object-storage.interface.js";
 
 @Injectable()
 export class ObjectStorageService implements IObjectStorage {
   private readonly client: S3Client;
   private readonly bucket: string;
+  private readonly publicUrl?: string;
 
-  constructor() {
-    this.bucket = storageConfig.R2_BUCKET;
+  constructor(@Inject(STORAGE_OPTIONS) private readonly options: StorageOptions) {
+    this.bucket = options.bucket;
+    this.publicUrl = options.publicUrl;
     this.client = new S3Client({
       region: "auto",
-      endpoint: storageConfig.R2_ENDPOINT,
+      endpoint: options.endpoint,
       credentials: {
-        accessKeyId: storageConfig.R2_ACCESS_KEY_ID,
-        secretAccessKey: storageConfig.R2_SECRET_ACCESS_KEY,
+        accessKeyId: options.accessKeyId,
+        secretAccessKey: options.secretAccessKey,
       },
     });
   }
 
+  /**
+   * Returns the public URL for the given object key.
+   * Falls back to a presigned URL if no public domain is configured.
+   */
+  async getPublicUrl(key: string): Promise<string> {
+    if (this.publicUrl) {
+      return `${this.publicUrl}/${key}`;
+    }
+    return this.getPresignedUrl(key);
+  }
+
+  /**
+   * Issues a temporary presigned URL for the given object key.
+   * @param key       Object key
+   * @param expiresIn Expiry duration in seconds. Defaults to 3600.
+   */
   async getPresignedUrl(key: string, expiresIn = 3600): Promise<string> {
     const command = new GetObjectCommand({ Bucket: this.bucket, Key: key });
     return getSignedUrl(this.client, command, { expiresIn });
   }
 
   /**
-   * Issues a presigned URL that allows a client to PUT an object directly into
-   * the bucket without going through the application server.
+   * Issues a temporary presigned URL for uploading.
    * @param key         Object key
-   * @param contentType MIME type that the client must use when uploading
+   * @param contentType MIME type
    * @param expiresIn   Expiry duration in seconds. Defaults to 3600.
    */
   async getPresignedUploadUrl(
@@ -57,9 +75,8 @@ export class ObjectStorageService implements IObjectStorage {
   }
 
   /**
-   * Returns the content type and byte size of the stored object.
-   * Returns null when the object does not exist or the HEAD request fails.
-   * @param key Object key
+   * Returns the metadata of the given object key.
+   * Returns null if the object does not exist.
    */
   async getObjectMetadata(
     key: string,
@@ -75,6 +92,9 @@ export class ObjectStorageService implements IObjectStorage {
     }
   }
 
+  /**
+   * Uploads an object.
+   */
   async putObject(
     key: string,
     body: Buffer | Uint8Array,
@@ -90,6 +110,9 @@ export class ObjectStorageService implements IObjectStorage {
     );
   }
 
+  /**
+   * Returns the content type of the given object key.
+   */
   async getContentType(key: string): Promise<string | undefined> {
     try {
       const res = await this.client.send(
@@ -101,6 +124,9 @@ export class ObjectStorageService implements IObjectStorage {
     }
   }
 
+  /**
+   * Downloads an object.
+   */
   async getObject(key: string): Promise<Buffer | null> {
     try {
       const resp = await this.client.send(
@@ -117,12 +143,18 @@ export class ObjectStorageService implements IObjectStorage {
     }
   }
 
+  /**
+   * Deletes an object.
+   */
   async deleteObject(key: string): Promise<void> {
     await this.client.send(
       new DeleteObjectCommand({ Bucket: this.bucket, Key: key }),
     );
   }
 
+  /**
+   * Lists object keys with the given prefix.
+   */
   async listObjects(prefix?: string): Promise<string[]> {
     const res = await this.client.send(
       new ListObjectsV2Command({ Bucket: this.bucket, Prefix: prefix }),
