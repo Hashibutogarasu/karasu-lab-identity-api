@@ -30,6 +30,7 @@ import { InitializeService } from "./bootstrap/initialize-service.js";
 import { ErrorCodes } from "./shared/errors/error.codes.js";
 import { IAdminConfig } from "./services/auth/admin/admin-config.interface.js";
 import { IRateLimitConfig } from "./services/auth/rateLimit/rate-limit-config.interface.js";
+import { dash } from "@better-auth/infra";
 
 export function createAuth(
   configService: IConfigService,
@@ -61,6 +62,7 @@ export function createAuth(
   };
 
   const corePlugins = [
+    dash(),
     openAPIPlugin(),
     discoveryPlugin(),
     oidcProvider({ loginPage: "/login" }),
