@@ -79,12 +79,14 @@ export function createAuth(
     deviceAuthorization(),
     bearer(),
     emailOTP({
+      storeOTP: "hashed",
       sendVerificationOTP: async ({ email, otp, type }) => {
         await notificationService.sendVerificationOTP({ email, otp, type });
       },
       sendVerificationOnSignUp: false,
     }),
     magicLink({
+      storeToken: 'hashed',
       sendMagicLink: async ({ email, token }) => {
         await notificationService.sendMagicLink({ email, token });
       },
