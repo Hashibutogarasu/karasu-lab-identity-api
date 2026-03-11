@@ -108,11 +108,14 @@ export function createAuth(
       ...(Array.isArray(overrides.trustedOrigins) ? overrides.trustedOrigins : []),
     ])
     .basic.setAdvanced({ crossSubDomainCookies: authConfig.getCrossSubDomainCookies() })
+    .basic.setIPAddressHeaders(['cf-connecting-ip', 'x-forwarded-for'])
+    .basic.setCookieCache({ enabled: true, strategy: 'jwe', maxAge: 300 })
     .basic.setLogger({
       level: EnvironmentUtils.isProduction(authEnv.environment) ? "info" : "debug",
       disabled: false,
     })
     .basic.setRateLimit(overrides.rateLimit ?? rateLimitConfig.getConfig())
+    .experimental.setJoins(true)
     .email.setEmailAndPassword({ enabled: true, requireEmailVerification: true })
     .email.setEmailVerification({
       sendVerificationEmail: async ({ user, url }) => {
@@ -148,7 +151,7 @@ export function createAuth(
       accountLinking: { allowDifferentEmails: false },
       updateAccountOnSignIn: true,
     })
-    .session.setSession({ cookieCache: { enabled: true, maxAge: 300 } })
+    .session.setSession({})
     .database.setDatabase(dbService.getHandler())
     .withPlugins(corePlugins)
     .buildServer() as unknown as BetterAuthType;
