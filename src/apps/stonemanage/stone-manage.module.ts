@@ -1,5 +1,7 @@
 import { Module } from '@nestjs/common';
-import { StoneManageService } from './stone-manage.service.js';
+import { GamesService } from './games.service.js';
+import { StonesService } from './stones.service.js';
+import { LogsService } from './logs.service.js';
 import { GamesRepository } from './repositories/games.repository.js';
 import { StonesRepository } from './repositories/stones.repository.js';
 import { LogsRepository } from './repositories/logs.repository.js';
@@ -10,6 +12,7 @@ import { RolesGuard } from '../../shared/auth/roles.guard.js';
 import { StoneManageGamesController } from './games.controller.js';
 import { StoneManageStonesController } from './stones.controller.js';
 import { StoneManageLogsController } from './logs.controller.js';
+import { StoneManageImagesController } from './images.controller.js';
 
 @Module({
   imports: [SessionModule],
@@ -17,9 +20,12 @@ import { StoneManageLogsController } from './logs.controller.js';
     StoneManageGamesController,
     StoneManageStonesController,
     StoneManageLogsController,
+    StoneManageImagesController,
   ],
   providers: [
-    StoneManageService,
+    GamesService,
+    StonesService,
+    LogsService,
     GamesRepository,
     StonesRepository,
     LogsRepository,

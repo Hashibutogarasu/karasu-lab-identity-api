@@ -15,7 +15,7 @@ import type { Request } from 'express';
 import { SessionService } from '../../shared/auth/session.service.js';
 import { RolesGuard } from '../../shared/auth/roles.guard.js';
 import { ZodValidationPipe } from '../../shared/pipes/zod-validation.pipe.js';
-import { StoneManageService } from './stone-manage.service.js';
+import { StonesService } from './stones.service.js';
 import { CreateStoneDto, createStoneSchema } from './dto/create-stone.dto.js';
 import { UpdateStoneDto, updateStoneSchema } from './dto/update-stone.dto.js';
 import { StoneResponseDto } from './dto/stone-response.dto.js';
@@ -26,7 +26,7 @@ import { SuccessResponseDto } from '../../blogs/dto/success-response.dto.js';
 @Controller('apps/stonemanage')
 export class StoneManageStonesController {
   constructor(
-    private readonly service: StoneManageService,
+    private readonly service: StonesService,
     private readonly sessionService: SessionService,
   ) {}
 

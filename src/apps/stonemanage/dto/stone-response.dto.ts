@@ -7,6 +7,7 @@ export const stoneResponseSchema = z.object({
   userId: z.string(),
   name: z.string(),
   amount: z.number(),
+  image: z.string().url().optional().describe('Signed GET URL for the stone image'),
   createdAt: z.string(),
   updatedAt: z.string(),
 });

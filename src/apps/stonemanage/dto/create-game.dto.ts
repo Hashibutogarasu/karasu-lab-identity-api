@@ -3,6 +3,7 @@ import { createZodDto } from 'nestjs-zod';
 
 export const createGameSchema = z.object({
   title: z.string().min(1).max(255),
+  imageKey: z.string().optional(),
 });
 
 /**

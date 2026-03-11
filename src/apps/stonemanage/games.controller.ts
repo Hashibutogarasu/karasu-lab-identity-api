@@ -15,7 +15,7 @@ import type { Request } from 'express';
 import { SessionService } from '../../shared/auth/session.service.js';
 import { RolesGuard } from '../../shared/auth/roles.guard.js';
 import { ZodValidationPipe } from '../../shared/pipes/zod-validation.pipe.js';
-import { StoneManageService } from './stone-manage.service.js';
+import { GamesService } from './games.service.js';
 import { CreateGameDto, createGameSchema } from './dto/create-game.dto.js';
 import { UpdateGameDto, updateGameSchema } from './dto/update-game.dto.js';
 import { GameResponseDto } from './dto/game-response.dto.js';
@@ -26,7 +26,7 @@ import { SuccessResponseDto } from '../../blogs/dto/success-response.dto.js';
 @Controller('apps/stonemanage')
 export class StoneManageGamesController {
   constructor(
-    private readonly service: StoneManageService,
+    private readonly service: GamesService,
     private readonly sessionService: SessionService,
   ) {}
 

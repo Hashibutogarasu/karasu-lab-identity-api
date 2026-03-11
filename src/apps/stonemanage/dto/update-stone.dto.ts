@@ -4,6 +4,7 @@ import { createZodDto } from 'nestjs-zod';
 export const updateStoneSchema = z.object({
   name: z.string().min(1).max(255).optional(),
   amount: z.number().int().nonnegative().optional(),
+  imageKey: z.string().optional(),
 });
 
 /**
