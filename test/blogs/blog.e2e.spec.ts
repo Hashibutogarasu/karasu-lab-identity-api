@@ -66,7 +66,6 @@ describe('BlogService (E2E)', () => {
 	});
 
 	afterAll(async () => {
-		// Clear Firestore emulator data for this project
 		try {
 			await fetch(
 				`http://127.0.0.1:8080/emulator/v1/projects/${IFirebaseAdminProvider.DUMMY_PROJECT_ID}/databases/(default)/documents`,
@@ -80,10 +79,6 @@ describe('BlogService (E2E)', () => {
 			where: { id: { in: [ownerUserId, otherUserId] } },
 		});
 	});
-
-  // ---------------------------------------------------------------------------
-  // List endpoints
-  // ---------------------------------------------------------------------------
 
   describe('listBlogs', () => {
     it('anonymous: returns only published blogs', async () => {
@@ -271,10 +266,6 @@ describe('BlogService (E2E)', () => {
     });
   });
 
-  // ---------------------------------------------------------------------------
-  // Basic CRUD
-  // ---------------------------------------------------------------------------
-
   describe('createBlog', () => {
     it('creates a blog with default draft status', async () => {
       const blog = await service.createBlog(ownerUserId, { title: 'Test Blog', content: 'Hello World' });
@@ -336,10 +327,6 @@ describe('BlogService (E2E)', () => {
     });
   });
 
-  // ---------------------------------------------------------------------------
-  // Status changes
-  // ---------------------------------------------------------------------------
-
   describe('status changes', () => {
     it('transitions from draft to published', async () => {
       const blog = await service.createBlog(ownerUserId, { title: 'Test Blog', content: 'Draft content' });
@@ -367,10 +354,6 @@ describe('BlogService (E2E)', () => {
       expect(updated.status).toBe('published');
     });
   });
-
-  // ---------------------------------------------------------------------------
-  // Locked blog
-  // ---------------------------------------------------------------------------
 
   describe('locked blog', () => {
     it('prevents updating a locked blog', async () => {
@@ -433,10 +416,6 @@ describe('BlogService (E2E)', () => {
     });
   });
 
-  // ---------------------------------------------------------------------------
-  // Permissions
-  // ---------------------------------------------------------------------------
-
   describe('permissions', () => {
     it('prevents a non-owner from updating a blog', async () => {
       const blog = await service.createBlog(ownerUserId, { title: 'Test Blog', content: 'Owner only' });
@@ -456,7 +435,6 @@ describe('BlogService (E2E)', () => {
       await expect(attachmentService.deleteAttachment(attachment.id, otherUserId)).rejects.toThrow(
         ErrorDefinition,
       );
-      // Clean up
       await attachmentService.deleteAttachment(attachment.id, ownerUserId);
     });
 
@@ -470,10 +448,6 @@ describe('BlogService (E2E)', () => {
     });
   });
 
-  // ---------------------------------------------------------------------------
-  // Delete
-  // ---------------------------------------------------------------------------
-
   describe('deleteBlog', () => {
     it('deletes a blog and makes it unretrievable', async () => {
       const blog = await service.createBlog(ownerUserId, { title: 'Test Blog', content: 'To be deleted' });
@@ -485,10 +459,6 @@ describe('BlogService (E2E)', () => {
       await expect(service.deleteBlog('ghost-id', ownerUserId)).rejects.toThrow(ErrorDefinition);
     });
   });
-
-  // ---------------------------------------------------------------------------
-  // Attachments — basic CRUD (against real R2)
-  // ---------------------------------------------------------------------------
 
   describe('createAttachment', () => {
     it('uploads an attachment and returns metadata', async () => {
@@ -560,10 +530,6 @@ describe('BlogService (E2E)', () => {
     });
   });
 
-  // ---------------------------------------------------------------------------
-  // Attachment Firestore presence
-  // ---------------------------------------------------------------------------
-
   describe('attachment Firestore presence', () => {
     it('returns FORBIDDEN when a non-owner attempts to delete an attachment', async () => {
       const blog = await service.createBlog(ownerUserId, { title: 'Test Blog', content: 'perm test' });
@@ -594,10 +560,6 @@ describe('BlogService (E2E)', () => {
     });
   });
 
-  // ---------------------------------------------------------------------------
-  // File size boundary
-  // ---------------------------------------------------------------------------
-
   describe('file size boundary', () => {
     it('accepts a file exactly at the limit', async () => {
       const blog = await service.createBlog(ownerUserId, { title: 'Test Blog', content: 'Size boundary' });
@@ -612,7 +574,6 @@ describe('BlogService (E2E)', () => {
       const attachment = await attachmentService.createAttachment(blog.id, ownerUserId, exactFile, {});
       expect(attachment.size).toBe(MAX_ATTACHMENT_SIZE);
 
-      // Clean up
       await attachmentService.deleteAttachment(attachment.id, ownerUserId);
     });
 

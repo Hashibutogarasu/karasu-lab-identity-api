@@ -8,6 +8,8 @@ import { IFirebaseAdminProvider } from '../shared/firebase/firebase-admin.provid
 import { ErrorCodes } from '../shared/errors/error.codes.js';
 import { UserResponseDto } from '../blogs/dto/user-response.dto.js';
 import { IRepository } from '../shared/repository/repository.interface.js';
+import type { BasePaginationQueryDto } from '../shared/dto/pagination-query.dto.js';
+import type { PaginatedResult } from '../shared/types/pagination.types.js';
 
 @Injectable()
 export class AuthorService extends AbstractRepository<UserResponseDto> implements IRepository<UserResponseDto> {
@@ -35,6 +37,26 @@ export class AuthorService extends AbstractRepository<UserResponseDto> implement
       name: user.name,
       image: user.image ?? null,
     }));
+  }
+
+  async listAuthorsPaged(
+    query: BasePaginationQueryDto = { limit: 20 },
+  ): Promise<PaginatedResult<UserResponseDto>> {
+    const { limit, cursor } = query;
+
+    const users = await this.prisma.user.findMany({
+      take: limit + 1,
+      ...(cursor ? { skip: 1, cursor: { id: cursor } } : {}),
+      select: { id: true, name: true, image: true },
+      orderBy: { id: 'asc' },
+    });
+
+    const hasMore = users.length > limit;
+    const paged = hasMore ? users.slice(0, limit) : users;
+    const nextCursor = hasMore ? paged[paged.length - 1].id : null;
+    const data = paged.map(u => ({ id: u.id, name: u.name, image: u.image ?? null }));
+
+    return { data, total: null, page: null, limit, totalPages: null, nextCursor, hasMore };
   }
 
   /**
