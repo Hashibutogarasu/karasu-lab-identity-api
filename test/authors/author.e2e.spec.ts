@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { AuthorController } from '../../src/authors/author.controller.js';
+import { AuthorController, AuthorLegacyController } from '../../src/authors/author.controller.js';
 import { AuthorService } from '../../src/authors/author.service.js';
 import { IConfigService } from '../../src/shared/config/config.service.interface.js';
 import { RolesGuard } from '../../src/shared/auth/roles.guard.js';
@@ -23,7 +23,7 @@ describe('AuthorController (e2e)', () => {
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      controllers: [AuthorController],
+      controllers: [AuthorController, AuthorLegacyController],
       providers: [
         AuthorService,
         {
@@ -105,6 +105,39 @@ describe('AuthorController (e2e)', () => {
 
   it('GET /author/:id - should return 200 and empty object for non-existent author', async () => {
     const response = await request(app.getHttpServer()).get('/author/non-existent-id');
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({});
+  });
+
+  it('GET /authors - should return paginated list of authors', async () => {
+    const response = await request(app.getHttpServer()).get('/authors');
+    expect(response.status).toBe(200);
+    const body = response.body as { data: UserResponseDto[]; hasMore: boolean; nextCursor: string | null };
+    expect(Array.isArray(body.data)).toBe(true);
+    expect(body).toHaveProperty('hasMore');
+    expect(body).toHaveProperty('nextCursor');
+    const author = body.data.find((u) => u.id === testUserId);
+    expect(author).toBeDefined();
+    expect(author?.name).toBe('E2E Author Test');
+  });
+
+  it('GET /authors - respects limit query parameter', async () => {
+    const response = await request(app.getHttpServer()).get('/authors?limit=1');
+    expect(response.status).toBe(200);
+    const body = response.body as { data: UserResponseDto[] };
+    expect(body.data.length).toBeLessThanOrEqual(1);
+  });
+
+  it('GET /authors/:id - should return a single author', async () => {
+    const response = await request(app.getHttpServer()).get(`/authors/${testUserId}`);
+    expect(response.status).toBe(200);
+    const author = response.body as UserResponseDto;
+    expect(author.id).toBe(testUserId);
+    expect(author.name).toBe('E2E Author Test');
+  });
+
+  it('GET /authors/:id - should return 200 and empty object for non-existent author', async () => {
+    const response = await request(app.getHttpServer()).get('/authors/non-existent-id');
     expect(response.status).toBe(200);
     expect(response.body).toEqual({});
   });

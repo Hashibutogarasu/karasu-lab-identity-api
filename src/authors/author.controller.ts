@@ -37,6 +37,22 @@ export class AuthorLegacyController {
   async listAuthors() {
     return this.authorService.listAuthors();
   }
+
+  /**
+   * Get an author by ID.
+   * @deprecated Use GET /authors/:id instead.
+   */
+  @AllowAnonymous()
+  @ApiOperation({ summary: 'Get an author by ID', deprecated: true })
+  @ApiResponse({
+    status: 200,
+    description: '[Deprecated] Use GET /authors/:id. Return an author profile.',
+    type: UserResponseDto,
+  })
+  @Get(':id')
+  async getAuthor(@Param('id') id: string) {
+    return this.authorService.getById(id);
+  }
 }
 
 @UseGuards(RolesGuard)
