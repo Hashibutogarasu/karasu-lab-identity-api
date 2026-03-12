@@ -8,8 +8,8 @@ export const userProfileResponseSchema = z.object({
   image: z.string().nullable(),
   username: z.string().nullable(),
   displayUsername: z.boolean().nullable(),
-  createdAt: z.string().or(z.date()),
-  updatedAt: z.string().or(z.date()),
+  createdAt: z.string(),
+  updatedAt: z.string(),
 });
 
 export class UserProfileResponseDto extends createZodDto(userProfileResponseSchema) {}
