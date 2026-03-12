@@ -17,6 +17,7 @@ describe('GamesService', () => {
     gamesRepo = {
       create: vi.fn(),
       findByUserId: vi.fn(),
+      findByUserIdPaged: vi.fn(),
       getById: vi.fn(),
       update: vi.fn(),
       delete: vi.fn(),
@@ -119,13 +120,17 @@ describe('GamesService', () => {
   });
 
   it('fetches games with resolved image URLs', async () => {
-    gamesRepo.findByUserId.mockResolvedValue([
-      { id: 'g1', userId: 'u1', title: 'Game 1', imageKey: 'stonemanage/images/u1/img1' },
-      { id: 'g2', userId: 'u1', title: 'Game 2' },
-    ]);
-    const results = await service.getGames('u1');
-    expect(results[0].image).toBe('https://example.com/signed-url');
-    expect(results[1].image).toBeUndefined();
+    gamesRepo.findByUserIdPaged.mockResolvedValue({
+      data: [
+        { id: 'g1', userId: 'u1', title: 'Game 1', imageKey: 'stonemanage/images/u1/img1' },
+        { id: 'g2', userId: 'u1', title: 'Game 2' },
+      ],
+      nextCursor: null,
+      hasMore: false,
+    });
+    const result = await service.getGames('u1');
+    expect(result.data[0].image).toBe('https://example.com/signed-url');
+    expect(result.data[1].image).toBeUndefined();
   });
 
   it('rejects updating game image for another user', async () => {

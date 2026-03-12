@@ -14,13 +14,15 @@ import type { Request } from 'express';
 
 import { SessionService } from '../../shared/auth/session.service.js';
 import { RolesGuard } from '../../shared/auth/roles.guard.js';
-import { ZodValidationPipe } from '../../shared/pipes/zod-validation.pipe.js';
 import { GamesService } from './games.service.js';
 import { CreateGameDto, createGameSchema } from './dto/create-game.dto.js';
 import { UpdateGameDto, updateGameSchema } from './dto/update-game.dto.js';
 import { GameResponseDto } from './dto/game-response.dto.js';
 import { SuccessResponseDto } from '../../blogs/dto/success-response.dto.js';
 import { AuthGuard } from '@thallesp/nestjs-better-auth';
+import { ZodValidationPipe } from '../../shared/pipes/zod-validation.pipe.js';
+import { Pagination } from '../../shared/decorators/pagination.decorator.js';
+import { BasePaginationQueryDto } from '../../shared/dto/pagination-query.dto.js';
 
 @UseGuards(AuthGuard)
 @UseGuards(RolesGuard)
@@ -39,9 +41,12 @@ export class StoneManageGamesController {
     type: [GameResponseDto],
   })
   @Get('games')
-  async listGames(@Req() req: Request) {
+  async listGames(
+    @Req() req: Request,
+    @Pagination() query: BasePaginationQueryDto,
+  ) {
     const { user } = await this.sessionService.requireSession(req);
-    return this.service.getGames(user.id);
+    return this.service.getGames(user.id, query);
   }
 
   @ApiOperation({ summary: 'Create a new game' })

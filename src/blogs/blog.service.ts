@@ -17,17 +17,7 @@ import type { CreateBlogDto } from './dto/create-blog.dto.js';
 import type { UpdateBlogDto } from './dto/update-blog.dto.js';
 import type { ListBlogsQueryDto } from './dto/list-blogs-query.dto.js';
 import { mapAttachments } from '../utils/attachment.util.js';
-
-/**
- * Paginated result wrapper.
- */
-export interface PaginatedResult<T> {
-	data: T[];
-	total: number;
-	page: number;
-	limit: number;
-	totalPages: number;
-}
+import type { PaginatedResult } from '../shared/types/pagination.types.js';
 
 @Deletable(4)
 @Injectable()
@@ -63,73 +53,105 @@ export class BlogService extends AbstractRepository<BlogData> implements IDeleta
 		userId?: string,
 		query: ListBlogsQueryDto = { page: 1, limit: 10, sort: 'desc' },
 	): Promise<PaginatedResult<BlogData>> {
-		const { page, limit, sort, status, mine } = query;
-		const snapshot = await this.collection.orderBy('createdAt', sort).get();
-		const allBlogs = snapshot.docs.map((d) => this.mapDoc(d));
+		const { limit, sort, status, mine, cursor } = query;
 
-		let filtered: BlogData[] = allBlogs as unknown as BlogData[];
 		if (mine && userId) {
-			filtered = filtered.filter((blog) => blog.authorId === userId);
-		} else {
-			filtered = filtered.filter((blog) => {
-				if (userId && blog.authorId === userId) return true;
-				return blog.status === BlogStatus.PUBLISHED;
-			});
+			let q = this.collection
+				.where('authorId', '==', userId)
+				.orderBy('createdAt', sort);
+			if (status) {
+				q = q.where('status', '==', status);
+			}
+			const { data: rawBlogs, nextCursor, hasMore } = await this.paginate(q, { limit, cursor });
+			const data = await this._enrichBlogs(rawBlogs);
+			return { data, total: null, page: null, limit, totalPages: null, nextCursor, hasMore };
 		}
 
-		if (status) {
-			filtered = filtered.filter((blog) => blog.status === status);
+		if (!userId) {
+			const q = this.collection
+				.where('status', '==', BlogStatus.PUBLISHED)
+				.orderBy('createdAt', sort);
+			if (status && status !== BlogStatus.PUBLISHED) {
+				return { data: [], total: 0, page: null, limit, totalPages: 0, nextCursor: null, hasMore: false };
+			}
+			const { data: rawBlogs, nextCursor, hasMore } = await this.paginate(q, { limit, cursor });
+			const data = await this._enrichBlogs(rawBlogs);
+			return { data, total: null, page: null, limit, totalPages: null, nextCursor, hasMore };
 		}
 
-		const total = filtered.length;
-		const totalPages = Math.ceil(total / limit);
-		const skip = (page - 1) * limit;
-		const paged = filtered.slice(skip, skip + limit);
+		const [ownSnap, publishedSnap] = await Promise.all([
+			this.collection
+				.where('authorId', '==', userId)
+				.orderBy('createdAt', sort)
+				.limit(limit * 2)
+				.get(),
+			this.collection
+				.where('status', '==', BlogStatus.PUBLISHED)
+				.orderBy('createdAt', sort)
+				.limit(limit * 2)
+				.get(),
+		]);
 
-		const data = await Promise.all(
-			paged.map(async (blog) => {
-				const [contentBuffer, attachmentsSnapshot] = await Promise.all([
-					this.storage.getObject(`blogs/${blog.id}/content`),
-					this.attachmentsCol.where('blogId', '==', blog.id).get(),
-				]);
-				return {
-					...blog,
-					content: contentBuffer?.toString('utf-8') ?? '',
-					attachments: mapAttachments(attachmentsSnapshot),
-				} as BlogData;
-			}),
+		const seen = new Set<string>();
+		let merged: BlogData[] = [];
+		for (const doc of [...ownSnap.docs, ...publishedSnap.docs]) {
+			if (!seen.has(doc.id)) {
+				seen.add(doc.id);
+				merged.push(this.mapDoc(doc) as unknown as BlogData);
+			}
+		}
+
+		merged.sort((a, b) =>
+			sort === 'desc'
+				? b.createdAt.localeCompare(a.createdAt)
+				: a.createdAt.localeCompare(b.createdAt),
 		);
 
-		return { data, total, page, limit, totalPages };
+		if (status) {
+			merged = merged.filter((blog) => blog.status === status);
+		}
+
+		if (cursor) {
+			const idx = merged.findIndex((b) => b.id === cursor);
+			if (idx !== -1) {
+				merged = merged.slice(idx + 1);
+			}
+		}
+
+		const hasMore = merged.length > limit;
+		const paged = merged.slice(0, limit);
+		const nextCursor = hasMore ? paged[paged.length - 1].id : null;
+		const data = await this._enrichBlogs(paged);
+		return { data, total: null, page: null, limit, totalPages: null, nextCursor, hasMore };
 	}
 
 	/**
 	 * List only the authenticated user's own blog posts.
-	 * Supports optional status filter.
+	 * Supports optional status filter and cursor-based pagination.
 	 * @deprecated Use GET /blogs?mine=true instead.
 	 */
 	async listMyBlogs(
 		userId: string,
 		query: ListBlogsQueryDto = { page: 1, limit: 10, sort: 'desc' },
 	): Promise<PaginatedResult<BlogData>> {
-		const { page, limit, sort, status } = query;
-		const snapshot = await this.collection
+		const { limit, sort, status, cursor } = query;
+		let q = this.collection
 			.where('authorId', '==', userId)
-			.orderBy('createdAt', sort)
-			.get();
-		let allBlogs: BlogData[] = snapshot.docs.map((d) => this.mapDoc(d)) as unknown as BlogData[];
-
+			.orderBy('createdAt', sort);
 		if (status) {
-			allBlogs = allBlogs.filter((blog) => blog.status === status);
+			q = q.where('status', '==', status);
 		}
+		const { data: rawBlogs, nextCursor, hasMore } = await this.paginate(q, { limit, cursor });
+		const data = await this._enrichBlogs(rawBlogs);
+		return { data, total: null, page: null, limit, totalPages: null, nextCursor, hasMore };
+	}
 
-		const total = allBlogs.length;
-		const totalPages = Math.ceil(total / limit);
-		const skip = (page - 1) * limit;
-		const paged = allBlogs.slice(skip, skip + limit);
-
-		const data = await Promise.all(
-			paged.map(async (blog) => {
+	/**
+	 * Enrich blog entries with content from object storage and attachment metadata.
+	 */
+	private async _enrichBlogs(blogs: BlogData[]): Promise<BlogData[]> {
+		return Promise.all(
+			blogs.map(async (blog) => {
 				const [contentBuffer, attachmentsSnapshot] = await Promise.all([
 					this.storage.getObject(`blogs/${blog.id}/content`),
 					this.attachmentsCol.where('blogId', '==', blog.id).get(),
@@ -141,8 +163,6 @@ export class BlogService extends AbstractRepository<BlogData> implements IDeleta
 				} as BlogData;
 			}),
 		);
-
-		return { data, total, page, limit, totalPages };
 	}
 
 	async createBlog(authorId: string, dto: CreateBlogDto): Promise<BlogData> {

@@ -1,4 +1,4 @@
-import { DocumentSnapshot, FieldValue } from 'firebase-admin/firestore';
+import { DocumentSnapshot, FieldValue, Query } from 'firebase-admin/firestore';
 import { IRepository } from './repository.interface.js';
 import { IFirebaseAdminProvider } from '../firebase/firebase-admin.provider.interface.js';
 import { toDateString } from '../../utils/date.util.js';
@@ -95,5 +95,42 @@ export abstract class AbstractRepository<T> implements IRepository<T> {
    */
   async delete(id: string): Promise<void> {
     await this.collection.doc(id).delete();
+  }
+
+  /**
+   * Cursor-based pagination helper for Firestore queries.
+   *
+   * Fetches `limit + 1` documents to determine whether a next page exists.
+   * Returns at most `limit` documents along with a `nextCursor` pointing to the
+   * last returned document ID (or `null` if no further pages exist).
+   *
+   * @param query  The Firestore query (with `orderBy` applied before calling this).
+   * @param options.limit   Maximum number of items to return (must be >= 1).
+   * @param options.cursor  Optional document ID to start after (exclusive).
+   */
+  protected async paginate(
+    query: Query,
+    options: { limit: number; cursor?: string },
+  ): Promise<{ data: T[]; nextCursor: string | null; hasMore: boolean }> {
+    const { limit, cursor } = options;
+
+    let paginatedQuery = query;
+    if (cursor) {
+      const cursorSnap = await this.collection.doc(cursor).get();
+      if (cursorSnap.exists) {
+        paginatedQuery = paginatedQuery.startAfter(cursorSnap);
+      }
+    }
+
+    paginatedQuery = paginatedQuery.limit(limit + 1);
+    const snapshot = await paginatedQuery.get();
+    const docs = snapshot.docs;
+
+    const hasMore = docs.length > limit;
+    const resultDocs = hasMore ? docs.slice(0, limit) : docs;
+    const data = resultDocs.map((doc) => this.mapDoc(doc));
+    const nextCursor = hasMore ? resultDocs[resultDocs.length - 1].id : null;
+
+    return { data, nextCursor, hasMore };
   }
 }

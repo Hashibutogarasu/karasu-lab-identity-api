@@ -13,6 +13,8 @@ import { GameEntity } from './entities/game.entity.js';
 import { IObjectStorageService } from '../../storage/object-storage.interface.js';
 import type { IObjectStorage } from '../../storage/object-storage.interface.js';
 import { CreateImageUploadUrlDto } from './dto/create-image-upload-url.dto.js';
+import type { PaginatedResult } from '../../shared/types/pagination.types.js';
+import { BasePaginationQueryDto } from '../../shared/dto/pagination-query.dto.js';
 
 const UPLOAD_PRESIGNED_URL_EXPIRES_IN = 15 * 60;
 
@@ -84,13 +86,19 @@ export class GamesService implements IDeletable {
   }
 
   /**
-   * Retrieves all games for a specific user.
+   * Retrieves games for a specific user with cursor-based pagination.
    * @param userId The user's ID.
-   * @returns Array of games.
+   * @param query Pagination options.
+   * @returns Paginated games.
    */
-  async getGames(userId: string): Promise<(GameEntity & { image?: string })[]> {
-    const games = await this.gamesRepo.findByUserId(userId);
-    return Promise.all(games.map((g) => this.resolveGameImage(g)));
+  async getGames(
+    userId: string,
+    query: BasePaginationQueryDto = { limit: 20 },
+  ): Promise<PaginatedResult<GameEntity & { image?: string }>> {
+    const { limit, cursor } = query;
+    const { data, nextCursor, hasMore } = await this.gamesRepo.findByUserIdPaged(userId, { limit, cursor });
+    const enriched = await Promise.all(data.map((g) => this.resolveGameImage(g)));
+    return { data: enriched, total: null, page: null, limit, totalPages: null, nextCursor, hasMore };
   }
 
   /**

@@ -14,13 +14,15 @@ import type { Request } from 'express';
 
 import { SessionService } from '../../shared/auth/session.service.js';
 import { RolesGuard } from '../../shared/auth/roles.guard.js';
-import { ZodValidationPipe } from '../../shared/pipes/zod-validation.pipe.js';
 import { StonesService } from './stones.service.js';
 import { CreateStoneDto, createStoneSchema } from './dto/create-stone.dto.js';
 import { UpdateStoneDto, updateStoneSchema } from './dto/update-stone.dto.js';
 import { StoneResponseDto } from './dto/stone-response.dto.js';
 import { SuccessResponseDto } from '../../blogs/dto/success-response.dto.js';
 import { AuthGuard } from '@thallesp/nestjs-better-auth';
+import { ZodValidationPipe } from '../../shared/pipes/zod-validation.pipe.js';
+import { Pagination } from '../../shared/decorators/pagination.decorator.js';
+import { BasePaginationQueryDto } from '../../shared/dto/pagination-query.dto.js';
 
 @UseGuards(AuthGuard)
 @UseGuards(RolesGuard)
@@ -39,9 +41,12 @@ export class StoneManageStonesController {
     type: [StoneResponseDto],
   })
   @Get('stone')
-  async listAllStones(@Req() req: Request) {
+  async listAllStones(
+    @Req() req: Request,
+    @Pagination() query: BasePaginationQueryDto,
+  ) {
     const { user } = await this.sessionService.requireSession(req);
-    return this.service.getStones(user.id);
+    return this.service.getStones(user.id, query);
   }
 
   @ApiOperation({ summary: 'Create a new stone in a game' })

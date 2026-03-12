@@ -12,6 +12,8 @@ import { UpdateStoneDto } from './dto/update-stone.dto.js';
 import { StoneEntity } from './entities/stone.entity.js';
 import { IObjectStorageService } from '../../storage/object-storage.interface.js';
 import type { IObjectStorage } from '../../storage/object-storage.interface.js';
+import type { PaginatedResult } from '../../shared/types/pagination.types.js';
+import { BasePaginationQueryDto } from '../../shared/dto/pagination-query.dto.js';
 
 /**
  * Service for managing stones (in-game currencies).
@@ -53,13 +55,19 @@ export class StonesService implements IDeletable {
   }
 
   /**
-   * Retrieves all stones for a specific user.
+   * Retrieves stones for a specific user with cursor-based pagination.
    * @param userId The user's ID.
-   * @returns Array of stones.
+   * @param query Pagination options.
+   * @returns Paginated stones.
    */
-  async getStones(userId: string): Promise<(StoneEntity & { image?: string })[]> {
-    const stones = await this.stonesRepo.findByUserId(userId);
-    return Promise.all(stones.map((s) => this.resolveStoneImage(s)));
+  async getStones(
+    userId: string,
+    query: BasePaginationQueryDto = { limit: 20 },
+  ): Promise<PaginatedResult<StoneEntity & { image?: string }>> {
+    const { limit, cursor } = query;
+    const { data, nextCursor, hasMore } = await this.stonesRepo.findByUserIdPaged(userId, { limit, cursor });
+    const enriched = await Promise.all(data.map((s) => this.resolveStoneImage(s)));
+    return { data: enriched, total: null, page: null, limit, totalPages: null, nextCursor, hasMore };
   }
 
   /**

@@ -14,13 +14,15 @@ import type { Request } from 'express';
 
 import { SessionService } from '../../shared/auth/session.service.js';
 import { RolesGuard } from '../../shared/auth/roles.guard.js';
-import { ZodValidationPipe } from '../../shared/pipes/zod-validation.pipe.js';
 import { LogsService } from './logs.service.js';
 import { CreateLogDto, createLogSchema } from './dto/create-log.dto.js';
 import { UpdateLogDto, updateLogSchema } from './dto/update-log.dto.js';
 import { LogResponseDto } from './dto/log-response.dto.js';
 import { SuccessResponseDto } from '../../blogs/dto/success-response.dto.js';
 import { AuthGuard } from '@thallesp/nestjs-better-auth';
+import { ZodValidationPipe } from '../../shared/pipes/zod-validation.pipe.js';
+import { Pagination } from '../../shared/decorators/pagination.decorator.js';
+import { BasePaginationQueryDto } from '../../shared/dto/pagination-query.dto.js';
 
 @UseGuards(AuthGuard)
 @UseGuards(RolesGuard)
@@ -39,9 +41,13 @@ export class StoneManageLogsController {
     type: [LogResponseDto],
   })
   @Get('stone/:sid/logs')
-  async listLogs(@Req() req: Request, @Param('sid') sid: string) {
+  async listLogs(
+    @Req() req: Request,
+    @Param('sid') sid: string,
+    @Pagination() query: BasePaginationQueryDto,
+  ) {
     const { user } = await this.sessionService.requireSession(req);
-    return this.service.getLogs(sid, user.id);
+    return this.service.getLogs(sid, user.id, query);
   }
 
   @ApiOperation({ summary: 'Get a specific log by ID' })

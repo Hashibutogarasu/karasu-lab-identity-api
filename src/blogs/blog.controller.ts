@@ -6,7 +6,6 @@ import {
   Param,
   Post,
   Put,
-  Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
@@ -20,6 +19,7 @@ import { Roles } from '../shared/auth/roles.decorator.js';
 import { RolesGuard } from '../shared/auth/roles.guard.js';
 import { ZodValidationPipe } from '../shared/pipes/zod-validation.pipe.js';
 import { ErrorCodes } from '../shared/errors/error.codes.js';
+import { Pagination } from '../shared/decorators/pagination.decorator.js';
 import { BlogService } from './blog.service.js';
 import {
   BlogResponseDto,
@@ -60,7 +60,7 @@ export class BlogController {
   @Get()
   async listBlogs(
     @Req() req: Request,
-    @Query(new ZodValidationPipe(listBlogsQuerySchema)) query: ListBlogsQueryDto,
+    @Pagination(listBlogsQuerySchema) query: ListBlogsQueryDto,
   ) {
     const session = await this.sessionService.optionalSession(req);
     if (query.mine && !session) {

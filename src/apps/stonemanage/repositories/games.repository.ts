@@ -20,6 +20,16 @@ export class GamesRepository extends AbstractRepository<GameEntity> {
   }
 
   /**
+   * Finds games for a user with cursor-based pagination.
+   * @param userId The ID of the user.
+   * @param options Pagination options (limit, cursor).
+   */
+  findByUserIdPaged(userId: string, options: { limit: number; cursor?: string }) {
+    const query = this.collection.where('userId', '==', userId).orderBy('createdAt', 'desc');
+    return this.paginate(query, options);
+  }
+
+  /**
    * Deletes all games associated with a specific user ID.
    * @param userId The ID of the user.
    * @returns A promise that resolves when all games are deleted.

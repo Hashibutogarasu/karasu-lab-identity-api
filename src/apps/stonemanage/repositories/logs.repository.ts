@@ -23,4 +23,14 @@ export class LogsRepository extends AbstractRepository<LogEntity> {
     });
     await batch.commit();
   }
+
+  /**
+   * Finds logs for a stone with cursor-based pagination.
+   * @param stoneId The ID of the stone.
+   * @param options Pagination options (limit, cursor).
+   */
+  findByStoneIdPaged(stoneId: string, options: { limit: number; cursor?: string }) {
+    const query = this.collection.where('stoneId', '==', stoneId).orderBy('createdAt', 'desc');
+    return this.paginate(query, options);
+  }
 }

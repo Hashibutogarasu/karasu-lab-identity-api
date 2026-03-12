@@ -9,6 +9,8 @@ import type { IDeletable } from '../../shared/deletable/deletable.interface.js';
 import { CreateLogDto } from './dto/create-log.dto.js';
 import { UpdateLogDto } from './dto/update-log.dto.js';
 import { LogEntity } from './entities/log.entity.js';
+import type { PaginatedResult } from '../../shared/types/pagination.types.js';
+import { BasePaginationQueryDto } from '../../shared/dto/pagination-query.dto.js';
 
 /**
  * Service for managing stone logs.
@@ -48,14 +50,21 @@ export class LogsService implements IDeletable {
   }
 
   /**
-   * Retrieves all logs for a specific stone.
+   * Retrieves logs for a specific stone with cursor-based pagination.
    * @param stoneId The stone ID.
    * @param userId The user's ID.
-   * @returns Array of logs.
+   * @param query Pagination options.
+   * @returns Paginated logs.
    */
-  async getLogs(stoneId: string, userId: string): Promise<LogEntity[]> {
+  async getLogs(
+    stoneId: string,
+    userId: string,
+    query: BasePaginationQueryDto = { limit: 20 },
+  ): Promise<PaginatedResult<LogEntity>> {
     await this.validateStoneOwnership(stoneId, userId);
-    return this.logsRepo.findByStoneId(stoneId);
+    const { limit, cursor } = query;
+    const { data, nextCursor, hasMore } = await this.logsRepo.findByStoneIdPaged(stoneId, { limit, cursor });
+    return { data, total: null, page: null, limit, totalPages: null, nextCursor, hasMore };
   }
 
   /**

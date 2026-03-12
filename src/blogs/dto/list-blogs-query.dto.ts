@@ -9,6 +9,7 @@ export const listBlogsQuerySchema = z.object({
 	sort: z.enum(['asc', 'desc']).default('desc'),
 	status: statusSchema.optional(),
 	mine: z.coerce.boolean().optional(),
+	cursor: z.string().optional(),
 });
 
 export class ListBlogsQueryDto extends createZodDto(listBlogsQuerySchema) { };
