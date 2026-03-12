@@ -24,8 +24,7 @@ import { ZodValidationPipe } from '../../shared/pipes/zod-validation.pipe.js';
 import { Pagination } from '../../shared/decorators/pagination.decorator.js';
 import { BasePaginationQueryDto } from '../../shared/dto/pagination-query.dto.js';
 
-@UseGuards(AuthGuard)
-@UseGuards(RolesGuard)
+@UseGuards(RolesGuard, AuthGuard)
 @ApiTags('Stone Manage Stones')
 @Controller('apps/stonemanage')
 export class StoneManageStonesController {
