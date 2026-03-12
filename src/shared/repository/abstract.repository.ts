@@ -112,7 +112,8 @@ export abstract class AbstractRepository<T> implements IRepository<T> {
     query: Query,
     options: { limit: number; cursor?: string },
   ): Promise<{ data: T[]; nextCursor: string | null; hasMore: boolean }> {
-    const { limit, cursor } = options;
+    const limit = Number(options.limit) || 20;
+    const { cursor } = options;
 
     let paginatedQuery = query;
     if (cursor) {

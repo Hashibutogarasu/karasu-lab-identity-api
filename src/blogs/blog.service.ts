@@ -53,7 +53,8 @@ export class BlogService extends AbstractRepository<BlogData> implements IDeleta
 		userId?: string,
 		query: ListBlogsQueryDto = { page: 1, limit: 10, sort: 'desc' },
 	): Promise<PaginatedResult<BlogData>> {
-		const { limit, sort, status, mine, cursor } = query;
+		const limit = Number(query.limit) || 10;
+		const { sort, status, mine, cursor } = query;
 
 		if (mine && userId) {
 			let q = this.collection
@@ -134,7 +135,8 @@ export class BlogService extends AbstractRepository<BlogData> implements IDeleta
 		userId: string,
 		query: ListBlogsQueryDto = { page: 1, limit: 10, sort: 'desc' },
 	): Promise<PaginatedResult<BlogData>> {
-		const { limit, sort, status, cursor } = query;
+		const limit = Number(query.limit) || 10;
+		const { sort, status, cursor } = query;
 		let q = this.collection
 			.where('authorId', '==', userId)
 			.orderBy('createdAt', sort);
