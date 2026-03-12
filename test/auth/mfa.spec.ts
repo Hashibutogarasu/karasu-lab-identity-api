@@ -450,13 +450,14 @@ describe('Two-Factor Authentication — re-enable rotates secret', () => {
     const { totpURI: first, cookie: enabledCookie } = await enableTwoFactor(cookie, 'Password123!');
 
     const code1 = await generateTOTPCode(first);
-    await request(
+    const verifyRes = await request(
       '/two-factor/verify-totp',
       { method: 'POST', body: JSON.stringify({ code: code1 }) },
       enabledCookie,
     );
+    const verifiedCookie = extractCookies(verifyRes.headers) || enabledCookie;
 
-    const { totpURI: second } = await enableTwoFactor(enabledCookie, 'Password123!');
+    const { totpURI: second } = await enableTwoFactor(verifiedCookie, 'Password123!');
     expect(second).not.toBe(first);
 
     const firstSecret = new URL(first).searchParams.get('secret');
