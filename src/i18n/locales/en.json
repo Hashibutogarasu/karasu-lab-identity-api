@@ -30,5 +30,8 @@
 		"stone_not_found": "Stone data not found",
 		"log_not_found": "Stone log not found",
 		"forbidden": "You do not have permission to perform this action"
+	},
+	"user": {
+		"not_found": "User not found"
 	}
 }

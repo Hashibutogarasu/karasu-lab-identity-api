@@ -5,6 +5,8 @@ import { GamesRepository } from './repositories/games.repository.js';
 import { StonesRepository } from './repositories/stones.repository.js';
 import { LogsRepository } from './repositories/logs.repository.js';
 import { ErrorCodes } from '../../shared/errors/error.codes.js';
+import { Deletable } from '../../shared/deletable/deletable.decorator.js';
+import type { IDeletable } from '../../shared/deletable/deletable.interface.js';
 import { CreateGameDto } from './dto/create-game.dto.js';
 import { UpdateGameDto } from './dto/update-game.dto.js';
 import { GameEntity } from './entities/game.entity.js';
@@ -17,8 +19,9 @@ const UPLOAD_PRESIGNED_URL_EXPIRES_IN = 15 * 60;
 /**
  * Service for managing games and issuing image upload URLs.
  */
+@Deletable(5)
 @Injectable()
-export class GamesService {
+export class GamesService implements IDeletable {
   constructor(
     private readonly gamesRepo: GamesRepository,
     private readonly stonesRepo: StonesRepository,
@@ -156,5 +159,15 @@ export class GamesService {
     if (game.imageKey) {
       await this.storage.deleteObject(game.imageKey);
     }
+  }
+
+  async deleteData(userId: string): Promise<void> {
+    const games = await this.gamesRepo.findByUserId(userId);
+    for (const game of games) {
+      if (game.imageKey) {
+        await this.storage.deleteObject(game.imageKey);
+      }
+    }
+    await this.gamesRepo.deleteByUserId(userId);
   }
 }

@@ -3,6 +3,8 @@ import cuid from 'cuid';
 import { FieldValue } from 'firebase-admin/firestore';
 import { IFirebaseAdminProvider } from '../shared/firebase/firebase-admin.provider.interface.js';
 import { ErrorCodes } from '../shared/errors/error.codes.js';
+import { Deletable } from '../shared/deletable/deletable.decorator.js';
+import type { IDeletable } from '../shared/deletable/deletable.interface.js';
 import { IObjectStorageService, type IObjectStorage } from '../storage/object-storage.interface.js';
 import { AbstractRepository } from '../shared/repository/abstract.repository.js';
 import type { SyncAttachmentDto } from '../blogs/dto/sync-attachment.dto.js';
@@ -40,8 +42,9 @@ export interface AttachmentUploadUrlResult {
   expiresIn: number;
 }
 
+@Deletable(2)
 @Injectable()
-export class AttachmentService extends AbstractRepository<AttachmentData> {
+export class AttachmentService extends AbstractRepository<AttachmentData> implements IDeletable {
   constructor(
     @Inject(IObjectStorageService) private readonly storage: IObjectStorage,
     firebase: IFirebaseAdminProvider
@@ -232,5 +235,16 @@ export class AttachmentService extends AbstractRepository<AttachmentData> {
     await this.collection.doc(attachmentId).set(data);
     const doc = await this.collection.doc(attachmentId).get();
     return this.mapDoc(doc);
+  }
+
+  async deleteData(userId: string): Promise<void> {
+    const snapshot = await this.collection.where('authorId', '==', userId).get();
+    for (const doc of snapshot.docs) {
+      const metadata = doc.data();
+      if (metadata?.['key']) {
+        await this.storage.deleteObject(metadata['key'] as string);
+      }
+      await doc.ref.delete();
+    }
   }
 }

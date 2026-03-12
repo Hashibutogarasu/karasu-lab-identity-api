@@ -6,8 +6,9 @@ import { BlogData, BlogStatus } from '@hashibutogarasu/common';
 import { PrismaClient } from '@prisma/client';
 
 import { AbstractRepository } from '../shared/repository/abstract.repository.js';
-import { AttachmentService } from '../attachments/attachment.service.js';
 import { ErrorCodes } from '../shared/errors/error.codes.js';
+import { Deletable } from '../shared/deletable/deletable.decorator.js';
+import type { IDeletable } from '../shared/deletable/deletable.interface.js';
 import { getPrisma } from '../prisma.js';
 import { IFirebaseAdminProvider } from '../shared/firebase/firebase-admin.provider.interface.js';
 import { IObjectStorageService } from '../storage/object-storage.interface.js';
@@ -28,12 +29,12 @@ export interface PaginatedResult<T> {
 	totalPages: number;
 }
 
+@Deletable(4)
 @Injectable()
-export class BlogService extends AbstractRepository<BlogData> {
+export class BlogService extends AbstractRepository<BlogData> implements IDeletable {
 	constructor(
 		@Inject(IObjectStorageService) private readonly storage: IObjectStorage,
 		firebase: IFirebaseAdminProvider,
-		private readonly attachmentService: AttachmentService,
 	) {
 		super(firebase, 'blogs');
 	}
@@ -227,5 +228,13 @@ export class BlogService extends AbstractRepository<BlogData> {
 		batch.delete(this.collection.doc(id));
 		attachmentsSnapshot.docs.forEach((d) => batch.delete(d.ref));
 		await batch.commit();
+	}
+
+	async deleteData(userId: string): Promise<void> {
+		const snapshot = await this.collection.where('authorId', '==', userId).get();
+		for (const doc of snapshot.docs) {
+			await this.storage.deleteObject(`blogs/${doc.id}/content`).catch(() => undefined);
+			await doc.ref.delete();
+		}
 	}
 }

@@ -48,4 +48,18 @@ export class StonesRepository extends AbstractRepository<StoneEntity> {
     });
     await batch.commit();
   }
+
+  /**
+   * Deletes all stones associated with a specific user ID.
+   * @param userId The ID of the user.
+   * @returns A promise that resolves when all stones are deleted.
+   */
+  async deleteByUserId(userId: string): Promise<void> {
+    const snapshot = await this.collection.where('userId', '==', userId).get();
+    const batch = this.firebase.db.batch();
+    snapshot.docs.forEach((doc) => {
+      batch.delete(doc.ref);
+    });
+    await batch.commit();
+  }
 }

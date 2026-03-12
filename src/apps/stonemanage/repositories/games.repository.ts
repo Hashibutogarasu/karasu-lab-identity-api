@@ -18,4 +18,18 @@ export class GamesRepository extends AbstractRepository<GameEntity> {
     const snapshot = await this.collection.where('userId', '==', userId).get();
     return snapshot.docs.map(doc => this.mapDoc(doc));
   }
+
+  /**
+   * Deletes all games associated with a specific user ID.
+   * @param userId The ID of the user.
+   * @returns A promise that resolves when all games are deleted.
+   */
+  async deleteByUserId(userId: string): Promise<void> {
+    const snapshot = await this.collection.where('userId', '==', userId).get();
+    const batch = this.firebase.db.batch();
+    snapshot.docs.forEach((doc) => {
+      batch.delete(doc.ref);
+    });
+    await batch.commit();
+  }
 }

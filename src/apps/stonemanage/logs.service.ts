@@ -4,6 +4,8 @@ import cuid from 'cuid';
 import { StonesRepository } from './repositories/stones.repository.js';
 import { LogsRepository } from './repositories/logs.repository.js';
 import { ErrorCodes } from '../../shared/errors/error.codes.js';
+import { Deletable } from '../../shared/deletable/deletable.decorator.js';
+import type { IDeletable } from '../../shared/deletable/deletable.interface.js';
 import { CreateLogDto } from './dto/create-log.dto.js';
 import { UpdateLogDto } from './dto/update-log.dto.js';
 import { LogEntity } from './entities/log.entity.js';
@@ -11,8 +13,9 @@ import { LogEntity } from './entities/log.entity.js';
 /**
  * Service for managing stone logs.
  */
+@Deletable(1)
 @Injectable()
-export class LogsService {
+export class LogsService implements IDeletable {
   constructor(
     private readonly stonesRepo: StonesRepository,
     private readonly logsRepo: LogsRepository,
@@ -151,5 +154,12 @@ export class LogsService {
   async deleteLog(stoneId: string, logId: string, userId: string): Promise<void> {
     await this.getLog(stoneId, logId, userId);
     await this.logsRepo.delete(logId);
+  }
+
+  async deleteData(userId: string): Promise<void> {
+    const stones = await this.stonesRepo.findByUserId(userId);
+    for (const stone of stones) {
+      await this.logsRepo.deleteByStoneId(stone.id);
+    }
   }
 }

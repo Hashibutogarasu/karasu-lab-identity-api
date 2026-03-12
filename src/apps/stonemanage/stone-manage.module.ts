@@ -33,5 +33,6 @@ import { StoneManageImagesController } from './images.controller.js';
     ConfigServiceProvider,
     RolesGuard,
   ],
+  exports: [GamesService, StonesService, LogsService],
 })
 export class StoneManageModule {}

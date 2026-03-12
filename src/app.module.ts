@@ -11,8 +11,7 @@ import { AuthorModule } from "./authors/author.module.js";
 import { AttachmentModule } from "./attachments/attachment.module.js";
 import { OpenApiModule } from "./shared/openapi/openapi.module.js";
 import { AuthMiddlewareModule } from "./shared/auth/auth-middleware.module.js";
-import { StoneManageModule } from "./apps/stonemanage/stone-manage.module.js";
-import { initAuth } from "./auth.js";
+import { StoneManageModule } from "./apps/stonemanage/stone-manage.module.js";import { UserModule } from './user/user.module.js';import { initAuth } from "./auth.js";
 import { DotEnvServiceProvider } from "./shared/config/dotenv.service.js";
 
 @Module({
@@ -29,6 +28,7 @@ import { DotEnvServiceProvider } from "./shared/config/dotenv.service.js";
     AttachmentModule,
     OpenApiModule,
     StoneManageModule,
+    UserModule,
     AuthMiddlewareModule.forRoot({ path: '/api/auth' }),
     AuthModule.forRootAsync({
       useFactory: async () => {

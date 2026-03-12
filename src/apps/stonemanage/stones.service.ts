@@ -5,6 +5,8 @@ import { GamesRepository } from './repositories/games.repository.js';
 import { StonesRepository } from './repositories/stones.repository.js';
 import { LogsRepository } from './repositories/logs.repository.js';
 import { ErrorCodes } from '../../shared/errors/error.codes.js';
+import { Deletable } from '../../shared/deletable/deletable.decorator.js';
+import type { IDeletable } from '../../shared/deletable/deletable.interface.js';
 import { CreateStoneDto } from './dto/create-stone.dto.js';
 import { UpdateStoneDto } from './dto/update-stone.dto.js';
 import { StoneEntity } from './entities/stone.entity.js';
@@ -14,8 +16,9 @@ import type { IObjectStorage } from '../../storage/object-storage.interface.js';
 /**
  * Service for managing stones (in-game currencies).
  */
+@Deletable(3)
 @Injectable()
-export class StonesService {
+export class StonesService implements IDeletable {
   constructor(
     private readonly gamesRepo: GamesRepository,
     private readonly stonesRepo: StonesRepository,
@@ -148,5 +151,15 @@ export class StonesService {
       await this.logsRepo.deleteByStoneId(st.id);
     }
     await this.stonesRepo.deleteByGameId(gameId);
+  }
+
+  async deleteData(userId: string): Promise<void> {
+    const stones = await this.stonesRepo.findByUserId(userId);
+    for (const stone of stones) {
+      if (stone.imageKey) {
+        await this.storage.deleteObject(stone.imageKey);
+      }
+    }
+    await this.stonesRepo.deleteByUserId(userId);
   }
 }

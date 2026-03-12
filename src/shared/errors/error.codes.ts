@@ -64,6 +64,9 @@ export const ErrorCodes = createErrorMap({
 		LOG_NOT_FOUND: ['stonemanage.log_not_found', 'NOT_FOUND'],
 		FORBIDDEN: ['stonemanage.forbidden', 'FORBIDDEN'],
 	},
+	USER: {
+		NOT_FOUND: ['user.not_found', 'NOT_FOUND'],
+	},
 } as const);
 
 export const createAPIError = (error: ErrorDefinition, options?: Record<string, unknown>): APIError => {
