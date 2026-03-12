@@ -248,11 +248,12 @@ model OauthConsent {
 
 model Apikey {
   id                  String    @id
+  configId            String    @default("default")
   name                String?
   start               String?
   prefix              String?
   key                 String
-  referenceId         String
+  referenceId         String    @map("userId")
   user                User      @relation(fields: [referenceId], references: [id], onDelete: Cascade)
   refillInterval      Int?
   refillAmount        Int?
@@ -272,6 +273,7 @@ model Apikey {
 
   @@index([key])
   @@index([referenceId])
+  @@index([configId])
   @@map("apikey")
 }
 
