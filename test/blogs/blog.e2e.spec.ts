@@ -42,7 +42,7 @@ describe('BlogService (E2E)', () => {
 		await firebaseProvider.onModuleInit();
 
 		attachmentService = new AttachmentService(storage, firebaseProvider);
-		service = new BlogService(storage, firebaseProvider, attachmentService);
+		service = new BlogService(storage, firebaseProvider);
 		await prisma.user.createMany({
 			data: [
 				{

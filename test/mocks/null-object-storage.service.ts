@@ -15,6 +15,10 @@ export class NullObjectStorageService implements IObjectStorage {
    */
   static readonly UPLOAD_BASE = 'https://test-stub/upload/';
 
+  getPublicUrl(key: string): Promise<string> {
+    return Promise.resolve(`https://test-stub/public/${key}`);
+  }
+
   getPresignedUrl(key: string, expiresIn?: number): Promise<string> {
     let url = `https://test-stub/${key}`;
     if (expiresIn) {

@@ -27,7 +27,7 @@ describe('BlogService — presigned upload URL and sync', () => {
     firebaseProvider = new MockFirebaseAdminProvider();
     await firebaseProvider.onModuleInit();
     attachmentService = new AttachmentService(storage, firebaseProvider);
-    service = new BlogService(storage, firebaseProvider, attachmentService);
+    service = new BlogService(storage, firebaseProvider);
   });
 
   afterEach(async () => {
