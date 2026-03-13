@@ -80,7 +80,7 @@ describe('BlogService (E2E)', () => {
 		});
 	});
 
-  describe('listBlogs', () => {
+  describe('listPublishedBlogs', () => {
     it('anonymous: returns only published blogs', async () => {
       const draft = await service.createBlog(ownerUserId, { title: 'Test Blog', content: 'Draft', status: 'draft' });
       const published = await service.createBlog(ownerUserId, {
@@ -89,12 +89,43 @@ describe('BlogService (E2E)', () => {
         status: 'published',
       });
 
-      const blogs = await service.listBlogs();
+      const blogs = await service.listPublishedBlogs();
       const ids = blogs.data.map((b) => b.id);
       expect(ids).toContain(published.id);
       expect(ids).not.toContain(draft.id);
     });
 
+    it('returns only published posts regardless of user', async () => {
+      const draft = await service.createBlog(ownerUserId, {
+        title: 'Test Blog',
+        content: 'Owner draft',
+        status: 'draft',
+      });
+      const published = await service.createBlog(ownerUserId, {
+        title: 'Test Blog',
+        content: 'Owner published',
+        status: 'published',
+      });
+
+      const blogs = await service.listPublishedBlogs();
+      const ids = blogs.data.map((b) => b.id);
+      expect(ids).toContain(published.id);
+      expect(ids).not.toContain(draft.id);
+    });
+
+    it('each entry includes attachments array', async () => {
+      const blog = await service.createBlog(ownerUserId, {
+        title: 'Test Blog',
+        content: 'With attachments field',
+        status: 'published',
+      });
+      const blogs = await service.listPublishedBlogs();
+      const found = blogs.data.find((b) => b.id === blog.id);
+      expect(found?.attachments).toBeInstanceOf(Array);
+    });
+  });
+
+  describe('listMyBlogs', () => {
     it('authenticated owner: sees own posts of all statuses', async () => {
       const draft = await service.createBlog(ownerUserId, {
         title: 'Test Blog',
@@ -112,44 +143,15 @@ describe('BlogService (E2E)', () => {
         status: 'published',
       });
 
-      const blogs = await service.listBlogs(ownerUserId);
+      const blogs = await service.listMyBlogs(ownerUserId);
       const ids = blogs.data.map((b) => b.id);
       expect(ids).toContain(draft.id);
       expect(ids).toContain(archived.id);
       expect(ids).toContain(published.id);
     });
 
-    it('authenticated non-owner: sees only published posts from others', async () => {
-      const draft = await service.createBlog(ownerUserId, {
-        title: 'Test Blog',
-        content: 'Owner draft',
-        status: 'draft',
-      });
-      const published = await service.createBlog(ownerUserId, {
-        title: 'Test Blog',
-        content: 'Owner published',
-        status: 'published',
-      });
-
-      const blogs = await service.listBlogs(otherUserId);
-      const ids = blogs.data.map((b) => b.id);
-      expect(ids).toContain(published.id);
-      expect(ids).not.toContain(draft.id);
-    });
-
-    it('each entry includes attachments array', async () => {
-      const blog = await service.createBlog(ownerUserId, {
-        title: 'Test Blog',
-        content: 'With attachments field',
-        status: 'published',
-      });
-      const blogs = await service.listBlogs();
-      const found = blogs.data.find((b) => b.id === blog.id);
-      expect(found?.attachments).toBeInstanceOf(Array);
-    });
-
     it('returns results in descending createdAt order', async () => {
-      const blogs = await service.listBlogs(ownerUserId);
+      const blogs = await service.listMyBlogs(ownerUserId);
       for (let i = 1; i < blogs.data.length; i++) {
         expect(new Date(blogs.data[i - 1].createdAt).getTime()).toBeGreaterThanOrEqual(
           new Date(blogs.data[i].createdAt).getTime(),

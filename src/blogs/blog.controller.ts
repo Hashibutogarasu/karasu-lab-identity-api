@@ -6,7 +6,6 @@ import {
   Param,
   Post,
   Put,
-  Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
@@ -19,7 +18,6 @@ import { SessionService } from '../shared/auth/session.service.js';
 import { Roles } from '../shared/auth/roles.decorator.js';
 import { RolesGuard } from '../shared/auth/roles.guard.js';
 import { ZodValidationPipe } from '../shared/pipes/zod-validation.pipe.js';
-import { ErrorCodes } from '../shared/errors/error.codes.js';
 import { Pagination } from '../shared/decorators/pagination.decorator.js';
 import { BlogService } from './blog.service.js';
 import {
@@ -46,28 +44,20 @@ export class BlogController {
   ) {}
 
   /**
-   * List blog posts. Public route, but auth changes the result set:
-   * - mine=true: own posts only (all statuses). Requires authentication.
-   * - Authenticated: own posts (all statuses) + published posts from others.
-   * - Anonymous: published posts only.
+   * List published blog posts for the public feed.
    */
   @AllowAnonymous()
-  @ApiOperation({ summary: 'List blog posts' })
+  @ApiOperation({ summary: 'List published blog posts' })
   @ApiResponse({
     status: 200,
-    description: 'Return a list of blog posts.',
+    description: 'Return a list of published blog posts.',
     type: PaginatedBlogResponseDto,
   })
   @Get()
   async listBlogs(
-    @Req() req: Request,
     @Pagination(listBlogsQuerySchema) query: ListBlogsQueryDto,
   ) {
-    const session = await this.sessionService.optionalSession(req);
-    if (query.mine && !session) {
-      throw ErrorCodes.BLOG.MINE_REQUIRES_AUTH;
-    }
-    return this.blogService.listBlogs(session?.user.id, query);
+    return this.blogService.listPublishedBlogs(query);
   }
 
   /**
@@ -89,19 +79,18 @@ export class BlogController {
 
   /**
    * List only the authenticated user's own blog posts (all statuses).
-   * Defined before :id to avoid route shadowing.
-   * @deprecated Use GET /blogs?mine=true instead.
+   * Used in the dashboard.
    */
-  @ApiOperation({ summary: 'List own blog posts', deprecated: true })
+  @ApiOperation({ summary: 'List own blog posts' })
   @ApiResponse({
     status: 200,
     description: 'Return a list of own blog posts.',
     type: PaginatedBlogResponseDto,
   })
-  @Get('mine')
+  @Get('my')
   async listMyBlogs(
     @Req() req: Request,
-    @Query(new ZodValidationPipe(listBlogsQuerySchema)) query: ListBlogsQueryDto,
+    @Pagination(listBlogsQuerySchema) query: ListBlogsQueryDto,
   ) {
     const { user } = await this.sessionService.requireSession(req);
     return this.blogService.listMyBlogs(user.id, query);

@@ -8,7 +8,6 @@ export const listBlogsQuerySchema = z.object({
 	limit: z.coerce.number().int().min(1).max(100).default(10),
 	sort: z.enum(['asc', 'desc']).default('desc'),
 	status: statusSchema.optional(),
-	mine: z.coerce.boolean().optional(),
 	cursor: z.string().optional(),
 });
 

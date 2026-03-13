@@ -44,92 +44,33 @@ export class BlogService extends AbstractRepository<BlogData> implements IDeleta
 	}
 
 	/**
-	 * List blogs.
-	 * - If mine=true & userId present: return own posts only, then apply status filter.
-	 * - Authenticated: own posts (all statuses) + published posts from others, then apply status filter.
-	 * - Anonymous: published posts only, then apply status filter.
+	 * List all published blog posts for the public feed.
+	 * Strictly filters by 'published' status.
 	 */
-	async listBlogs(
-		userId?: string,
+	async listPublishedBlogs(
 		query: ListBlogsQueryDto = { page: 1, limit: 10, sort: 'desc' },
 	): Promise<PaginatedResult<BlogData>> {
 		const limit = Number(query.limit) || 10;
-		const { sort, status, mine, cursor } = query;
+		const { sort, status, cursor } = query;
 
-		if (mine && userId) {
-			let q = this.collection
-				.where('authorId', '==', userId)
-				.orderBy('createdAt', sort);
-			if (status) {
-				q = q.where('status', '==', status);
-			}
-			const { data: rawBlogs, nextCursor, hasMore } = await this.paginate(q, { limit, cursor });
-			const data = await this._enrichBlogs(rawBlogs);
-			return { data, total: null, page: null, limit, totalPages: null, nextCursor, hasMore };
+		const q = this.collection
+			.where('status', '==', BlogStatus.PUBLISHED)
+			.orderBy('createdAt', sort);
+
+		// If a status filter is provided but it's not 'published', return empty.
+		// Public feed only shows published posts.
+		if (status && status !== BlogStatus.PUBLISHED) {
+			return { data: [], total: 0, page: null, limit, totalPages: 0, nextCursor: null, hasMore: false };
 		}
 
-		if (!userId) {
-			const q = this.collection
-				.where('status', '==', BlogStatus.PUBLISHED)
-				.orderBy('createdAt', sort);
-			if (status && status !== BlogStatus.PUBLISHED) {
-				return { data: [], total: 0, page: null, limit, totalPages: 0, nextCursor: null, hasMore: false };
-			}
-			const { data: rawBlogs, nextCursor, hasMore } = await this.paginate(q, { limit, cursor });
-			const data = await this._enrichBlogs(rawBlogs);
-			return { data, total: null, page: null, limit, totalPages: null, nextCursor, hasMore };
-		}
-
-		const [ownSnap, publishedSnap] = await Promise.all([
-			this.collection
-				.where('authorId', '==', userId)
-				.orderBy('createdAt', sort)
-				.limit(limit * 2)
-				.get(),
-			this.collection
-				.where('status', '==', BlogStatus.PUBLISHED)
-				.orderBy('createdAt', sort)
-				.limit(limit * 2)
-				.get(),
-		]);
-
-		const seen = new Set<string>();
-		let merged: BlogData[] = [];
-		for (const doc of [...ownSnap.docs, ...publishedSnap.docs]) {
-			if (!seen.has(doc.id)) {
-				seen.add(doc.id);
-				merged.push(this.mapDoc(doc) as unknown as BlogData);
-			}
-		}
-
-		merged.sort((a, b) =>
-			sort === 'desc'
-				? b.createdAt.localeCompare(a.createdAt)
-				: a.createdAt.localeCompare(b.createdAt),
-		);
-
-		if (status) {
-			merged = merged.filter((blog) => blog.status === status);
-		}
-
-		if (cursor) {
-			const idx = merged.findIndex((b) => b.id === cursor);
-			if (idx !== -1) {
-				merged = merged.slice(idx + 1);
-			}
-		}
-
-		const hasMore = merged.length > limit;
-		const paged = merged.slice(0, limit);
-		const nextCursor = hasMore ? paged[paged.length - 1].id : null;
-		const data = await this._enrichBlogs(paged);
+		const { data: rawBlogs, nextCursor, hasMore } = await this.paginate(q, { limit, cursor });
+		const data = await this._enrichBlogs(rawBlogs);
 		return { data, total: null, page: null, limit, totalPages: null, nextCursor, hasMore };
 	}
 
 	/**
-	 * List only the authenticated user's own blog posts.
-	 * Supports optional status filter and cursor-based pagination.
-	 * @deprecated Use GET /blogs?mine=true instead.
+	 * List blog posts owned by a specific user (Dashboard view).
+	 * Allows filtering by status.
 	 */
 	async listMyBlogs(
 		userId: string,
@@ -137,12 +78,15 @@ export class BlogService extends AbstractRepository<BlogData> implements IDeleta
 	): Promise<PaginatedResult<BlogData>> {
 		const limit = Number(query.limit) || 10;
 		const { sort, status, cursor } = query;
+
 		let q = this.collection
 			.where('authorId', '==', userId)
 			.orderBy('createdAt', sort);
+
 		if (status) {
 			q = q.where('status', '==', status);
 		}
+
 		const { data: rawBlogs, nextCursor, hasMore } = await this.paginate(q, { limit, cursor });
 		const data = await this._enrichBlogs(rawBlogs);
 		return { data, total: null, page: null, limit, totalPages: null, nextCursor, hasMore };
