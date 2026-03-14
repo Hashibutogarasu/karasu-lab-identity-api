@@ -18,3 +18,19 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           release-type: node
+
+      - name: Trigger Deploy Workflow
+        if: ${{ steps.release.outputs.release_created }}
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            await github.rest.repos.createDispatchEvent({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              event_type: 'release-published',
+              client_payload: {
+                tag_name: '${{ steps.release.outputs.tag_name }}',
+                version: '${{ steps.release.outputs.version }}'
+              }
+            });

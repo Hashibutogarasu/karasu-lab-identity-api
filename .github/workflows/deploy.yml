@@ -1,9 +1,10 @@
 name: Deploy Identity API
 
 on:
-  push:
-    branches:
-      - main
+  release:
+    types: [published]
+  repository_dispatch:
+    types: [release-published]
   workflow_dispatch:
 
 jobs:
