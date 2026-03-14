@@ -8,7 +8,11 @@ RUN apt-get update && apt-get install -y openssl ca-certificates git build-essen
 
 WORKDIR /app
 
-COPY .npmrc package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+RUN echo "node-linker=hoisted" > .npmrc && \
+    echo "shamefully-hoist=true" >> .npmrc && \
+    echo "strict-peer-dependencies=false" >> .npmrc
+
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY packages/common/package.json ./packages/common/package.json
 COPY packages/yultyyev/better-auth-firebase-auth/package.json ./packages/yultyyev/better-auth-firebase-auth/package.json
 
