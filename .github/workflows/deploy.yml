@@ -27,13 +27,19 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      - name: Get package version
+        id: pkg-version
+        run: echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
+
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
           context: .
           file: ./Dockerfile
           push: true
-          tags: hashibutogarasu/karasu-lab-identity-api:latest
+          tags: |
+            hashibutogarasu/karasu-lab-identity-api:latest
+            hashibutogarasu/karasu-lab-identity-api:${{ steps.pkg-version.outputs.version }}
           platforms: linux/amd64,linux/arm64
           cache-from: type=gha
           cache-to: type=gha,mode=max
