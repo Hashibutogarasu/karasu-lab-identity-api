@@ -10,7 +10,6 @@ import { passwordPlugin } from "./plugins/password/password-plugin.js";
 import { oauthApplicationPlugin } from "./plugins/oauth/oauth-application-plugin.js";
 import { passkeyPlugin } from "./plugins/passkey/passkey-plugin.js";
 import { openAPIPlugin } from "./plugins/openapi/openapi-plugin.js";
-import { discoveryPlugin } from "./plugins/discovery/discovery-plugin.js";
 import { databaseSeedingFactory } from "./shared/database/database-seeding.service.js";
 import { IPasskeyAuth } from "./plugins/passkey/passkey.interface.js";
 import { IConfigService } from "./shared/config/config.service.interface.js";
@@ -64,7 +63,6 @@ export function createAuth(
   const corePlugins = [
     dash(),
     openAPIPlugin(),
-    discoveryPlugin(),
     oidcProvider({ loginPage: "/login" }),
     username(),
     passwordPlugin(),
