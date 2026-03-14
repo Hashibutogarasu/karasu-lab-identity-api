@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.1.5](https://github.com/Hashibutogarasu/karasu-lab-identity-api/compare/karasu-lab-identity-api-v2.1.4...karasu-lab-identity-api-v2.1.5) (2026-03-14)
+
+
+### Bug Fixes
+
+* fixed .npmrc not found error ([b845583](https://github.com/Hashibutogarasu/karasu-lab-identity-api/commit/b84558317c224a6c5f4115405d98f83ded06cdfb))
+
 ## [2.1.4](https://github.com/Hashibutogarasu/karasu-lab-identity-api/compare/karasu-lab-identity-api-v2.1.3...karasu-lab-identity-api-v2.1.4) (2026-03-14)
 
 
