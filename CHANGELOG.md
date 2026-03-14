@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.2.0](https://github.com/Karasu-Lab/karasu-lab-api/compare/karasu-lab-api-v3.1.0...karasu-lab-api-v3.2.0) (2026-03-14)
+
+
+### Features
+
+* added release-please automated versioning to version.ts ([aa1e948](https://github.com/Karasu-Lab/karasu-lab-api/commit/aa1e948aa8d93028501ed81c1fac44340f191477))
+
 ## [3.1.0](https://github.com/Karasu-Lab/karasu-lab-api/compare/karasu-lab-api-v3.0.0...karasu-lab-api-v3.1.0) (2026-03-14)
 
 
