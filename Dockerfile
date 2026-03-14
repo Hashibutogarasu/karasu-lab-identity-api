@@ -1,6 +1,6 @@
 FROM node:22-bookworm-slim AS builder
 LABEL version="0.0.1"
-LABEL x-release-please-version="2.1.10"
+LABEL x-release-please-version="2.1.9"
 
 RUN corepack enable && corepack prepare pnpm@10.27.0 --activate
 RUN npm install -g bun
@@ -16,12 +16,12 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY packages/common/package.json ./packages/common/package.json
 COPY packages/yultyyev/better-auth-firebase-auth/package.json ./packages/yultyyev/better-auth-firebase-auth/package.json
 
-RUN --mount=type=cache,id=pnpm,target=/root/.local/share/pnpm/store pnpm install --frozen-lockfile --ignore-scripts
+RUN --mount=type=cache,id=pnpm,target=/root/.local/share/pnpm/store pnpm fetch --frozen-lockfile
 
 COPY . .
 
 RUN sed -i 's/"prepare":/"_prepare":/' packages/common/package.json
-RUN --mount=type=cache,id=pnpm,target=/root/.local/share/pnpm/store pnpm install --frozen-lockfile
+RUN --mount=type=cache,id=pnpm,target=/root/.local/share/pnpm/store CI=true pnpm install --frozen-lockfile --offline
 RUN sed -i 's/"_prepare":/"prepare":/' packages/common/package.json
 
 RUN pnpm --filter="@hashibutogarasu/common" exec tsc --noEmitOnError false || true
