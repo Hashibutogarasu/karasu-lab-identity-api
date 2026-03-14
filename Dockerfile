@@ -18,8 +18,7 @@ COPY packages/yultyyev/better-auth-firebase-auth/package.json ./packages/yultyye
 
 RUN --mount=type=cache,id=pnpm,target=/root/.local/share/pnpm/store pnpm install --frozen-lockfile --ignore-scripts
 
-COPY packages/common ./packages/common
-COPY packages/yultyyev ./packages/yultyyev
+COPY . .
 
 RUN --mount=type=cache,id=pnpm,target=/root/.local/share/pnpm/store pnpm install --frozen-lockfile --ignore-scripts
 
@@ -27,10 +26,7 @@ RUN pnpm --filter="@hashibutogarasu/common" exec tsc --noEmitOnError false || tr
 RUN pnpm --filter="better-auth-firebase-auth" run build
 RUN pnpm rebuild @thallesp/nestjs-better-auth
 
-COPY prisma ./prisma/
 RUN DATABASE_URL="postgresql://build:dummy@localhost:5432/dummy" npx prisma generate
-
-COPY . .
 
 RUN pnpm run build
 
