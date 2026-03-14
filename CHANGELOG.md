@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.2.2](https://github.com/Karasu-Lab/karasu-lab-api/compare/karasu-lab-api-v3.2.1...karasu-lab-api-v3.2.2) (2026-03-14)
+
+
+### Bug Fixes
+
+* fixed release-please config ([bc7be9f](https://github.com/Karasu-Lab/karasu-lab-api/commit/bc7be9f7f3999e27e697abc84c7dfba699f995cc))
+
 ## [3.2.1](https://github.com/Karasu-Lab/karasu-lab-api/compare/karasu-lab-api-v3.2.0...karasu-lab-api-v3.2.1) (2026-03-14)
 
 
