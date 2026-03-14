@@ -4,8 +4,25 @@
       "release-type": "node",
       "package-name": "karasu-lab-identity-api",
       "extra-files": [
-        "Dockerfile",
-        "docker-compose.yml"
+        {
+          "path": "Dockerfile",
+          "type": "regex",
+          "params": {
+            "patterns": [
+              "LABEL version=\"(\\d+\\.\\d+\\.\\d+)\"",
+              "LABEL x-release-please-version=\"(\\d+\\.\\d+\\.\\d+)\""
+            ]
+          }
+        },
+        {
+          "path": "docker-compose.yml",
+          "type": "regex",
+          "params": {
+            "patterns": [
+              ":(\\d+\\.\\d+\\.\\d+) # x-release-please-version"
+            ]
+          }
+        }
       ]
     }
   },
