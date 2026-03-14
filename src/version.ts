@@ -7,6 +7,10 @@ const require = createRequire(import.meta.url);
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const getPkg = (): { version: string } => {
+	if (process.env.npm_package_version) {
+		return { version: process.env.npm_package_version };
+	}
+
 	const paths = [join(__dirname, "../package.json"), join(__dirname, "../../package.json")];
 	for (const p of paths) {
 		if (existsSync(p)) {
@@ -17,7 +21,7 @@ const getPkg = (): { version: string } => {
 			}
 		}
 	}
-	return { version: process.env.npm_package_version || "unknown" };
+	return { version: "unknown" };
 };
 
 const pkg = getPkg();
