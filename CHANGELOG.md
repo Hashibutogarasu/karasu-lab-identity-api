@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.1](https://github.com/Hashibutogarasu/karasu-lab-identity-api/compare/v1.0.0...v1.0.1) (2026-03-14)
+
+
+### Bug Fixes
+
+* fixed version is not set by please-release ([593d4f0](https://github.com/Hashibutogarasu/karasu-lab-identity-api/commit/593d4f08da1db574226e5e0e19ae96d873c5af01))
+
 ## 1.0.0 (2026-03-14)
 
 
