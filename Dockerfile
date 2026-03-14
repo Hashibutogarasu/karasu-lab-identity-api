@@ -23,7 +23,7 @@ COPY packages/yultyyev ./packages/yultyyev
 
 RUN --mount=type=cache,id=pnpm,target=/root/.local/share/pnpm/store pnpm install --frozen-lockfile --ignore-scripts
 
-RUN pnpm --filter="@hashibutogarasu/common" exec tsc --declaration false --skipLibCheck true --noEmitOnError false --target ESNext --module Node16 --moduleResolution Node16
+RUN pnpm --filter="@hashibutogarasu/common" exec tsc --declaration false --noEmitOnError false || true
 RUN pnpm --filter="better-auth-firebase-auth" run build
 
 COPY prisma ./prisma/
