@@ -11,6 +11,10 @@
 				{
 					"path": "docker-compose.yml",
 					"type": "generic"
+				},
+				{
+					"path": "src/version.ts",
+					"type": "generic"
 				}
 			]
 		}
