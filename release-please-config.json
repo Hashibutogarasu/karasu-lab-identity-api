@@ -1,23 +1,33 @@
 {
-  "release-type": "node",
-  "package-name": "karasu-lab-identity-api",
-  "bump-minor-pre-major": true,
-  "bump-patch-for-minor-pre-major": false,
-  "extra-files": [
-    "Dockerfile",
-    "docker-compose.yml"
-  ],
-  "changelog-sections": [
-    { "type": "feat", "section": "Features" },
-    { "type": "fix", "section": "Bug Fixes" },
-    { "type": "perf", "section": "Performance Improvements" },
-    { "type": "revert", "section": "Reverts" },
-    { "type": "docs", "section": "Documentation", "hidden": false },
-    { "type": "style", "section": "Styles", "hidden": true },
-    { "type": "chore", "section": "Miscellaneous Chores", "hidden": true },
-    { "type": "refactor", "section": "Code Refactoring", "hidden": false },
-    { "type": "test", "section": "Tests", "hidden": true },
-    { "type": "build", "section": "Build System", "hidden": true },
-    { "type": "ci", "section": "Continuous Integration", "hidden": true }
-  ]
+	"packages": {
+		".": {
+			"release-type": "node",
+			"package-name": "karasu-lab-identity-api",
+			"extra-files": [
+				{
+					"path": "Dockerfile",
+					"type": "simple"
+				},
+				{
+					"path": "docker-compose.yml",
+					"type": "simple"
+				}
+			]
+		}
+	},
+	"bump-minor-pre-major": true,
+	"bump-patch-for-minor-pre-major": false,
+	"changelog-sections": [
+		{ "type": "feat", "section": "Features" },
+		{ "type": "fix", "section": "Bug Fixes" },
+		{ "type": "perf", "section": "Performance Improvements" },
+		{ "type": "revert", "section": "Reverts" },
+		{ "type": "docs", "section": "Documentation", "hidden": false },
+		{ "type": "style", "section": "Styles", "hidden": true },
+		{ "type": "chore", "section": "Miscellaneous Chores", "hidden": true },
+		{ "type": "refactor", "section": "Code Refactoring", "hidden": false },
+		{ "type": "test", "section": "Tests", "hidden": true },
+		{ "type": "build", "section": "Build System", "hidden": true },
+		{ "type": "ci", "section": "Continuous Integration", "hidden": true }
+	]
 }
