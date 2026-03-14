@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.3](https://github.com/Hashibutogarasu/karasu-lab-identity-api/compare/karasu-lab-identity-api-v2.0.2...karasu-lab-identity-api-v2.0.3) (2026-03-14)
+
+
+### Bug Fixes
+
+* fixed version is not loaded ([a00098d](https://github.com/Hashibutogarasu/karasu-lab-identity-api/commit/a00098dff785f52dc90d88c3fb309caf4d85b698))
+
 ## [2.0.2](https://github.com/Hashibutogarasu/karasu-lab-identity-api/compare/karasu-lab-identity-api-v2.0.1...karasu-lab-identity-api-v2.0.2) (2026-03-14)
 
 
