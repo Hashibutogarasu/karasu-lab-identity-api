@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.1.3](https://github.com/Hashibutogarasu/karasu-lab-identity-api/compare/karasu-lab-identity-api-v2.1.2...karasu-lab-identity-api-v2.1.3) (2026-03-14)
+
+
+### Bug Fixes
+
+* fixed docker build error ([fd1c855](https://github.com/Hashibutogarasu/karasu-lab-identity-api/commit/fd1c855d4a0055147f2e19a81afd7cd9ba27454a))
+
 ## [2.1.2](https://github.com/Hashibutogarasu/karasu-lab-identity-api/compare/karasu-lab-identity-api-v2.1.1...karasu-lab-identity-api-v2.1.2) (2026-03-14)
 
 
