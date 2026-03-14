@@ -1,4 +1,4 @@
-import { Controller, Get } from "@nestjs/common";
+import { Controller, Get, Inject } from "@nestjs/common";
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { AllowAnonymous } from "@thallesp/nestjs-better-auth";
 import { VersionService } from "./version.service.js";
@@ -7,7 +7,7 @@ import { VersionService } from "./version.service.js";
 @AllowAnonymous()
 @Controller("version")
 export class VersionController {
-  constructor(private readonly versionService: VersionService) {}
+  constructor(@Inject(VersionService) private readonly versionService: VersionService) {}
 
   @Get()
   @ApiOperation({ summary: "Get API version" })
