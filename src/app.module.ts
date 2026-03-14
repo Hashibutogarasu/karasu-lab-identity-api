@@ -15,6 +15,7 @@ import { StoneManageModule } from "./apps/stonemanage/stone-manage.module.js";im
 import { ProvidersModule } from "./providers/providers.module.js";
 import { ConfigServiceProvider } from "./shared/config/config.service.js";
 import { DotEnvServiceProvider } from "./shared/config/dotenv.service.js";
+import { VersionModule } from "./version/version.module.js";
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { DotEnvServiceProvider } from "./shared/config/dotenv.service.js";
     StoneManageModule,
     UserModule,
     ProvidersModule,
+    VersionModule,
     AuthMiddlewareModule.forRoot({ path: '/api/auth' }),
     AuthModule.forRootAsync({
       useFactory: async () => {
