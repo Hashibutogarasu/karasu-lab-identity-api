@@ -2,6 +2,7 @@
 import { Injectable, INestApplication } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder, OpenAPIObject } from '@nestjs/swagger';
 import { ErrorCodes } from '../errors/error.codes.js';
+import { packageVersion } from '../../version.js';
 
 @Injectable()
 export class OpenApiService {
@@ -11,7 +12,7 @@ export class OpenApiService {
 		const config = new DocumentBuilder()
 			.setTitle('Karasu Lab Identity API')
 			.setDescription('The identity API for Karasu Lab services')
-			.setVersion('1.0')
+			.setVersion(packageVersion)
 			.build();
 
 		this.document = SwaggerModule.createDocument(app, config);
