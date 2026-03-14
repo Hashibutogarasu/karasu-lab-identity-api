@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.2](https://github.com/Hashibutogarasu/karasu-lab-identity-api/compare/karasu-lab-identity-api-v2.0.1...karasu-lab-identity-api-v2.0.2) (2026-03-14)
+
+
+### Bug Fixes
+
+* package.json can't load in prod runtime ([60752bd](https://github.com/Hashibutogarasu/karasu-lab-identity-api/commit/60752bda958e96fd7687b3c5262db7f45ae75bcd))
+
 ## [2.0.1](https://github.com/Hashibutogarasu/karasu-lab-identity-api/compare/karasu-lab-identity-api-v2.0.0...karasu-lab-identity-api-v2.0.1) (2026-03-14)
 
 
