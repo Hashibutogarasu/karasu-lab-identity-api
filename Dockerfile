@@ -17,6 +17,8 @@ RUN --mount=type=cache,id=pnpm,target=/root/.local/share/pnpm/store pnpm install
 COPY packages/common ./packages/common
 COPY packages/yultyyev ./packages/yultyyev
 
+RUN --mount=type=cache,id=pnpm,target=/root/.local/share/pnpm/store pnpm install --frozen-lockfile
+
 RUN pnpm --filter="@hashibutogarasu/common" run build
 RUN pnpm --filter="better-auth-firebase-auth" run build
 
