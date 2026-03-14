@@ -2,7 +2,7 @@
 	"packages": {
 		".": {
 			"release-type": "node",
-			"package-name": "karasu-lab-api",
+			"package-name": "@karasu-lab/karasu-lab-api",
 			"extra-files": [
 				{
 					"path": "Dockerfile",
