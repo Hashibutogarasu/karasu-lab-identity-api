@@ -11,8 +11,10 @@ import { setupI18n } from "./shared/i18n/i18n.setup.js";
 import { II18nService } from "./shared/i18n/i18n.service.interface.js";
 import { configServiceFactory } from "./shared/config/config.service.js";
 import { IConfigService } from "./shared/config/config.service.interface.js";
+import { packageVersion } from "./version.js";
 
 async function bootstrap() {
+  console.log(`Launching Karasu LAB API ver. ${packageVersion}`)
   await setupI18n();
   const app = await NestFactory.create(AppModule, {
     bodyParser: false,
