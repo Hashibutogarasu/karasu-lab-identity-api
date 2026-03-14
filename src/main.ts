@@ -14,7 +14,7 @@ import { IConfigService } from "./shared/config/config.service.interface.js";
 import { packageVersion } from "./version.js";
 
 async function bootstrap() {
-  console.log(`Launching Karasu LAB API ver. ${packageVersion}`)
+  console.log(`Launching Karasu LAB API ver.${packageVersion}`)
   await setupI18n();
   const app = await NestFactory.create(AppModule, {
     bodyParser: false,
