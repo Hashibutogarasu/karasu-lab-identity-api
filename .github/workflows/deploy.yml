@@ -39,8 +39,8 @@ jobs:
           file: ./Dockerfile
           push: true
           tags: |
-            hashibutogarasu/karasu-lab-identity-api:latest
-            hashibutogarasu/karasu-lab-identity-api:${{ steps.pkg-version.outputs.version }}
+            hashibutogarasu/karasu-lab-api:latest
+            hashibutogarasu/karasu-lab-api:${{ steps.pkg-version.outputs.version }}
           platforms: linux/amd64,linux/arm64
           cache-from: type=gha
           cache-to: type=gha,mode=max

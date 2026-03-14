@@ -2,8 +2,8 @@ version: '3.8'
 
 services:
   app:
-    container_name: karasu-lab-identity-api
-    image: hashibutogarasu/karasu-lab-identity-api:2.1.11 # x-release-please-version
+    container_name: karasu-lab-api
+    image: hashibutogarasu/karasu-lab-api:2.1.11 # x-release-please-version
     build:
       context: .
       dockerfile: Dockerfile

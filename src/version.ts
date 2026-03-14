@@ -10,7 +10,7 @@ interface Package {
 const getPkg = (): Package => {
 	try {
 		const pkg = require("../../package.json") as Package;
-		if (pkg.name === "karasu-lab-identity-api") return pkg;
+		if (pkg.name === "karasu-lab-api") return pkg;
 		throw new Error();
 	} catch {
 		return require("../package.json") as Package;

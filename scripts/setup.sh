@@ -16,4 +16,4 @@ docker run -d \
   containrrr/watchtower \
   --http-api-update \
   --http-api-token "${WATCHTOWER_HTTP_API_TOKEN}" \
-  karasu-lab-identity-api
+  karasu-lab-api
