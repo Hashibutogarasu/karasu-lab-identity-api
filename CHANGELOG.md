@@ -1,5 +1,13 @@
 # Changelog
 
+## [3.6.2](https://github.com/Karasu-Lab/karasu-lab-api/compare/karasu-lab-api-v3.6.1...karasu-lab-api-v3.6.2) (2026-03-15)
+
+
+### Bug Fixes
+
+* fixed docker build error ([916ce38](https://github.com/Karasu-Lab/karasu-lab-api/commit/916ce383c0c8fd7072635ab402b86ca37a469b8c))
+* fixed docker build error ([2279464](https://github.com/Karasu-Lab/karasu-lab-api/commit/2279464d79574a6800f5467e26a62881d0808e3c))
+
 ## [3.6.1](https://github.com/Karasu-Lab/karasu-lab-api/compare/karasu-lab-api-v3.6.0...karasu-lab-api-v3.6.1) (2026-03-15)
 
 
