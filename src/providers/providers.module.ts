@@ -7,7 +7,7 @@ import { ConfigServiceProvider } from '../shared/config/config.service.js';
   controllers: [ProvidersController],
   providers: [
     ProvidersService,
-    ConfigServiceProvider, // Ensure IConfigService is available for injection
+    ConfigServiceProvider,
   ],
   exports: [ProvidersService],
 })
