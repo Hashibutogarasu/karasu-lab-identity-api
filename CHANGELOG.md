@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.7.0](https://github.com/Karasu-Lab/karasu-lab-api/compare/karasu-lab-api-v3.6.4...karasu-lab-api-v3.7.0) (2026-03-15)
+
+
+### Features
+
+* added blog content endpoint ([5d1bd53](https://github.com/Karasu-Lab/karasu-lab-api/commit/5d1bd536d0c4230a2b9b1f50de08d197b5cc5f82))
+
 ## [3.6.4](https://github.com/Karasu-Lab/karasu-lab-api/compare/karasu-lab-api-v3.6.3...karasu-lab-api-v3.6.4) (2026-03-15)
 
 
