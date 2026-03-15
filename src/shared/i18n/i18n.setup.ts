@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
-/* eslint-disable @typescript-eslint/no-unsafe-return */
 import i18next from 'i18next';
 import { readFileSync } from 'fs';
 import { join } from 'path';

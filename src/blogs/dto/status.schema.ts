@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { z } from 'zod';
 import { BlogStatus } from '@hashibutogarasu/common';
 
