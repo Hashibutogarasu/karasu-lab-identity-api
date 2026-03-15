@@ -1,11 +1,6 @@
 import { Module, DynamicModule, NestModule, MiddlewareConsumer, RequestMethod, Inject } from '@nestjs/common';
 import { AuthMiddleware } from './auth.middleware.js';
-
-export const AUTH_MIDDLEWARE_OPTIONS = 'AUTH_MIDDLEWARE_OPTIONS';
-
-export interface AuthMiddlewareOptions {
-  path: string;
-}
+import { AUTH_MIDDLEWARE_OPTIONS, type AuthMiddlewareOptions } from './auth-middleware.constants.js';
 
 @Module({})
 export class AuthMiddlewareModule implements NestModule {

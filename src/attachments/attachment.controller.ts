@@ -42,6 +42,7 @@ import {
   SyncAttachmentDto,
   syncAttachmentSchema,
 } from '../blogs/dto/sync-attachment.dto.js';
+import { AllowAnonymous } from '@thallesp/nestjs-better-auth';
 
 @UseGuards(RolesGuard)
 @ApiTags('Attachments')
@@ -64,6 +65,7 @@ export class AttachmentController {
     type: [AttachmentResponseDto],
   })
   @Get()
+  @AllowAnonymous()
   async listAttachments(@Req() req: Request) {
     const session = await this.sessionService.optionalSession(req);
     return this.attachmentService.listAttachments(session?.user.id);

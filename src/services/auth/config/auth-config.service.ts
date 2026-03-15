@@ -108,10 +108,6 @@ class DevelopmentAuthConfig extends AbstractAuthConfig {
     return [
       'http://localhost:3000',
       'http://localhost:3001',
-      'https://sso.karasu256.com',
-      'https://www.karasu256.com',
-      'https://karasu256.com',
-      'https://id.karasu256.com',
     ];
   }
 
@@ -126,7 +122,7 @@ class DevelopmentAuthConfig extends AbstractAuthConfig {
  */
 class TestAuthConfig extends AbstractAuthConfig {
   protected getDefaultTrustedOrigins(): string[] {
-    return ['http://localhost:3000'];
+    return ['http://localhost:3000', 'http://localhost:3001'];
   }
 
   protected getDefaultCookieDomain(): string {

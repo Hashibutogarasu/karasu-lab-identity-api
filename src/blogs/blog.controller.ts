@@ -32,6 +32,7 @@ import {
 import { UpdateBlogDto, updateBlogSchema } from './dto/update-blog.dto.js';
 import { UserResponseDto } from './dto/user-response.dto.js';
 import { SuccessResponseDto } from './dto/success-response.dto.js';
+import { AllowAnonymous } from '@thallesp/nestjs-better-auth';
 
 @UseGuards(RolesGuard)
 @ApiTags('Blogs')
@@ -52,6 +53,7 @@ export class BlogController {
     type: PaginatedBlogResponseDto,
   })
   @Get()
+  @AllowAnonymous()
   async listBlogs(
     @Pagination(listBlogsQuerySchema) query: ListBlogsQueryDto,
   ) {
@@ -68,6 +70,7 @@ export class BlogController {
     type: [UserResponseDto],
   })
   @Post('authors')
+  @AllowAnonymous()
   async getAuthors(
     @Body(new ZodValidationPipe(getAuthorsSchema)) dto: GetAuthorsDto,
   ) {

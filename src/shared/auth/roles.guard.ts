@@ -9,7 +9,8 @@ import { ROLES_KEY } from './roles.decorator.js';
 
 /**
  * Guard that enforces role-based access control on routes decorated with @Roles().
- * Skips role checks for routes without @Roles() metadata.
+ * Skips checks if @AllowAnonymous() is present.
+ * Skips role checks for routes without @Roles() metadata but still checks for session.
  * Throws AUTH.UNAUTHORIZED if the session is absent, AUTH.FORBIDDEN if the role is insufficient.
  */
 @Injectable()

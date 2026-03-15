@@ -1,4 +1,5 @@
 import { Module } from "@nestjs/common";
+import { APP_GUARD } from "@nestjs/core";
 import { AppController } from "./app.controller.js";
 import { AppService } from "./app.service.js";
 import { AuthModule } from "@thallesp/nestjs-better-auth";
@@ -17,6 +18,8 @@ import { ProvidersModule } from "./providers/providers.module.js";
 import { ConfigServiceProvider } from "./shared/config/config.service.js";
 import { DotEnvServiceProvider } from "./shared/config/dotenv.service.js";
 import { VersionModule } from "./version/version.module.js";
+import { RolesGuard } from "./shared/auth/roles.guard.js";
+import { SessionService } from "./shared/auth/session.service.js";
 
 @Module({
   imports: [
@@ -54,6 +57,11 @@ import { VersionModule } from "./version/version.module.js";
       useClass: I18nService,
     },
     I18nService,
+    SessionService,
+    {
+      provide: APP_GUARD,
+      useClass: RolesGuard,
+    },
   ],
 })
 export class AppModule {}

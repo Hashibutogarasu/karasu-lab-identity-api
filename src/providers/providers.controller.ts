@@ -2,7 +2,9 @@ import { Controller, Get } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ProvidersService } from './providers.service.js';
 import { ProvidersResponseDto } from './dto/providers-response.dto.js';
+import { AllowAnonymous } from '@thallesp/nestjs-better-auth';
 
+@AllowAnonymous()
 @ApiTags('Authentication')
 @Controller('providers')
 export class ProvidersController {

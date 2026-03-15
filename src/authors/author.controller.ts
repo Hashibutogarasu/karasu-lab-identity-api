@@ -11,6 +11,7 @@ import { UserResponseDto } from '../blogs/dto/user-response.dto.js';
 import { RolesGuard } from '../shared/auth/roles.guard.js';
 import { Pagination } from '../shared/decorators/pagination.decorator.js';
 import { BasePaginationQueryDto } from '../shared/dto/pagination-query.dto.js';
+import { AllowAnonymous } from '@thallesp/nestjs-better-auth';
 
 /**
  * @deprecated Use AuthorsController (/api/authors) instead.
@@ -68,6 +69,7 @@ export class AuthorController {
     type: [UserResponseDto],
   })
   @Get()
+  @AllowAnonymous()
   async listAuthors(@Pagination() query: BasePaginationQueryDto) {
     return this.authorService.listAuthorsPaged(query);
   }
@@ -82,6 +84,7 @@ export class AuthorController {
     type: UserResponseDto,
   })
   @Get(':id')
+  @AllowAnonymous()
   async getAuthor(@Param('id') id: string) {
     return this.authorService.getById(id);
   }
