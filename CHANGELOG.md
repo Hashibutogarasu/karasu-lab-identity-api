@@ -1,5 +1,13 @@
 # Changelog
 
+## [3.4.0](https://github.com/Karasu-Lab/karasu-lab-api/compare/karasu-lab-api-v3.3.0...karasu-lab-api-v3.4.0) (2026-03-15)
+
+
+### Features
+
+* added firebase sync logics ([82396f3](https://github.com/Karasu-Lab/karasu-lab-api/commit/82396f3f7d9977ecbeb3251ef16531b02fdf8663))
+* added firebase token endpoint and login hook to add user to firebase auth ([149b37a](https://github.com/Karasu-Lab/karasu-lab-api/commit/149b37aa104ec0631e436ce654dc45419b0a2592))
+
 ## [3.3.0](https://github.com/Karasu-Lab/karasu-lab-api/compare/karasu-lab-api-v3.2.3...karasu-lab-api-v3.3.0) (2026-03-15)
 
 
