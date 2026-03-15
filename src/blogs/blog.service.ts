@@ -60,7 +60,6 @@ export class BlogService extends AbstractRepository<BlogData> implements IDeleta
 		const limit = Number(query.limit) || 10;
 		const { sort, status, cursor } = query;
 
-		// Public feed only shows published posts.
 		if (status && status !== BlogStatus.PUBLISHED) {
 			return {
 				data: [],
