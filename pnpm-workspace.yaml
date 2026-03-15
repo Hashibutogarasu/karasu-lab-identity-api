@@ -16,3 +16,8 @@ onlyBuiltDependencies:
   - '@thallesp/nestjs-better-auth'
   - 'protobufjs'
   - '@firebase/util'
+
+pnpm:
+  overrides:
+    "@better-auth/core": "1.5.5"
+
