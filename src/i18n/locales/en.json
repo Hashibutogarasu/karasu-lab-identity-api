@@ -10,6 +10,10 @@
 	"oauth": {
 		"application_not_found": "OAuth Application not found"
 	},
+	"firebase": {
+		"sync_failed": "Failed to synchronize user to Firebase",
+		"not_initialized": "Firebase Auth is not initialized"
+	},
 	"blog": {
 		"not_found": "Blog post not found",
 		"attachment_not_found": "Attachment not found",

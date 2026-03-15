@@ -58,6 +58,10 @@ export const ErrorCodes = createErrorMap({
 		ATTACHMENT_TOO_LARGE: ['blog.attachment_too_large', 'BAD_REQUEST'],
 		NOT_IMPLEMENTED: ['blog.not_implemented', 'BAD_REQUEST'],
 	},
+	FIREBASE: {
+		SYNC_FAILED: ['firebase.sync_failed', 'INTERNAL_SERVER_ERROR'],
+		NOT_INITIALIZED: ['firebase.not_initialized', 'INTERNAL_SERVER_ERROR'],
+	},
 	STONEMANAGE: {
 		GAME_NOT_FOUND: ['stonemanage.game_not_found', 'NOT_FOUND'],
 		STONE_NOT_FOUND: ['stonemanage.stone_not_found', 'NOT_FOUND'],

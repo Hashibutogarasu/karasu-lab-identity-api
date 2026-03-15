@@ -10,6 +10,10 @@
 	"oauth": {
 		"application_not_found": "OAuthアプリケーションが見つかりません"
 	},
+	"firebase": {
+		"sync_failed": "Firebaseへのユーザー同期に失敗しました",
+		"not_initialized": "Firebase認証が初期化されていません"
+	},
 	"blog": {
 		"not_found": "ブログ記事が見つかりません",
 		"attachment_not_found": "添付ファイルが見つかりません",

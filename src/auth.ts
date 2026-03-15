@@ -1,4 +1,5 @@
 import { betterAuth, BetterAuthOptions, type Auth as BetterAuthType } from "better-auth";
+import { syncFirebaseUser } from "./firebase/index.js";
 import { createAuthMiddleware } from "better-auth/api";
 import { admin, bearer, deviceAuthorization, emailOTP, magicLink, oidcProvider, organization, twoFactor, username } from "better-auth/plugins";
 import { apiKey } from "@better-auth/api-key";
@@ -141,6 +142,16 @@ export function createAuth(
             const setCookie = `${cookieName}=; Expires=${expiredDate}; Max-Age=0; Path=/; SameSite=lax`;
             context.setHeader("Set-Cookie", setCookie);
           });
+        }
+        if (context.context.newSession) {
+          const { user } = context.context.newSession;
+          context.context.runInBackground(
+            syncFirebaseUser({
+              id: user.id,
+              email: user.email,
+              name: user.name,
+            }),
+          );
         }
         await Promise.resolve();
       }),
