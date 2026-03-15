@@ -1,5 +1,13 @@
 # Changelog
 
+## [3.5.0](https://github.com/Karasu-Lab/karasu-lab-api/compare/karasu-lab-api-v3.4.0...karasu-lab-api-v3.5.0) (2026-03-15)
+
+
+### Features
+
+* added id token guard ([baa2af7](https://github.com/Karasu-Lab/karasu-lab-api/commit/baa2af7394ac55ddbd15f77d6ed8740b718c7128))
+* fixed type errors ([aeec633](https://github.com/Karasu-Lab/karasu-lab-api/commit/aeec63315f660fa1b759085639d0e5e36c0f0212))
+
 ## [3.4.0](https://github.com/Karasu-Lab/karasu-lab-api/compare/karasu-lab-api-v3.3.0...karasu-lab-api-v3.4.0) (2026-03-15)
 
 
