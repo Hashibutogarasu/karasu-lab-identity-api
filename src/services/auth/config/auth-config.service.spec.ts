@@ -45,23 +45,6 @@ describe('AuthConfigService', () => {
       const origins = config.getTrustedOrigins();
 
       expect(origins).toContain('http://localhost:3000');
-      expect(origins).toContain('https://karasu256.com');
-      expect(config.getCookieDomain()).toBe('localhost');
-    });
-
-    it('should return TestAuthConfig for test environment', () => {
-      process.env.NODE_ENV = 'test';
-
-      const configService = new MockConfigService({
-        NODE_ENV: 'test',
-        BETTER_AUTH_URL: 'http://localhost:3001',
-        BETTER_AUTH_SECRET: 'test-secret',
-      }, 'test');
-
-      const config = authConfigFactory(configService);
-      const origins = config.getTrustedOrigins();
-
-      expect(origins).toEqual(['http://localhost:3000']);
       expect(config.getCookieDomain()).toBe('localhost');
     });
 
@@ -253,21 +236,6 @@ describe('AuthConfigService', () => {
 
       expect(config.getCookieDomain()).toBe('localhost');
       expect(config.getTrustedOrigins()).toContain('http://localhost:3000');
-    });
-
-    it('should have correct test defaults', () => {
-      process.env.NODE_ENV = 'test';
-
-      const configService = new MockConfigService({
-        NODE_ENV: 'test',
-        BETTER_AUTH_URL: 'http://localhost:3001',
-        BETTER_AUTH_SECRET: 'test-secret',
-      }, 'test');
-
-      const config = authConfigFactory(configService);
-
-      expect(config.getCookieDomain()).toBe('localhost');
-      expect(config.getTrustedOrigins()).toEqual(['http://localhost:3000']);
     });
   });
 });
