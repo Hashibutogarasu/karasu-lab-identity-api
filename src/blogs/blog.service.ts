@@ -1,8 +1,15 @@
+/** @format */
+
 import { Inject, Injectable } from '@nestjs/common';
 import cuid from 'cuid';
 import { FieldValue } from 'firebase-admin/firestore';
 
-import { BlogData, BlogStatus } from '@hashibutogarasu/common';
+import {
+	BlogData,
+	BlogStatus,
+	buildBlogQuery,
+	buildAttachmentsQuery,
+} from '@hashibutogarasu/common';
 import { PrismaClient } from '@prisma/client';
 
 import { AbstractRepository } from '../shared/repository/abstract.repository.js';
@@ -24,7 +31,7 @@ import type { PaginatedResult } from '../shared/types/pagination.types.js';
 export class BlogService extends AbstractRepository<BlogData> implements IDeletable {
 	constructor(
 		@Inject(IObjectStorageService) private readonly storage: IObjectStorage,
-		firebase: IFirebaseAdminProvider,
+		firebase: IFirebaseAdminProvider
 	) {
 		super(firebase, 'blogs');
 	}
@@ -48,20 +55,28 @@ export class BlogService extends AbstractRepository<BlogData> implements IDeleta
 	 * Strictly filters by 'published' status.
 	 */
 	async listPublishedBlogs(
-		query: ListBlogsQueryDto = { page: 1, limit: 10, sort: 'desc' },
+		query: ListBlogsQueryDto = { page: 1, limit: 10, sort: 'desc' }
 	): Promise<PaginatedResult<BlogData>> {
 		const limit = Number(query.limit) || 10;
 		const { sort, status, cursor } = query;
 
-		const q = this.collection
-			.where('status', '==', BlogStatus.PUBLISHED)
-			.orderBy('createdAt', sort);
-
-		// If a status filter is provided but it's not 'published', return empty.
 		// Public feed only shows published posts.
 		if (status && status !== BlogStatus.PUBLISHED) {
-			return { data: [], total: 0, page: null, limit, totalPages: 0, nextCursor: null, hasMore: false };
+			return {
+				data: [],
+				total: 0,
+				page: null,
+				limit,
+				totalPages: 0,
+				nextCursor: null,
+				hasMore: false,
+			};
 		}
+
+		const q = buildBlogQuery(this.collection, {
+			status: BlogStatus.PUBLISHED,
+			sort: sort,
+		});
 
 		const { data: rawBlogs, nextCursor, hasMore } = await this.paginate(q, { limit, cursor });
 		const data = await this._enrichBlogs(rawBlogs);
@@ -74,18 +89,16 @@ export class BlogService extends AbstractRepository<BlogData> implements IDeleta
 	 */
 	async listMyBlogs(
 		userId: string,
-		query: ListBlogsQueryDto = { page: 1, limit: 10, sort: 'desc' },
+		query: ListBlogsQueryDto = { page: 1, limit: 10, sort: 'desc' }
 	): Promise<PaginatedResult<BlogData>> {
 		const limit = Number(query.limit) || 10;
 		const { sort, status, cursor } = query;
 
-		let q = this.collection
-			.where('authorId', '==', userId)
-			.orderBy('createdAt', sort);
-
-		if (status) {
-			q = q.where('status', '==', status);
-		}
+		const q = buildBlogQuery(this.collection, {
+			authorId: userId,
+			status: status as BlogStatus | undefined,
+			sort: sort,
+		});
 
 		const { data: rawBlogs, nextCursor, hasMore } = await this.paginate(q, { limit, cursor });
 		const data = await this._enrichBlogs(rawBlogs);
@@ -98,16 +111,18 @@ export class BlogService extends AbstractRepository<BlogData> implements IDeleta
 	private async _enrichBlogs(blogs: BlogData[]): Promise<BlogData[]> {
 		return Promise.all(
 			blogs.map(async (blog) => {
+				const attachmentsQuery = buildAttachmentsQuery(this.attachmentsCol, blog.id);
+
 				const [contentBuffer, attachmentsSnapshot] = await Promise.all([
 					this.storage.getObject(`blogs/${blog.id}/content`),
-					this.attachmentsCol.where('blogId', '==', blog.id).get(),
+					attachmentsQuery.get(),
 				]);
 				return {
 					...blog,
 					content: contentBuffer?.toString('utf-8') ?? '',
 					attachments: mapAttachments(attachmentsSnapshot),
 				} as BlogData;
-			}),
+			})
 		);
 	}
 
@@ -125,7 +140,11 @@ export class BlogService extends AbstractRepository<BlogData> implements IDeleta
 
 		await Promise.all([
 			this.collection.doc(id).set(data),
-			this.storage.putObject(`blogs/${id}/content`, Buffer.from(dto.content ?? ''), 'text/plain; charset=utf-8'),
+			this.storage.putObject(
+				`blogs/${id}/content`,
+				Buffer.from(dto.content ?? ''),
+				'text/plain; charset=utf-8'
+			),
 		]);
 		return this.getBlog(id, authorId);
 	}
@@ -168,7 +187,13 @@ export class BlogService extends AbstractRepository<BlogData> implements IDeleta
 
 		const ops: Promise<unknown>[] = [this.collection.doc(id).update(updateData)];
 		if (dto.content !== undefined) {
-			ops.push(this.storage.putObject(`blogs/${id}/content`, Buffer.from(dto.content), 'text/plain; charset=utf-8'));
+			ops.push(
+				this.storage.putObject(
+					`blogs/${id}/content`,
+					Buffer.from(dto.content),
+					'text/plain; charset=utf-8'
+				)
+			);
 		}
 		await Promise.all(ops);
 		return this.getBlog(id, authorId);

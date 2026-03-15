@@ -1,4 +1,4 @@
-import { toDateString } from './date.util.js';
+import { mapAttachments as commonMapAttachments } from '@hashibutogarasu/common';
 import type { AttachmentData } from '@hashibutogarasu/common';
 
 /**
@@ -9,9 +9,4 @@ import type { AttachmentData } from '@hashibutogarasu/common';
  * @returns Array of typed AttachmentData objects
  */
 export const mapAttachments = (docs: FirebaseFirestore.QuerySnapshot): AttachmentData[] =>
-  docs.docs.map((d) => ({
-    id: d.id,
-    ...d.data(),
-    createdAt: toDateString(d.data()?.createdAt),
-    updatedAt: toDateString(d.data()?.updatedAt),
-  })) as AttachmentData[];
+  commonMapAttachments(docs);

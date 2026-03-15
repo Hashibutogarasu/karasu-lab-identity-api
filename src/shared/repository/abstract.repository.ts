@@ -1,7 +1,7 @@
 import { DocumentSnapshot, FieldValue, Query } from 'firebase-admin/firestore';
 import { IRepository } from './repository.interface.js';
 import { IFirebaseAdminProvider } from '../firebase/firebase-admin.provider.interface.js';
-import { toDateString } from '../../utils/date.util.js';
+import { mapBlog, FirestoreDocLike } from '@hashibutogarasu/common';
 
 /**
  * Abstract implementation of a Firestore repository.
@@ -31,14 +31,7 @@ export abstract class AbstractRepository<T> implements IRepository<T> {
    * @param doc The DocumentSnapshot to map.
    */
   protected mapDoc(doc: DocumentSnapshot): T {
-    const data = doc.data();
-
-    return {
-      ...data,
-      id: doc.id,
-      createdAt: toDateString(data?.createdAt),
-      updatedAt: toDateString(data?.updatedAt),
-    } as unknown as T;
+    return mapBlog(doc as unknown as FirestoreDocLike) as unknown as T;
   }
 
   /**
