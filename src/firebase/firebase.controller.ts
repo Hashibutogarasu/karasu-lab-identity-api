@@ -1,9 +1,9 @@
-import { Controller, Get, Req, UseGuards } from '@nestjs/common';
+import { Controller, Get, UseGuards } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '@thallesp/nestjs-better-auth';
-import type { Request } from 'express';
 import { SessionService } from '../shared/auth/session.service.js';
 import { FirebaseService } from './firebase.service.js';
+import { IdTokenGuard } from '../shared/firebase/id-token/id-token.guard.js';
 
 @ApiTags('Firebase')
 @Controller('firebase')
@@ -14,20 +14,14 @@ export class FirebaseController {
     private readonly sessionService: SessionService,
   ) {}
 
-  @ApiOperation({ summary: 'Get a Firebase Custom Token for the authenticated user' })
+  @ApiOperation({ summary: 'Verify Firebase ID Token from session' })
   @ApiResponse({
     status: 200,
-    description: 'Returns the Firebase Custom Token.',
-    schema: {
-      properties: {
-        token: { type: 'string' },
-      },
-    },
+    description: 'Firebase ID Token is valid.',
   })
-  @Get('token')
-  async getToken(@Req() req: Request) {
-    const { user } = await this.sessionService.requireSession(req);
-    const token = await this.firebaseService.createCustomToken(user.id);
-    return { token };
+  @Get('verify')
+  @UseGuards(IdTokenGuard)
+  verifyToken() {
+    return { valid: true };
   }
 }
