@@ -17,6 +17,8 @@ const createEmptyStore = (): Record<string, any[]> => ({
   oauthAccessToken: [],
   oauthConsent: [],
   jwks: [],
+  apikey: [],
+  deviceCode: [],
 });
 
 export class MemoryDatabaseService extends AbstractDatabaseService {
