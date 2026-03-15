@@ -1,11 +1,11 @@
-import { Auth as BetterAuthType, BetterAuthOptions } from "better-auth";
+import { betterAuth, BetterAuthOptions, type Auth as BetterAuthType } from "better-auth";
 import { createAuthMiddleware } from "better-auth/api";
-  import { admin, bearer, deviceAuthorization, emailOTP, magicLink, oidcProvider, organization, twoFactor, username } from "better-auth/plugins";
+import { admin, bearer, deviceAuthorization, emailOTP, magicLink, oidcProvider, organization, twoFactor, username } from "better-auth/plugins";
 import { apiKey } from "@better-auth/api-key";
 import { firebaseAuthPlugin as firebaseAuth } from "better-auth-firebase-auth/server";
 import { initializeApp, getApps, cert } from "firebase-admin/app";
 import { getAuth } from "firebase-admin/auth";
-import { BetterAuthBuilder, EnvironmentUtils } from "@hashibutogarasu/common";
+import { EnvironmentUtils } from "@hashibutogarasu/common";
 import { passwordPlugin } from "./plugins/password/password-plugin.js";
 import { oauthApplicationPlugin } from "./plugins/oauth/oauth-application-plugin.js";
 import { passkeyPlugin } from "./plugins/passkey/passkey-plugin.js";
@@ -98,34 +98,41 @@ export function createAuth(
     ...(overrides.plugins ?? []),
   ];
 
-  return BetterAuthBuilder.create()
-    .basic.setBaseURL(env.BETTER_AUTH_URL)
-    .basic.setBasePath('/api/auth')
-    .basic.setSecret(env.BETTER_AUTH_SECRET)
-    .basic.setAppName("Karasu Lab")
-    .basic.setTrustedOrigins([
+  return betterAuth({
+    baseURL: env.BETTER_AUTH_URL,
+    basePath: '/api/auth',
+    secret: env.BETTER_AUTH_SECRET,
+    appName: "Karasu Lab",
+    trustedOrigins: [
       ...authConfig.getTrustedOrigins(),
       ...(Array.isArray(overrides.trustedOrigins) ? overrides.trustedOrigins : []),
-    ])
-    .basic.setAdvanced({ crossSubDomainCookies: authConfig.getCrossSubDomainCookies() })
-    .basic.setIPAddressHeaders(['cf-connecting-ip', 'x-forwarded-for'])
-    .basic.setCookieCache({ enabled: true, strategy: 'jwe', maxAge: 300 })
-    .basic.setLogger({
+    ],
+    advanced: {
+      crossSubDomainCookies: authConfig.getCrossSubDomainCookies()
+    },
+    ipAddressHeaders: ['cf-connecting-ip', 'x-forwarded-for'],
+    cookieCache: { enabled: true, strategy: 'jwe', maxAge: 300 },
+    logger: {
       level: EnvironmentUtils.isProduction(authEnv.environment) ? "info" : "debug",
       disabled: false,
-    })
-    .basic.setRateLimit(overrides.rateLimit ?? rateLimitConfig.getConfig())
-    .experimental.setJoins(true)
-    .email.setEmailAndPassword({ enabled: true, requireEmailVerification: true })
-    .email.setEmailVerification({
+    },
+    rateLimit: overrides.rateLimit ?? rateLimitConfig.getConfig(),
+    experimental: {
+      joins: true
+    },
+    emailAndPassword: {
+      enabled: true,
+      requireEmailVerification: true
+    },
+    emailVerification: {
       sendVerificationEmail: async ({ user, url }) => {
         await notificationService.sendVerificationEmail({ user, url });
       },
       sendOnSignUp: true,
       sendOnSignIn: true,
-    })
-    .auth.setSocialProviders(socialProviders)
-    .auth.setHooks({
+    },
+    socialProviders,
+    hooks: {
       after: createAuthMiddleware(async (context) => {
         if (context.path === "/oauth2/consent" || context.path === "/sign-out") {
           const expiredDate = new Date(0).toUTCString();
@@ -137,8 +144,8 @@ export function createAuth(
         }
         await Promise.resolve();
       }),
-    })
-    .user.setUser({
+    },
+    user: {
       deleteUser: { enabled: true },
       changeEmail: {
         enabled: true,
@@ -146,15 +153,15 @@ export function createAuth(
           await notificationService.sendChangeEmailVerification({ newEmail, url });
         },
       },
-    })
-    .user.setAccount({
+    },
+    account: {
       accountLinking: { allowDifferentEmails: false },
       updateAccountOnSignIn: true,
-    })
-    .session.setSession({})
-    .database.setDatabase(dbService.getHandler())
-    .withPlugins(corePlugins)
-    .buildServer() as unknown as BetterAuthType;
+    },
+    session: {},
+    database: dbService.getHandler(),
+    plugins: corePlugins,
+  }) as unknown as BetterAuthType;
 }
 
 let cachedAuth: BetterAuthType | null = null;
