@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.3.0](https://github.com/Karasu-Lab/karasu-lab-api/compare/karasu-lab-api-v3.2.3...karasu-lab-api-v3.3.0) (2026-03-15)
+
+
+### Features
+
+* changed to betterAuth function ([3bb1cde](https://github.com/Karasu-Lab/karasu-lab-api/commit/3bb1cde508ec24c26d0ec86962ff4525555b344c))
+
 ## [3.2.3](https://github.com/Karasu-Lab/karasu-lab-api/compare/karasu-lab-api-v3.2.2...karasu-lab-api-v3.2.3) (2026-03-14)
 
 
