@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.6.3](https://github.com/Karasu-Lab/karasu-lab-api/compare/karasu-lab-api-v3.6.2...karasu-lab-api-v3.6.3) (2026-03-15)
+
+
+### Bug Fixes
+
+* fixed providers not loads by auth error ([b0c33e3](https://github.com/Karasu-Lab/karasu-lab-api/commit/b0c33e365a8919f6cfe3ca1ad51baf5702e1ff11))
+
 ## [3.6.2](https://github.com/Karasu-Lab/karasu-lab-api/compare/karasu-lab-api-v3.6.1...karasu-lab-api-v3.6.2) (2026-03-15)
 
 
