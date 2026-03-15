@@ -1,7 +1,13 @@
 import { dotEnvService } from '../../src/shared/config/dotenv.service.js';
 dotEnvService.init();
 
-import { beforeAll, afterAll, beforeEach } from 'vitest';
+import { beforeAll, afterAll, beforeEach, vi } from 'vitest';
+
+vi.mock('../../src/firebase/index.js', () => ({
+  syncFirebaseUser: vi.fn().mockResolvedValue(undefined),
+  createFirebaseCustomToken: vi.fn().mockResolvedValue('mock-firebase-token'),
+}));
+
 import { createAuth } from '../../src/auth.js';
 import { genericOAuth } from "better-auth/plugins";
 import { MockConfigService } from '../mocks/config.service.mock.js';
