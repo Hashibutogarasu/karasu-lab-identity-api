@@ -1,6 +1,3 @@
 [submodule "packages/common"]
 	path = packages/common
 	url = https://github.com/Hashibutogarasu/karasu-lab-api-common.git
-[submodule "packages/yultyyev/better-auth-firebase-auth"]
-	path = packages/yultyyev/better-auth-firebase-auth
-	url = https://github.com/Hashibutogarasu/better-auth-firebase-auth.git

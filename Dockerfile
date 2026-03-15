@@ -14,7 +14,6 @@ RUN echo "node-linker=hoisted" > .npmrc && \
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY packages/common/package.json ./packages/common/package.json
-COPY packages/yultyyev/better-auth-firebase-auth/package.json ./packages/yultyyev/better-auth-firebase-auth/package.json
 
 RUN --mount=type=cache,id=pnpm,target=/root/.local/share/pnpm/store pnpm fetch --frozen-lockfile
 
@@ -25,7 +24,6 @@ RUN --mount=type=cache,id=pnpm,target=/root/.local/share/pnpm/store CI=true pnpm
 RUN sed -i 's/"_prepare":/"prepare":/' packages/common/package.json
 
 RUN pnpm --filter="@hashibutogarasu/common" exec tsc --noEmitOnError false || true
-RUN pnpm --filter="better-auth-firebase-auth" run build
 
 RUN DATABASE_URL="postgresql://build:dummy@localhost:5432/dummy" npx prisma generate
 

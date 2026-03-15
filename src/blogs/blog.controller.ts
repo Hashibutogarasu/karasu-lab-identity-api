@@ -10,7 +10,6 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { AllowAnonymous } from '@thallesp/nestjs-better-auth';
 import { UserRole } from '@hashibutogarasu/common';
 import type { Request } from 'express';
 
@@ -46,7 +45,6 @@ export class BlogController {
   /**
    * List published blog posts for the public feed.
    */
-  @AllowAnonymous()
   @ApiOperation({ summary: 'List published blog posts' })
   @ApiResponse({
     status: 200,
@@ -63,7 +61,6 @@ export class BlogController {
   /**
    * Fetch author profiles by IDs.
    */
-  @AllowAnonymous()
   @ApiOperation({ summary: 'Fetch author profiles by IDs' })
   @ApiResponse({
     status: 201,
@@ -114,7 +111,6 @@ export class BlogController {
   }
 
   /** Get a blog post by ID. Public, but draft posts are author-only. */
-  @AllowAnonymous()
   @ApiOperation({ summary: 'Get a blog post by ID' })
   @ApiResponse({
     status: 200,

@@ -1,6 +1,5 @@
 import { Controller, Get } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { AllowAnonymous } from '@thallesp/nestjs-better-auth';
 import { ProvidersService } from './providers.service.js';
 import { ProvidersResponseDto } from './dto/providers-response.dto.js';
 
@@ -13,7 +12,6 @@ export class ProvidersController {
    * Get available authentication providers.
    * This endpoint is public and used by the login page to show supported social providers.
    */
-  @AllowAnonymous()
   @ApiOperation({ summary: 'List available authentication providers' })
   @ApiResponse({
     status: 200,

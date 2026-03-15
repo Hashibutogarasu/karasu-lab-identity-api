@@ -1,10 +1,8 @@
 import { Controller, Get, Res } from '@nestjs/common';
-import { AllowAnonymous } from '@thallesp/nestjs-better-auth';
 import type { Response } from 'express';
 import { OpenApiService } from './openapi.service.js';
 import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 
-@AllowAnonymous()
 @Controller('docs')
 export class OpenApiController {
   constructor(private readonly openApiService: OpenApiService) {}

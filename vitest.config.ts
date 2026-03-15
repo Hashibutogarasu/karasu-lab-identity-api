@@ -24,7 +24,7 @@ export default defineConfig({
     },
     server: {
       deps: {
-        inline: [/@karasu-lab\/common/, 'better-auth-firebase-auth'],
+        inline: [/@karasu-lab\/common/],
       },
     },
   },

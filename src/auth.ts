@@ -16,9 +16,7 @@ import {
 	username,
 } from 'better-auth/plugins';
 import { apiKey } from '@better-auth/api-key';
-import { firebaseAuthPlugin as firebaseAuth } from 'better-auth-firebase-auth/server';
 import { initializeApp, getApps, cert } from 'firebase-admin/app';
-import { getAuth } from 'firebase-admin/auth';
 import { EnvironmentUtils } from '@hashibutogarasu/common';
 import { passwordPlugin } from './plugins/password/password-plugin.js';
 import { oauthApplicationPlugin } from './plugins/oauth/oauth-application-plugin.js';
@@ -188,14 +186,6 @@ export function createAuth(
 				{},
 				{ shouldMutateListDeviceSessionsEndpoint: true }
 			),
-			...(env.FIREBASE_PROJECT_ID
-				? [
-						firebaseAuth({
-							serverSideOnly: true,
-							firebaseAdminAuth: getAuth(),
-						}),
-					]
-				: []),
 			...(overrides.plugins ?? []),
 		],
 	}) as unknown as BetterAuthType;

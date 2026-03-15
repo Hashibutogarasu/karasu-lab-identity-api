@@ -13,7 +13,6 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { AllowAnonymous } from '@thallesp/nestjs-better-auth';
 import { UserRole } from '@hashibutogarasu/common';
 import type { Request } from 'express';
 
@@ -58,7 +57,6 @@ export class AttachmentController {
    * - Authenticated: own attachments (all statuses) + published from others.
    * - Anonymous: published attachments only.
    */
-  @AllowAnonymous()
   @ApiOperation({ summary: 'List attachments' })
   @ApiResponse({
     status: 200,
@@ -166,7 +164,6 @@ export class AttachmentController {
    * Get a presigned URL for an attachment.
    * `:id` is the attachment ID. Public.
    */
-  @AllowAnonymous()
   @ApiOperation({ summary: 'Get an attachment presigned URL' })
   @ApiResponse({
     status: 200,
