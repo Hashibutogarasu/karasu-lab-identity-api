@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.6.0](https://github.com/Karasu-Lab/karasu-lab-api/compare/karasu-lab-api-v3.5.0...karasu-lab-api-v3.6.0) (2026-03-15)
+
+
+### Features
+
+* updated packages ([5fd6c21](https://github.com/Karasu-Lab/karasu-lab-api/commit/5fd6c216571abac6885b6c1fad1915ab9bf5ad11))
+
 ## [3.5.0](https://github.com/Karasu-Lab/karasu-lab-api/compare/karasu-lab-api-v3.4.0...karasu-lab-api-v3.5.0) (2026-03-15)
 
 
