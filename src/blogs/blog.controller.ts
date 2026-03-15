@@ -157,4 +157,49 @@ export class BlogController {
     const { user } = await this.sessionService.requireSession(req);
     return this.blogService.deleteBlog(id, user.id);
   }
+
+  /** Like a blog post. */
+  @ApiOperation({ summary: 'Like a blog post' })
+  @ApiResponse({
+    status: 200,
+    description: 'The blog post has been successfully liked.',
+    type: SuccessResponseDto,
+  })
+  @Put(':id/like')
+  async likeBlog(@Req() req: Request, @Param('id') id: string) {
+    const { user } = await this.sessionService.requireSession(req);
+    await this.blogService.likeBlog(user.id, id);
+    return { success: true };
+  }
+
+  /** Unlike a blog post. */
+  @ApiOperation({ summary: 'Unlike a blog post' })
+  @ApiResponse({
+    status: 200,
+    description: 'The blog post has been successfully unliked.',
+    type: SuccessResponseDto,
+  })
+  @Delete(':id/like')
+  async unlikeBlog(@Req() req: Request, @Param('id') id: string) {
+    const { user } = await this.sessionService.requireSession(req);
+    await this.blogService.unlikeBlog(user.id, id);
+    return { success: true };
+  }
+
+  /** Get only a blog content. */
+  @ApiOperation({ summary: 'Get a blog content' })
+  @ApiResponse({
+    status: 200,
+    description: 'Return a blog content.',
+    schema: {
+      type: 'object',
+      properties: { content: { type: 'string' } },
+    },
+  })
+  @Get(':id/content')
+  @AllowAnonymous()
+  async getBlogContent(@Req() req: Request, @Param('id') id: string) {
+    const content = await this.blogService.getBlogContent(id);
+    return { content };
+  }
 }

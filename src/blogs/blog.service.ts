@@ -105,20 +105,16 @@ export class BlogService extends AbstractRepository<BlogData> implements IDeleta
 	}
 
 	/**
-	 * Enrich blog entries with content from object storage and attachment metadata.
+	 * Enrich blog entries with attachment metadata.
 	 */
 	private async _enrichBlogs(blogs: BlogData[]): Promise<BlogData[]> {
 		return Promise.all(
 			blogs.map(async (blog) => {
 				const attachmentsQuery = buildAttachmentsQuery(this.attachmentsCol, blog.id);
-
-				const [contentBuffer, attachmentsSnapshot] = await Promise.all([
-					this.storage.getObject(`blogs/${blog.id}/content`),
-					attachmentsQuery.get(),
-				]);
+				const attachmentsSnapshot = await attachmentsQuery.get();
 				return {
 					...blog,
-					content: contentBuffer?.toString('utf-8') ?? '',
+					content: '',
 					attachments: mapAttachments(attachmentsSnapshot),
 				} as BlogData;
 			})
@@ -133,6 +129,7 @@ export class BlogService extends AbstractRepository<BlogData> implements IDeleta
 			title: dto.title,
 			tags: dto.tags ?? [],
 			status: dto.status ?? BlogStatus.DRAFT,
+			likeCount: 0,
 			createdAt: now,
 			updatedAt: now,
 		};
@@ -158,15 +155,20 @@ export class BlogService extends AbstractRepository<BlogData> implements IDeleta
 			throw ErrorCodes.BLOG.FORBIDDEN;
 		}
 
-		const [contentBuffer, attachmentsSnapshot] = await Promise.all([
-			this.storage.getObject(`blogs/${id}/content`),
-			this.attachmentsCol.where('blogId', '==', id).get(),
-		]);
+		const attachmentsSnapshot = await this.attachmentsCol.where('blogId', '==', id).get();
 
-		blog.content = contentBuffer?.toString('utf-8') ?? '';
+		blog.content = '';
 		blog.attachments = mapAttachments(attachmentsSnapshot);
 
 		return blog;
+	}
+
+	/**
+	 * Fetch blog content from object storage.
+	 */
+	async getBlogContent(id: string): Promise<string> {
+		const contentBuffer = await this.storage.getObject(`blogs/${id}/content`);
+		return contentBuffer?.toString('utf-8') ?? '';
 	}
 
 	async updateBlog(id: string, authorId: string, dto: UpdateBlogDto): Promise<BlogData> {
@@ -226,5 +228,44 @@ export class BlogService extends AbstractRepository<BlogData> implements IDeleta
 			await this.storage.deleteObject(`blogs/${doc.id}/content`).catch(() => undefined);
 			await doc.ref.delete();
 		}
+	}
+
+	async likeBlog(userId: string, blogId: string): Promise<void> {
+		const blogRef = this.collection.doc(blogId);
+		const likeRef = blogRef.collection('likes').doc(userId);
+
+		const blogDoc = await blogRef.get();
+		if (!blogDoc.exists) throw ErrorCodes.BLOG.NOT_FOUND;
+
+		const batch = this.firebase.db.batch();
+		batch.set(likeRef, {
+			userId,
+			createdAt: FieldValue.serverTimestamp(),
+		});
+		batch.update(blogRef, {
+			likeCount: FieldValue.increment(1),
+			updatedAt: FieldValue.serverTimestamp(),
+		});
+
+		await batch.commit();
+	}
+
+	async unlikeBlog(userId: string, blogId: string): Promise<void> {
+		const blogRef = this.collection.doc(blogId);
+		const likeRef = blogRef.collection('likes').doc(userId);
+
+		const [blogDoc, likeDoc] = await Promise.all([blogRef.get(), likeRef.get()]);
+
+		if (!blogDoc.exists) throw ErrorCodes.BLOG.NOT_FOUND;
+		if (!likeDoc.exists) return;
+
+		const batch = this.firebase.db.batch();
+		batch.delete(likeRef);
+		batch.update(blogRef, {
+			likeCount: FieldValue.increment(-1),
+			updatedAt: FieldValue.serverTimestamp(),
+		});
+
+		await batch.commit();
 	}
 }
