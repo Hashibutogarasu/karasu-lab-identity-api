@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.8.1](https://github.com/Karasu-Lab/karasu-lab-api/compare/karasu-lab-api-v3.8.0...karasu-lab-api-v3.8.1) (2026-03-21)
+
+
+### Bug Fixes
+
+* moved script ([062caec](https://github.com/Karasu-Lab/karasu-lab-api/commit/062caecdde15b31692699b0fc9f2d6c6a2aea8b1))
+
 ## [3.8.0](https://github.com/Karasu-Lab/karasu-lab-api/compare/karasu-lab-api-v3.7.0...karasu-lab-api-v3.8.0) (2026-03-21)
 
 
