@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.8.0](https://github.com/Karasu-Lab/karasu-lab-api/compare/karasu-lab-api-v3.7.0...karasu-lab-api-v3.8.0) (2026-03-21)
+
+
+### Features
+
+* added oauth proxy plugin ([758c745](https://github.com/Karasu-Lab/karasu-lab-api/commit/758c745109ca288057aafbb2631c86a85cb678a1))
+
 ## [3.7.0](https://github.com/Karasu-Lab/karasu-lab-api/compare/karasu-lab-api-v3.6.4...karasu-lab-api-v3.7.0) (2026-03-15)
 
 
