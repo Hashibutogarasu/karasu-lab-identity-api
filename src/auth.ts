@@ -10,6 +10,7 @@ import {
 	deviceAuthorization,
 	emailOTP,
 	magicLink,
+	oAuthProxy,
 	oidcProvider,
 	organization,
 	twoFactor,
@@ -146,6 +147,9 @@ export function createAuth(
 		session: {},
 		database: dbService.getHandler(),
 		plugins: [
+			oAuthProxy({
+				productionURL: env.FRONTEND_ORIGIN,
+			}),
 			dash(),
 			openAPIPlugin(),
 			oidcProvider({ loginPage: '/login' }),
