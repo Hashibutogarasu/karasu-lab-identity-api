@@ -34,7 +34,9 @@ export class GamesService implements IDeletable {
   /**
    * Attach presigned image URL to a game entity.
    */
-  private async resolveGameImage(game: GameEntity): Promise<GameEntity & { image?: string }> {
+  private async resolveGameImage(
+    game: GameEntity,
+  ): Promise<GameEntity & { image?: string }> {
     if (game.imageKey) {
       const url = await this.storage.getPublicUrl(game.imageKey);
       return { ...game, image: url };
@@ -69,7 +71,10 @@ export class GamesService implements IDeletable {
    * @param dto Data for the new game.
    * @returns The created game.
    */
-  async createGame(userId: string, dto: CreateGameDto): Promise<GameEntity & { image?: string }> {
+  async createGame(
+    userId: string,
+    dto: CreateGameDto,
+  ): Promise<GameEntity & { image?: string }> {
     const id = cuid();
 
     if (dto.imageKey) {
@@ -96,9 +101,20 @@ export class GamesService implements IDeletable {
     query: BasePaginationQueryDto = { limit: 20 },
   ): Promise<PaginatedResult<GameEntity & { image?: string }>> {
     const { limit, cursor } = query;
-    const { data, nextCursor, hasMore } = await this.gamesRepo.findByUserIdPaged(userId, { limit, cursor });
-    const enriched = await Promise.all(data.map((g) => this.resolveGameImage(g)));
-    return { data: enriched, total: null, page: null, limit, totalPages: null, nextCursor, hasMore };
+    const { data, nextCursor, hasMore } =
+      await this.gamesRepo.findByUserIdPaged(userId, { limit, cursor });
+    const enriched = await Promise.all(
+      data.map((g) => this.resolveGameImage(g)),
+    );
+    return {
+      data: enriched,
+      total: null,
+      page: null,
+      limit,
+      totalPages: null,
+      nextCursor,
+      hasMore,
+    };
   }
 
   /**
@@ -107,7 +123,10 @@ export class GamesService implements IDeletable {
    * @param userId The user's ID.
    * @returns The game entity.
    */
-  async getGame(id: string, userId: string): Promise<GameEntity & { image?: string }> {
+  async getGame(
+    id: string,
+    userId: string,
+  ): Promise<GameEntity & { image?: string }> {
     const game = await this.gamesRepo.getById(id);
     if (!game) {
       throw ErrorCodes.STONEMANAGE.GAME_NOT_FOUND;
@@ -125,7 +144,11 @@ export class GamesService implements IDeletable {
    * @param dto New game data.
    * @returns The updated game entity.
    */
-  async updateGame(id: string, userId: string, dto: UpdateGameDto): Promise<GameEntity & { image?: string }> {
+  async updateGame(
+    id: string,
+    userId: string,
+    dto: UpdateGameDto,
+  ): Promise<GameEntity & { image?: string }> {
     const game = await this.gamesRepo.getById(id);
     if (!game) throw ErrorCodes.STONEMANAGE.GAME_NOT_FOUND;
     if (game.userId !== userId) throw ErrorCodes.STONEMANAGE.FORBIDDEN;

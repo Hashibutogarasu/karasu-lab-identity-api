@@ -10,7 +10,13 @@ import { UserController } from './user.controller.js';
 import { UserService } from './user.service.js';
 
 @Module({
-  imports: [SessionModule, DeletableModule, BlogModule, AttachmentModule, StoneManageModule],
+  imports: [
+    SessionModule,
+    DeletableModule,
+    BlogModule,
+    AttachmentModule,
+    StoneManageModule,
+  ],
   controllers: [UserController],
   providers: [UserService, RolesGuard],
 })

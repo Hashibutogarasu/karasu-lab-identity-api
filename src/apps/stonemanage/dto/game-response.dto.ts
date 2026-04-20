@@ -5,7 +5,11 @@ export const gameResponseSchema = z.object({
   id: z.string(),
   userId: z.string(),
   title: z.string(),
-  image: z.string().url().optional().describe('Signed GET URL for the game image'),
+  image: z
+    .string()
+    .url()
+    .optional()
+    .describe('Signed GET URL for the game image'),
   createdAt: z.string(),
   updatedAt: z.string(),
 });

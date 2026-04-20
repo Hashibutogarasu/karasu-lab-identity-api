@@ -8,5 +8,6 @@ import type { AttachmentData } from '@hashibutogarasu/common';
  * @param docs - Firestore QuerySnapshot of attachment documents
  * @returns Array of typed AttachmentData objects
  */
-export const mapAttachments = (docs: FirebaseFirestore.QuerySnapshot): AttachmentData[] =>
-  commonMapAttachments(docs);
+export const mapAttachments = (
+  docs: FirebaseFirestore.QuerySnapshot,
+): AttachmentData[] => commonMapAttachments(docs);

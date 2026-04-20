@@ -1,27 +1,27 @@
-import { dotEnvService } from "./shared/config/dotenv.service.js";
+import { dotEnvService } from './shared/config/dotenv.service.js';
 dotEnvService.init();
 
-import { NestFactory } from "@nestjs/core";
-import { Request, Response, NextFunction } from "express";
-import { AppModule } from "./app.module.js";
-import { authConfigFactory } from "./services/auth/config/auth-config.service.js";
-import { OpenApiService } from "./shared/openapi/openapi.service.js";
-import { GlobalExceptionFilter } from "./shared/errors/global-exception.filter.js";
-import { setupI18n } from "./shared/i18n/i18n.setup.js";
-import { II18nService } from "./shared/i18n/i18n.service.interface.js";
-import { configServiceFactory } from "./shared/config/config.service.js";
-import { IConfigService } from "./shared/config/config.service.interface.js";
-import { packageVersion } from "./version.js";
+import { NestFactory } from '@nestjs/core';
+import { Request, Response, NextFunction } from 'express';
+import { AppModule } from './app.module.js';
+import { authConfigFactory } from './services/auth/config/auth-config.service.js';
+import { OpenApiService } from './shared/openapi/openapi.service.js';
+import { GlobalExceptionFilter } from './shared/errors/global-exception.filter.js';
+import { setupI18n } from './shared/i18n/i18n.setup.js';
+import { II18nService } from './shared/i18n/i18n.service.interface.js';
+import { configServiceFactory } from './shared/config/config.service.js';
+import { IConfigService } from './shared/config/config.service.interface.js';
+import { packageVersion } from './version.js';
 
 async function bootstrap() {
-  console.log(`Launching Karasu LAB API ver.${packageVersion}`)
+  console.log(`Launching Karasu LAB API ver.${packageVersion}`);
   await setupI18n();
   const app = await NestFactory.create(AppModule, {
     bodyParser: false,
   });
 
   app.useGlobalFilters(new GlobalExceptionFilter());
-  app.setGlobalPrefix("api");
+  app.setGlobalPrefix('api');
 
   const configService: IConfigService = configServiceFactory();
 
@@ -38,10 +38,10 @@ async function bootstrap() {
 
   const i18nService = app.get<II18nService>(II18nService);
   app.use(async (req: Request, _res: Response, next: NextFunction) => {
-    const acceptLanguage = req.headers["accept-language"];
-    let lang = "ja";
-    if (typeof acceptLanguage === "string") {
-      lang = acceptLanguage.split(",")[0];
+    const acceptLanguage = req.headers['accept-language'];
+    let lang = 'ja';
+    if (typeof acceptLanguage === 'string') {
+      lang = acceptLanguage.split(',')[0];
     } else if (Array.isArray(acceptLanguage)) {
       lang = acceptLanguage[0];
     }

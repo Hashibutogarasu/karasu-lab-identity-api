@@ -1,5 +1,5 @@
-import { AbstractEnvironment } from "@hashibutogarasu/common";
-import { AuthEnv } from "../../config/auth.env.js";
+import { AbstractEnvironment } from '@hashibutogarasu/common';
+import { AuthEnv } from '../../config/auth.env.js';
 
 /**
  * Interface for Config Service

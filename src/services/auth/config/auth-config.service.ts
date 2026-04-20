@@ -1,13 +1,16 @@
-import { Environment } from "@hashibutogarasu/common";
-import { IConfigService } from "../../../shared/config/config.service.interface.js";
-import { IAuthConfig } from "./auth-config.interface.js";
-import { AbstractPluginEnvironment } from "../../../shared/plugin/abstract-plugin-environment.js";
+import { Environment } from '@hashibutogarasu/common';
+import { IConfigService } from '../../../shared/config/config.service.interface.js';
+import { IAuthConfig } from './auth-config.interface.js';
+import { AbstractPluginEnvironment } from '../../../shared/plugin/abstract-plugin-environment.js';
 
 /**
  * Abstract base class for auth configuration
  * Handles environment variable merging and duplicate removal
  */
-abstract class AbstractAuthConfig extends AbstractPluginEnvironment<IAuthConfig> implements IAuthConfig {
+abstract class AbstractAuthConfig
+  extends AbstractPluginEnvironment<IAuthConfig>
+  implements IAuthConfig
+{
   constructor(protected configService: IConfigService) {
     super();
   }
@@ -38,7 +41,7 @@ abstract class AbstractAuthConfig extends AbstractPluginEnvironment<IAuthConfig>
 
     // Parse TRUSTED_ORIGINS from environment variable (comma-separated)
     const envOrigins = env.TRUSTED_ORIGINS
-      ? env.TRUSTED_ORIGINS.split(',').map(origin => origin.trim())
+      ? env.TRUSTED_ORIGINS.split(',').map((origin) => origin.trim())
       : [];
 
     // Merge and remove duplicates
@@ -105,10 +108,7 @@ class ProductionAuthConfig extends AbstractAuthConfig {
  */
 class DevelopmentAuthConfig extends AbstractAuthConfig {
   protected getDefaultTrustedOrigins(): string[] {
-    return [
-      'http://localhost:3000',
-      'http://localhost:3001',
-    ];
+    return ['http://localhost:3000', 'http://localhost:3001'];
   }
 
   protected getDefaultCookieDomain(): string {
@@ -142,10 +142,16 @@ export function authConfigFactory(configService: IConfigService): IAuthConfig {
     [IConfigService]
   >(
     {
-      [Environment.PRODUCTION]: ProductionAuthConfig as new (configService: IConfigService) => AbstractAuthConfig,
-      [Environment.DEVELOPMENT]: DevelopmentAuthConfig as new (configService: IConfigService) => AbstractAuthConfig,
-      [Environment.TEST]: TestAuthConfig as new (configService: IConfigService) => AbstractAuthConfig,
+      [Environment.PRODUCTION]: ProductionAuthConfig as new (
+        configService: IConfigService,
+      ) => AbstractAuthConfig,
+      [Environment.DEVELOPMENT]: DevelopmentAuthConfig as new (
+        configService: IConfigService,
+      ) => AbstractAuthConfig,
+      [Environment.TEST]: TestAuthConfig as new (
+        configService: IConfigService,
+      ) => AbstractAuthConfig,
     },
-    configService
+    configService,
   );
 }

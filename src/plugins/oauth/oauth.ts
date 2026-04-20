@@ -1,6 +1,11 @@
-import { IOAuth, IOAuthAuth, IOAuthConsent, IOAuthManage } from "./oauth.interface.js";
-import { OAuthManage } from "./oauth.manage.js";
-import { OAuthConsent } from "./oauth.consent.js";
+import {
+  IOAuth,
+  IOAuthAuth,
+  IOAuthConsent,
+  IOAuthManage,
+} from './oauth.interface.js';
+import { OAuthManage } from './oauth.manage.js';
+import { OAuthConsent } from './oauth.consent.js';
 
 export class OAuth implements IOAuth {
   private readonly _manage: IOAuthManage;

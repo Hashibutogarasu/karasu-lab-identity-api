@@ -1,4 +1,4 @@
-import { describe, expect, it, vi, beforeEach, Mock } from 'vitest';
+import { describe, expect, it, vi, beforeEach, Mock } from 'vite-plus/test';
 import { AuthorService } from './author.service.js';
 import { IFirebaseAdminProvider } from '../shared/firebase/firebase-admin.provider.interface.js';
 
@@ -48,7 +48,11 @@ describe('AuthorService', () => {
       const result = await service.listAuthors();
 
       expect(result).toHaveLength(3);
-      expect(result[0]).toEqual({ id: 'u1', name: 'User 1', image: 'https://example.com/u1.png' });
+      expect(result[0]).toEqual({
+        id: 'u1',
+        name: 'User 1',
+        image: 'https://example.com/u1.png',
+      });
       expect(result[1]).toEqual({ id: 'u2', name: 'User 2', image: null });
     });
 
@@ -94,7 +98,10 @@ describe('AuthorService', () => {
       mockFindMany.mockResolvedValue([]);
       await service.listAuthorsPaged({ limit: 10, cursor: 'u5' });
 
-      const call = (mockFindMany as Mock).mock.calls[0][0] as Record<string, unknown>;
+      const call = (mockFindMany as Mock).mock.calls[0][0] as Record<
+        string,
+        unknown
+      >;
       expect(call.skip).toBe(1);
       expect(call.cursor).toEqual({ id: 'u5' });
     });
@@ -103,13 +110,18 @@ describe('AuthorService', () => {
       mockFindMany.mockResolvedValue([]);
       await service.listAuthorsPaged({ limit: 10 });
 
-      const call = (mockFindMany as Mock).mock.calls[0][0] as Record<string, unknown>;
+      const call = (mockFindMany as Mock).mock.calls[0][0] as Record<
+        string,
+        unknown
+      >;
       expect(call.skip).toBeUndefined();
       expect(call.cursor).toBeUndefined();
     });
 
     it('maps image null correctly', async () => {
-      mockFindMany.mockResolvedValue([{ id: 'u1', name: 'Alice', image: null }]);
+      mockFindMany.mockResolvedValue([
+        { id: 'u1', name: 'Alice', image: null },
+      ]);
       const result = await service.listAuthorsPaged({ limit: 5 });
       expect(result.data[0].image).toBeNull();
     });
@@ -117,9 +129,17 @@ describe('AuthorService', () => {
 
   describe('getById', () => {
     it('returns author when found', async () => {
-      mockFindUnique.mockResolvedValue({ id: 'u1', name: 'Alice', image: 'https://example.com/u1.png' });
+      mockFindUnique.mockResolvedValue({
+        id: 'u1',
+        name: 'Alice',
+        image: 'https://example.com/u1.png',
+      });
       const result = await service.getById('u1');
-      expect(result).toEqual({ id: 'u1', name: 'Alice', image: 'https://example.com/u1.png' });
+      expect(result).toEqual({
+        id: 'u1',
+        name: 'Alice',
+        image: 'https://example.com/u1.png',
+      });
     });
 
     it('returns null when author is not found', async () => {

@@ -1,12 +1,12 @@
-/* eslint-disable @typescript-eslint/unbound-method */
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { IdTokenGuard } from "./id-token.guard.js";
-import { SessionService } from "../../auth/session.service.js";
-import { ExecutionContext } from "@nestjs/common";
-import { getAuth } from "firebase-admin/auth";
-import { ErrorCodes } from "../../errors/error.codes.js";
+/* oxlint-disable @typescript-eslint/unbound-method */
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
+import { IdTokenGuard } from './id-token.guard.js';
+import { SessionService } from '../../auth/session.service.js';
+import { ExecutionContext } from '@nestjs/common';
+import { getAuth } from 'firebase-admin/auth';
+import { ErrorCodes } from '../../errors/error.codes.js';
 
-vi.mock("firebase-admin/auth", () => ({
+vi.mock('firebase-admin/auth', () => ({
   getAuth: vi.fn(),
 }));
 
@@ -35,20 +35,27 @@ describe('IdTokenGuard', () => {
   it('should throw UNAUTHORIZED if session is missing', async () => {
     vi.mocked(sessionService.requireSession).mockResolvedValue(null as any);
 
-    await expect(guard.canActivate(mockContext)).rejects.toEqual(ErrorCodes.AUTH.UNAUTHORIZED);
+    await expect(guard.canActivate(mockContext)).rejects.toEqual(
+      ErrorCodes.AUTH.UNAUTHORIZED,
+    );
   });
 
   it('should throw UNAUTHORIZED if firebaseIdToken is missing in session', async () => {
-    vi.mocked(sessionService.requireSession).mockResolvedValue({ user: {}, session: {} } as any);
+    vi.mocked(sessionService.requireSession).mockResolvedValue({
+      user: {},
+      session: {},
+    } as any);
 
-    await expect(guard.canActivate(mockContext)).rejects.toEqual(ErrorCodes.AUTH.UNAUTHORIZED);
+    await expect(guard.canActivate(mockContext)).rejects.toEqual(
+      ErrorCodes.AUTH.UNAUTHORIZED,
+    );
   });
 
   it('should return true if firebaseIdToken is valid', async () => {
-    vi.mocked(sessionService.requireSession).mockResolvedValue({ 
-      user: {}, 
-      session: {}, 
-      firebaseIdToken: 'valid-token' 
+    vi.mocked(sessionService.requireSession).mockResolvedValue({
+      user: {},
+      session: {},
+      firebaseIdToken: 'valid-token',
     } as any);
 
     const mockVerifyIdToken = vi.fn().mockResolvedValue({ uid: 'user-id' });
@@ -62,16 +69,18 @@ describe('IdTokenGuard', () => {
   });
 
   it('should throw UNAUTHORIZED if firebaseIdToken is invalid', async () => {
-    vi.mocked(sessionService.requireSession).mockResolvedValue({ 
-      user: {}, 
-      session: {}, 
-      firebaseIdToken: 'invalid-token' 
+    vi.mocked(sessionService.requireSession).mockResolvedValue({
+      user: {},
+      session: {},
+      firebaseIdToken: 'invalid-token',
     } as any);
 
     vi.mocked(getAuth).mockReturnValue({
       verifyIdToken: vi.fn().mockRejectedValue(new Error('Invalid token')),
     } as any);
 
-    await expect(guard.canActivate(mockContext)).rejects.toEqual(ErrorCodes.AUTH.UNAUTHORIZED);
+    await expect(guard.canActivate(mockContext)).rejects.toEqual(
+      ErrorCodes.AUTH.UNAUTHORIZED,
+    );
   });
 });

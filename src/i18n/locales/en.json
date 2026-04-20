@@ -1,41 +1,41 @@
 {
-	"auth": {
-		"unauthorized": "Unauthorized access",
-		"forbidden": "You do not have permission to perform this action",
-		"password_not_set": "User does not have a password set",
-		"password_already_set": "User already has a password set",
-		"password_invalid": "The password you entered is incorrect",
-		"not_found": "Resource not found"
-	},
-	"oauth": {
-		"application_not_found": "OAuth Application not found"
-	},
-	"firebase": {
-		"sync_failed": "Failed to synchronize user to Firebase",
-		"not_initialized": "Firebase Auth is not initialized"
-	},
-	"blog": {
-		"not_found": "Blog post not found",
-		"attachment_not_found": "Attachment not found",
-		"forbidden": "You do not have permission to perform this action",
-		"locked": "This blog post is locked and cannot be modified",
-		"mine_requires_auth": "Authentication is required to list your own posts",
-		"attachment_too_large": "Attachment exceeds the maximum allowed size",
-		"not_implemented": "This feature is not implemented"
-	},
-	"system": {
-		"resend_api_key_required": "RESEND_API_KEY is required in production environment.",
-		"auth_initialization_failed": "Auth initialization failed.",
-		"openapi_uninitialized": "OpenAPI document has not been initialized. Call setup() first.",
-		"openapi_unauthorized": "Authentication is required to view the documentation."
-	},
-	"stonemanage": {
-		"game_not_found": "Game not found",
-		"stone_not_found": "Stone data not found",
-		"log_not_found": "Stone log not found",
-		"forbidden": "You do not have permission to perform this action"
-	},
-	"user": {
-		"not_found": "User not found"
-	}
+  "auth": {
+    "unauthorized": "Unauthorized access",
+    "forbidden": "You do not have permission to perform this action",
+    "password_not_set": "User does not have a password set",
+    "password_already_set": "User already has a password set",
+    "password_invalid": "The password you entered is incorrect",
+    "not_found": "Resource not found"
+  },
+  "oauth": {
+    "application_not_found": "OAuth Application not found"
+  },
+  "firebase": {
+    "sync_failed": "Failed to synchronize user to Firebase",
+    "not_initialized": "Firebase Auth is not initialized"
+  },
+  "blog": {
+    "not_found": "Blog post not found",
+    "attachment_not_found": "Attachment not found",
+    "forbidden": "You do not have permission to perform this action",
+    "locked": "This blog post is locked and cannot be modified",
+    "mine_requires_auth": "Authentication is required to list your own posts",
+    "attachment_too_large": "Attachment exceeds the maximum allowed size",
+    "not_implemented": "This feature is not implemented"
+  },
+  "system": {
+    "resend_api_key_required": "RESEND_API_KEY is required in production environment.",
+    "auth_initialization_failed": "Auth initialization failed.",
+    "openapi_uninitialized": "OpenAPI document has not been initialized. Call setup() first.",
+    "openapi_unauthorized": "Authentication is required to view the documentation."
+  },
+  "stonemanage": {
+    "game_not_found": "Game not found",
+    "stone_not_found": "Stone data not found",
+    "log_not_found": "Stone log not found",
+    "forbidden": "You do not have permission to perform this action"
+  },
+  "user": {
+    "not_found": "User not found"
+  }
 }

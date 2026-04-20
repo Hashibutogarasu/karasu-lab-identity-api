@@ -59,20 +59,27 @@ export class NullObjectStorageService implements IObjectStorage {
    * @param presignedUrl URL returned by getPresignedUploadUrl
    * @param body         File contents to store
    */
-  simulateUploadViaPresignedUrl(presignedUrl: string, body: Buffer): Promise<void> {
+  simulateUploadViaPresignedUrl(
+    presignedUrl: string,
+    body: Buffer,
+  ): Promise<void> {
     if (!presignedUrl.startsWith(NullObjectStorageService.UPLOAD_BASE)) {
       return Promise.reject(
         new Error(`Invalid presigned upload URL: ${presignedUrl}`),
       );
     }
 
-    const withoutBase = presignedUrl.slice(NullObjectStorageService.UPLOAD_BASE.length);
+    const withoutBase = presignedUrl.slice(
+      NullObjectStorageService.UPLOAD_BASE.length,
+    );
     const queryStart = withoutBase.indexOf('?');
-    const key = queryStart === -1 ? withoutBase : withoutBase.slice(0, queryStart);
+    const key =
+      queryStart === -1 ? withoutBase : withoutBase.slice(0, queryStart);
     const query = queryStart === -1 ? '' : withoutBase.slice(queryStart + 1);
 
     const params = new URLSearchParams(query);
-    const contentType = params.get('content-type') ?? 'application/octet-stream';
+    const contentType =
+      params.get('content-type') ?? 'application/octet-stream';
 
     this.store.set(key, { body, contentType });
     return Promise.resolve();
@@ -95,7 +102,11 @@ export class NullObjectStorageService implements IObjectStorage {
     });
   }
 
-  putObject(key: string, body: Buffer | Uint8Array, contentType?: string): Promise<void> {
+  putObject(
+    key: string,
+    body: Buffer | Uint8Array,
+    contentType?: string,
+  ): Promise<void> {
     this.store.set(key, {
       body: Buffer.isBuffer(body) ? body : Buffer.from(body),
       contentType,

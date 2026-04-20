@@ -8,4 +8,6 @@ export const updateUserProfileSchema = z.object({
   displayUsername: z.boolean().optional(),
 });
 
-export class UpdateUserProfileDto extends createZodDto(updateUserProfileSchema) {}
+export class UpdateUserProfileDto extends createZodDto(
+  updateUserProfileSchema,
+) {}

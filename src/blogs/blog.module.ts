@@ -9,9 +9,14 @@ import { RolesGuard } from '../shared/auth/roles.guard.js';
 import { AttachmentModule } from '../attachments/attachment.module.js';
 
 @Module({
-	imports: [SessionModule, AttachmentModule],
-	controllers: [BlogController],
-	providers: [BlogService, FirebaseAdminServiceProvider, ConfigServiceProvider, RolesGuard],
-	exports: [BlogService],
+  imports: [SessionModule, AttachmentModule],
+  controllers: [BlogController],
+  providers: [
+    BlogService,
+    FirebaseAdminServiceProvider,
+    ConfigServiceProvider,
+    RolesGuard,
+  ],
+  exports: [BlogService],
 })
 export class BlogModule {}

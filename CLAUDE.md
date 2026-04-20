@@ -29,6 +29,7 @@ pnpm prisma:push        # Push schema to DB (no migration file)
 ```
 
 To run a single test file:
+
 ```bash
 pnpm vitest run test/blogs/blog.e2e.spec.ts
 ```
@@ -49,6 +50,7 @@ Authentication is handled by `better-auth` via `@thallesp/nestjs-better-auth`. T
 - Password, Passkey/WebAuthn, OAuth 2.0 client + provider, OIDC, 2FA (TOTP), Magic Links, Email OTP, Device Authorization, API Keys, Organization management, Admin
 
 **Key files**:
+
 - `src/auth.ts` — auth initialization and plugin wiring
 - `src/config/auth.env.ts` — Zod schema for all required env vars
 - `src/shared/auth/session.service.ts` — `requireSession()` / `optionalSession()` helpers
@@ -57,6 +59,7 @@ Authentication is handled by `better-auth` via `@thallesp/nestjs-better-auth`. T
 ### Bootstrap & Config
 
 `src/bootstrap/` runs a sequential initialization pipeline before the app starts:
+
 1. `InitializeEnv` → `ValidEnv` (Zod) → `InitializeConfig` → `InitializeService` → `I18nBootStrapper` → optional `DatabaseSeeding`
 
 Config classes (`ProductionConfigService`, `DevelopmentConfigService`, `TestConfigService`) all extend `AbstractConfigService` and are injected via `ConfigServiceProvider` factory based on `NODE_ENV`.
@@ -76,6 +79,7 @@ Config classes (`ProductionConfigService`, `DevelopmentConfigService`, `TestConf
 ### Validation
 
 Use `ZodValidationPipe` for all request bodies:
+
 ```typescript
 @Body(new ZodValidationPipe(createBlogSchema)) body: CreateBlogDto
 ```
@@ -85,6 +89,7 @@ Use `ZodValidationPipe` for all request bodies:
 **Framework**: Vitest (not Jest). Global test setup is in `test/auth/auth.setup.ts` which provides `testAuth`, `testDbService`, and `testNotificationService`.
 
 **Mock services** (in `test/mocks/`):
+
 - `MemoryDatabaseService` — in-memory better-auth adapter
 - `NullObjectStorageService` — no-op storage
 - `MockAuthNotificationService` — captures sent emails/OTPs

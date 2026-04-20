@@ -1,6 +1,6 @@
-/* eslint-disable @typescript-eslint/require-await */
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { User, Session } from "better-auth";
+/* oxlint-disable @typescript-eslint/require-await */
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
+import { User, Session } from 'better-auth';
 import { testAuth, testNotificationService } from './auth.setup.js';
 
 const BASE_URL = 'http://localhost:3000/api/auth';
@@ -17,20 +17,23 @@ interface MockResponse {
   };
 }
 
-async function makeRequest(path: string, options: RequestInit = {}): Promise<MockResponse | Response> {
+async function makeRequest(
+  path: string,
+  options: RequestInit = {},
+): Promise<MockResponse | Response> {
   const cleanPath = path.startsWith('/') ? path : `/${path}`;
   const url = new URL(BASE_URL.replace(/\/$/, '') + cleanPath);
   const req = new Request(url.toString(), {
-    headers: { 
+    headers: {
       'Content-Type': 'application/json',
-      'Host': 'localhost:3000',
-      'Origin': 'http://localhost:3000',
+      Host: 'localhost:3000',
+      Origin: 'http://localhost:3000',
     },
     ...options,
   });
-  
+
   const res = await testAuth.handler(req);
-  
+
   if (!(res instanceof Response)) {
     const context = res as unknown as {
       returned: unknown;
@@ -39,7 +42,7 @@ async function makeRequest(path: string, options: RequestInit = {}): Promise<Moc
     };
     const body = context.returned;
     const status = context.status || 200;
-    
+
     return {
       status,
       json: async <T>() => body as T,
@@ -48,11 +51,11 @@ async function makeRequest(path: string, options: RequestInit = {}): Promise<Moc
         get: (name: string) => {
           const headers = context.responseHeaders;
           return headers?.[name] || null;
-        }
+        },
       },
       clone: () => ({
-        text: async () => JSON.stringify(body)
-      })
+        text: async () => JSON.stringify(body),
+      }),
     };
   }
 
@@ -67,14 +70,14 @@ describe('Better Auth Integration Tests', () => {
   it('Test 1: Error when a user without a password logs in with an empty password', async () => {
     const ctx = await testAuth.$context;
     await ctx.adapter.create({
-      model: "user",
+      model: 'user',
       data: {
         name: 'OAuth User',
         email: 'oauth@example.com',
         emailVerified: true,
         createdAt: new Date('2023-01-01T00:00:00.000Z'),
-        updatedAt: new Date('2023-01-01T00:00:00.000Z')
-      }
+        updatedAt: new Date('2023-01-01T00:00:00.000Z'),
+      },
     });
 
     const res = await makeRequest('/sign-in/email', {
@@ -82,8 +85,8 @@ describe('Better Auth Integration Tests', () => {
       body: JSON.stringify({ email: 'oauth@example.com', password: '' }),
     });
 
-    const body = await res.json() as { message?: string };
-    
+    const body = (await res.json()) as { message?: string };
+
     expect(res.status).not.toBe(200);
     expect(body.message).toBeDefined();
   });
@@ -97,17 +100,20 @@ describe('Better Auth Integration Tests', () => {
         name: 'Test Login User',
       }),
     });
-    
+
     expect(signupRes.status).toBe(200);
-    const signupBody = await signupRes.json() as { user: User; session: Session };
-    
+    const signupBody = (await signupRes.json()) as {
+      user: User;
+      session: Session;
+    };
+
     const ctx = await testAuth.$context;
     const userId = signupBody.user.id;
 
     await ctx.adapter.update({
-      model: "user",
-      where: [{ field: "id", value: userId }],
-      update: { emailVerified: true }
+      model: 'user',
+      where: [{ field: 'id', value: userId }],
+      update: { emailVerified: true },
     });
 
     const loginRes = await makeRequest('/sign-in/email', {
@@ -119,7 +125,10 @@ describe('Better Auth Integration Tests', () => {
     });
 
     expect(loginRes.status).toBe(200);
-    const loginBody = await loginRes.json() as { user: User; session: Session };
+    const loginBody = (await loginRes.json()) as {
+      user: User;
+      session: Session;
+    };
     expect(loginBody.user).toBeDefined();
     expect(loginBody.user.email).toBe('testlogin@example.com');
   });
@@ -132,8 +141,8 @@ describe('Better Auth Integration Tests', () => {
         callbackURL: 'http://localhost:3000/callback',
       }),
     });
-    
-    const body = await signinRes.json() as { url?: string };
+
+    const body = (await signinRes.json()) as { url?: string };
     expect(body.url).toBeDefined();
     expect(body.url?.includes('https://dummy.com/auth')).toBe(true);
 
@@ -143,35 +152,50 @@ describe('Better Auth Integration Tests', () => {
     const state = authUrl.searchParams.get('state');
 
     const originalFetch = globalThis.fetch;
-    globalThis.fetch = vi.fn().mockImplementation(async (url: Request | string | URL, options?: RequestInit) => {
-      const urlStr = url instanceof Request ? url.url : url.toString();
-      if (urlStr.includes('dummy.com/token')) {
-        return new Response(JSON.stringify({ access_token: 'dummy_access_token' }), {
-          headers: { 'Content-Type': 'application/json' }
-        });
-      }
-      if (urlStr.includes('dummy.com/userinfo')) {
-        return new Response(JSON.stringify({
-          id: 'dummy_user_1',
-          name: 'Dummy User',
-          email: 'dummy@example.com',
-          email_verified: true
-        }), {
-           headers: { 'Content-Type': 'application/json' }
-        });
-      }
-      return originalFetch(url, options);
-    });
+    globalThis.fetch = vi
+      .fn()
+      .mockImplementation(
+        async (url: Request | string | URL, options?: RequestInit) => {
+          const urlStr = url instanceof Request ? url.url : url.toString();
+          if (urlStr.includes('dummy.com/token')) {
+            return new Response(
+              JSON.stringify({ access_token: 'dummy_access_token' }),
+              {
+                headers: { 'Content-Type': 'application/json' },
+              },
+            );
+          }
+          if (urlStr.includes('dummy.com/userinfo')) {
+            return new Response(
+              JSON.stringify({
+                id: 'dummy_user_1',
+                name: 'Dummy User',
+                email: 'dummy@example.com',
+                email_verified: true,
+              }),
+              {
+                headers: { 'Content-Type': 'application/json' },
+              },
+            );
+          }
+          return originalFetch(url, options);
+        },
+      );
 
     try {
-      const callbackRes = await makeRequest(`/oauth2/callback/dummy?state=${encodeURIComponent(state ?? '')}&code=valid_code`, {
-        method: 'GET',
-        headers: cookies ? { 'Cookie': cookies } : undefined
-      });
+      const callbackRes = await makeRequest(
+        `/oauth2/callback/dummy?state=${encodeURIComponent(state ?? '')}&code=valid_code`,
+        {
+          method: 'GET',
+          headers: cookies ? { Cookie: cookies } : undefined,
+        },
+      );
 
       expect(callbackRes.status).toBe(302);
-      expect(callbackRes.headers.get('location')).toBe('http://localhost:3000/callback');
-      
+      expect(callbackRes.headers.get('location')).toBe(
+        'http://localhost:3000/callback',
+      );
+
       const setCookie = callbackRes.headers.get('set-cookie');
       expect(setCookie).toBeTruthy();
     } finally {
@@ -185,7 +209,7 @@ describe('Better Auth Integration Tests', () => {
     });
 
     expect(res.status).toBe(200);
-    const body = await res.json() as { challenge: string; rpId: string };
+    const body = (await res.json()) as { challenge: string; rpId: string };
 
     expect(body.challenge).toBeDefined();
     expect(body.rpId).toBe('localhost');
@@ -203,7 +227,8 @@ describe('Better Auth Integration Tests', () => {
     expect(res.status).toBe(200);
 
     expect(testNotificationService.sendVerificationOTP).toHaveBeenCalled();
-    const mockCallArgs = vi.mocked(testNotificationService.sendVerificationOTP).mock.calls[0][0] as { email: string };
+    const mockCallArgs = vi.mocked(testNotificationService.sendVerificationOTP)
+      .mock.calls[0][0] as { email: string };
 
     expect(mockCallArgs.email).toBe('otpuser@example.com');
   });

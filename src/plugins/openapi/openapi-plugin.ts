@@ -1,13 +1,13 @@
-import { BetterAuthPlugin } from "better-auth";
-import { openAPI as defaultOpenAPI } from "better-auth/plugins";
-import { AbstractPluginEnvironment } from "../../shared/plugin/abstract-plugin-environment.js";
-import { Environment } from "@hashibutogarasu/common";
+import { BetterAuthPlugin } from 'better-auth';
+import { openAPI as defaultOpenAPI } from 'better-auth/plugins';
+import { AbstractPluginEnvironment } from '../../shared/plugin/abstract-plugin-environment.js';
+import { Environment } from '@hashibutogarasu/common';
 
 class ProductionOpenAPIEnvironment extends AbstractPluginEnvironment {
   resolve(): BetterAuthPlugin {
     return {
-      id: "openapi",
-      endpoints: {}
+      id: 'openapi',
+      endpoints: {},
     } satisfies BetterAuthPlugin;
   }
 }

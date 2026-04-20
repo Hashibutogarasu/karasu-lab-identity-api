@@ -1,7 +1,10 @@
-import { AbstractEnvironment } from "@hashibutogarasu/common";
-import { IMailService, SendEmailOptions } from "./mail.service.interface.js";
+import { AbstractEnvironment } from '@hashibutogarasu/common';
+import { IMailService, SendEmailOptions } from './mail.service.interface.js';
 
-export abstract class AbstractMailService extends AbstractEnvironment implements IMailService {
+export abstract class AbstractMailService
+  extends AbstractEnvironment
+  implements IMailService
+{
   constructor(environment: string) {
     super(environment);
   }

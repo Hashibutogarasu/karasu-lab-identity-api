@@ -5,14 +5,14 @@ import {
   ListObjectsV2Command,
   PutObjectCommand,
   S3Client,
-} from "@aws-sdk/client-s3";
-import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import type { PutObjectCommandInput } from "@aws-sdk/client-s3";
-import { Inject, Injectable } from "@nestjs/common";
+} from '@aws-sdk/client-s3';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import type { PutObjectCommandInput } from '@aws-sdk/client-s3';
+import { Inject, Injectable } from '@nestjs/common';
 
-import { STORAGE_OPTIONS } from "./storage.constants.js";
-import type { StorageOptions } from "./storage-options.interface.js";
-import type { IObjectStorage } from "./object-storage.interface.js";
+import { STORAGE_OPTIONS } from './storage.constants.js';
+import type { StorageOptions } from './storage-options.interface.js';
+import type { IObjectStorage } from './object-storage.interface.js';
 
 @Injectable()
 export class ObjectStorageService implements IObjectStorage {
@@ -20,11 +20,13 @@ export class ObjectStorageService implements IObjectStorage {
   private readonly bucket: string;
   private readonly publicUrl?: string;
 
-  constructor(@Inject(STORAGE_OPTIONS) private readonly options: StorageOptions) {
+  constructor(
+    @Inject(STORAGE_OPTIONS) private readonly options: StorageOptions,
+  ) {
     this.bucket = options.bucket;
     this.publicUrl = options.publicUrl;
     this.client = new S3Client({
-      region: "auto",
+      region: 'auto',
       endpoint: options.endpoint,
       credentials: {
         accessKeyId: options.accessKeyId,

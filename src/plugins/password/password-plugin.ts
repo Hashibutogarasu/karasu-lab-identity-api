@@ -1,12 +1,15 @@
-import { BetterAuthPlugin } from "better-auth"
-import { VerifyPasswordEndpoint, SetPasswordEndpoint } from "./password-endpoints.js";
+import { BetterAuthPlugin } from 'better-auth';
+import {
+  VerifyPasswordEndpoint,
+  SetPasswordEndpoint,
+} from './password-endpoints.js';
 
 export const passwordPlugin = (): BetterAuthPlugin => {
   return {
-    id: "password",
+    id: 'password',
     endpoints: {
       verify: new VerifyPasswordEndpoint().getEndpoint(),
       set: new SetPasswordEndpoint().getEndpoint(),
-    }
-  } satisfies BetterAuthPlugin
-}
+    },
+  } satisfies BetterAuthPlugin;
+};

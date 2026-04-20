@@ -1,5 +1,5 @@
 export interface IPasskeyAuth {
-    getOrigin(): string[];
-    getRPID(): string;
-    getRPName(): string;
+  getOrigin(): string[];
+  getRPID(): string;
+  getRPName(): string;
 }

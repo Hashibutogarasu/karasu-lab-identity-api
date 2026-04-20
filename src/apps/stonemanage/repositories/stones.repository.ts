@@ -54,8 +54,13 @@ export class StonesRepository extends AbstractRepository<StoneEntity> {
    * @param userId The ID of the user.
    * @param options Pagination options (limit, cursor).
    */
-  findByUserIdPaged(userId: string, options: { limit: number; cursor?: string }) {
-    const query = this.collection.where('userId', '==', userId).orderBy('createdAt', 'desc');
+  findByUserIdPaged(
+    userId: string,
+    options: { limit: number; cursor?: string },
+  ) {
+    const query = this.collection
+      .where('userId', '==', userId)
+      .orderBy('createdAt', 'desc');
     return this.paginate(query, options);
   }
 

@@ -1,3 +1,3 @@
-import { AbstractEnvironment } from "@hashibutogarasu/common";
+import { AbstractEnvironment } from '@hashibutogarasu/common';
 
 export class AuthEnvironment extends AbstractEnvironment {}

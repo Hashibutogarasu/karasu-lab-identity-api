@@ -1,5 +1,5 @@
-import { IConfigService } from "./config.service.interface.js";
-import { AuthEnv } from "../../config/auth.env.js";
+import { IConfigService } from './config.service.interface.js';
+import { AuthEnv } from '../../config/auth.env.js';
 
 /**
  * Abstract base class for config services

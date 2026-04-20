@@ -1,10 +1,4 @@
-import {
-  Controller,
-  Get,
-  Inject,
-  Param,
-  UseGuards,
-} from '@nestjs/common';
+import { Controller, Get, Inject, Param, UseGuards } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthorService } from './author.service.js';
 import { UserResponseDto } from '../blogs/dto/user-response.dto.js';
@@ -20,7 +14,9 @@ import { AllowAnonymous } from '@thallesp/nestjs-better-auth';
 @ApiTags('Authors')
 @Controller('author')
 export class AuthorLegacyController {
-  constructor(@Inject(AuthorService) private readonly authorService: AuthorService) {}
+  constructor(
+    @Inject(AuthorService) private readonly authorService: AuthorService,
+  ) {}
 
   /**
    * List all authors (no pagination).
@@ -57,7 +53,9 @@ export class AuthorLegacyController {
 @ApiTags('Authors')
 @Controller('authors')
 export class AuthorController {
-  constructor(@Inject(AuthorService) private readonly authorService: AuthorService) {}
+  constructor(
+    @Inject(AuthorService) private readonly authorService: AuthorService,
+  ) {}
 
   /**
    * List all authors with cursor-based pagination.

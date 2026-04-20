@@ -1,5 +1,5 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @typescript-eslint/require-await */
+/* oxlint-disable @typescript-eslint/no-unused-vars */
+/* oxlint-disable @typescript-eslint/require-await */
 import { Inject, Injectable } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
 import getPrisma from '../prisma.js';
@@ -12,10 +12,15 @@ import type { BasePaginationQueryDto } from '../shared/dto/pagination-query.dto.
 import type { PaginatedResult } from '../shared/types/pagination.types.js';
 
 @Injectable()
-export class AuthorService extends AbstractRepository<UserResponseDto> implements IRepository<UserResponseDto> {
+export class AuthorService
+  extends AbstractRepository<UserResponseDto>
+  implements IRepository<UserResponseDto>
+{
   private readonly prisma: PrismaClient = getPrisma();
 
-  constructor(@Inject(IFirebaseAdminProvider) firebase: IFirebaseAdminProvider) {
+  constructor(
+    @Inject(IFirebaseAdminProvider) firebase: IFirebaseAdminProvider,
+  ) {
     super(firebase, 'users');
   }
 
@@ -32,7 +37,7 @@ export class AuthorService extends AbstractRepository<UserResponseDto> implement
         image: true,
       },
     });
-    return users.map(user => ({
+    return users.map((user) => ({
       id: user.id,
       name: user.name,
       image: user.image ?? null,
@@ -54,9 +59,21 @@ export class AuthorService extends AbstractRepository<UserResponseDto> implement
     const hasMore = users.length > limit;
     const paged = hasMore ? users.slice(0, limit) : users;
     const nextCursor = hasMore ? paged[paged.length - 1].id : null;
-    const data = paged.map(u => ({ id: u.id, name: u.name, image: u.image ?? null }));
+    const data = paged.map((u) => ({
+      id: u.id,
+      name: u.name,
+      image: u.image ?? null,
+    }));
 
-    return { data, total: null, page: null, limit, totalPages: null, nextCursor, hasMore };
+    return {
+      data,
+      total: null,
+      page: null,
+      limit,
+      totalPages: null,
+      nextCursor,
+      hasMore,
+    };
   }
 
   /**
@@ -105,9 +122,7 @@ export class AuthorService extends AbstractRepository<UserResponseDto> implement
   /**
    * Delete is not implemented for authors via this API.
    */
-  override async delete(
-    _id: string,
-  ): Promise<void> {
+  override async delete(_id: string): Promise<void> {
     throw ErrorCodes.BLOG.NOT_IMPLEMENTED;
   }
 }

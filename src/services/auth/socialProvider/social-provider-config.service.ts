@@ -1,5 +1,8 @@
 import { IConfigService } from '../../../shared/config/config.service.interface.js';
-import { ISocialProvider, ISocialProviderConfig } from './social-provider-config.interface.js';
+import {
+  ISocialProvider,
+  ISocialProviderConfig,
+} from './social-provider-config.interface.js';
 
 /**
  * Abstract base class for social provider
@@ -73,7 +76,8 @@ export class SocialProviderConfigService implements ISocialProviderConfig {
   }
 
   getProviders(): Record<string, { clientId: string; clientSecret: string }> {
-    const result: Record<string, { clientId: string; clientSecret: string }> = {};
+    const result: Record<string, { clientId: string; clientSecret: string }> =
+      {};
 
     for (const provider of this.providers) {
       const credentials = provider.getCredentials();
@@ -97,7 +101,7 @@ export class SocialProviderConfigService implements ISocialProviderConfig {
  * @returns Social provider config service instance
  */
 export function socialProviderConfigFactory(
-  configService: IConfigService
+  configService: IConfigService,
 ): ISocialProviderConfig {
   return new SocialProviderConfigService(configService);
 }

@@ -1,12 +1,18 @@
-import { AbstractEnvironment, Environment } from "@hashibutogarasu/common";
-import { BetterAuthPlugin } from "better-auth";
+import { AbstractEnvironment, Environment } from '@hashibutogarasu/common';
+import { BetterAuthPlugin } from 'better-auth';
 
 class EnvironmentResolver extends AbstractEnvironment {}
 
-export abstract class AbstractPluginEnvironment<T = BetterAuthPlugin> extends AbstractEnvironment {
+export abstract class AbstractPluginEnvironment<
+  T = BetterAuthPlugin,
+> extends AbstractEnvironment {
   abstract resolve(): T;
 
-  static resolve<T, E extends AbstractPluginEnvironment<T>, TArgs extends any[]>(
+  static resolve<
+    T,
+    E extends AbstractPluginEnvironment<T>,
+    TArgs extends any[],
+  >(
     classes: Record<Environment, new (...args: TArgs) => E>,
     ...args: TArgs
   ): T {

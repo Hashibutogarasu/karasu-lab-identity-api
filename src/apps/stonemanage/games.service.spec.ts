@@ -1,4 +1,4 @@
-import { describe, expect, it, beforeEach, vi, Mock } from 'vitest';
+import { describe, expect, it, beforeEach, vi, Mock } from 'vite-plus/test';
 import { GamesService } from './games.service.js';
 import { GamesRepository } from './repositories/games.repository.js';
 import { StonesRepository } from './repositories/stones.repository.js';
@@ -43,9 +43,15 @@ describe('GamesService', () => {
 
     storage = {
       getPublicUrl: vi.fn().mockResolvedValue('https://example.com/signed-url'),
-      getPresignedUrl: vi.fn().mockResolvedValue('https://example.com/signed-url'),
-      getPresignedUploadUrl: vi.fn().mockResolvedValue('https://example.com/upload-url'),
-      getObjectMetadata: vi.fn().mockResolvedValue({ contentType: 'image/png', size: 1024 }),
+      getPresignedUrl: vi
+        .fn()
+        .mockResolvedValue('https://example.com/signed-url'),
+      getPresignedUploadUrl: vi
+        .fn()
+        .mockResolvedValue('https://example.com/upload-url'),
+      getObjectMetadata: vi
+        .fn()
+        .mockResolvedValue({ contentType: 'image/png', size: 1024 }),
       putObject: vi.fn().mockResolvedValue(undefined),
       getContentType: vi.fn().mockResolvedValue('image/png'),
       getObject: vi.fn().mockResolvedValue(null),
@@ -63,7 +69,11 @@ describe('GamesService', () => {
 
   it('creates a game for a user', async () => {
     const dto = { title: 'My Game' };
-    gamesRepo.create.mockResolvedValue({ id: 'g1', userId: 'u1', title: 'My Game' });
+    gamesRepo.create.mockResolvedValue({
+      id: 'g1',
+      userId: 'u1',
+      title: 'My Game',
+    });
     const result = await service.createGame('u1', dto);
     expect(result.userId).toBe('u1');
     expect(gamesRepo.create).toHaveBeenCalled();
@@ -74,29 +84,39 @@ describe('GamesService', () => {
     const result = await service.getGame('g1', 'u1');
     expect(result).toBeDefined();
 
-    await expect(service.getGame('g1', 'u2')).rejects.toThrow(ErrorCodes.STONEMANAGE.FORBIDDEN);
+    await expect(service.getGame('g1', 'u2')).rejects.toThrow(
+      ErrorCodes.STONEMANAGE.FORBIDDEN,
+    );
   });
 
   it('updates a game only if the user owns it', async () => {
     gamesRepo.getById.mockResolvedValue({ id: 'g1', userId: 'u1' });
-    gamesRepo.update.mockResolvedValue({ id: 'g1', userId: 'u1', title: 'Updated' });
+    gamesRepo.update.mockResolvedValue({
+      id: 'g1',
+      userId: 'u1',
+      title: 'Updated',
+    });
 
     await service.updateGame('g1', 'u1', { title: 'Updated' });
     expect(gamesRepo.update).toHaveBeenCalled();
 
-    await expect(service.updateGame('g1', 'u2', { title: 'Updated' })).rejects.toThrow(ErrorCodes.STONEMANAGE.FORBIDDEN);
+    await expect(
+      service.updateGame('g1', 'u2', { title: 'Updated' }),
+    ).rejects.toThrow(ErrorCodes.STONEMANAGE.FORBIDDEN);
   });
 
   it('deletes a game and stones only if the user owns it', async () => {
     gamesRepo.getById.mockResolvedValue({ id: 'g1', userId: 'u1' });
     stonesRepo.findByGameId.mockResolvedValue([{ id: 's1' }]);
-    
+
     await service.deleteGame('g1', 'u1');
     expect(logsRepo.deleteByStoneId).toHaveBeenCalledWith('s1');
     expect(stonesRepo.deleteByGameId).toHaveBeenCalledWith('g1');
     expect(gamesRepo.delete).toHaveBeenCalledWith('g1');
 
-    await expect(service.deleteGame('g1', 'u2')).rejects.toThrow(ErrorCodes.STONEMANAGE.FORBIDDEN);
+    await expect(service.deleteGame('g1', 'u2')).rejects.toThrow(
+      ErrorCodes.STONEMANAGE.FORBIDDEN,
+    );
   });
 
   it('issues a presigned upload URL', async () => {
@@ -108,13 +128,25 @@ describe('GamesService', () => {
   });
 
   it('creates a game with imageKey and resolves image URL', async () => {
-    gamesRepo.create.mockResolvedValue({ id: 'g1', userId: 'u1', title: 'My Game', imageKey: 'stonemanage/images/u1/img1' });
-    const result = await service.createGame('u1', { title: 'My Game', imageKey: 'stonemanage/images/u1/img1' });
+    gamesRepo.create.mockResolvedValue({
+      id: 'g1',
+      userId: 'u1',
+      title: 'My Game',
+      imageKey: 'stonemanage/images/u1/img1',
+    });
+    const result = await service.createGame('u1', {
+      title: 'My Game',
+      imageKey: 'stonemanage/images/u1/img1',
+    });
     expect(result.image).toBe('https://example.com/signed-url');
   });
 
   it('creates a game without imageKey', async () => {
-    gamesRepo.create.mockResolvedValue({ id: 'g1', userId: 'u1', title: 'My Game' });
+    gamesRepo.create.mockResolvedValue({
+      id: 'g1',
+      userId: 'u1',
+      title: 'My Game',
+    });
     const result = await service.createGame('u1', { title: 'My Game' });
     expect(result.image).toBeUndefined();
   });
@@ -122,7 +154,12 @@ describe('GamesService', () => {
   it('fetches games with resolved image URLs', async () => {
     gamesRepo.findByUserIdPaged.mockResolvedValue({
       data: [
-        { id: 'g1', userId: 'u1', title: 'Game 1', imageKey: 'stonemanage/images/u1/img1' },
+        {
+          id: 'g1',
+          userId: 'u1',
+          title: 'Game 1',
+          imageKey: 'stonemanage/images/u1/img1',
+        },
         { id: 'g2', userId: 'u1', title: 'Game 2' },
       ],
       nextCursor: null,
@@ -136,20 +173,36 @@ describe('GamesService', () => {
   it('rejects updating game image for another user', async () => {
     gamesRepo.getById.mockResolvedValue({ id: 'g1', userId: 'u1' });
     await expect(
-      service.updateGame('g1', 'u2', { imageKey: 'stonemanage/images/u2/img1' }),
+      service.updateGame('g1', 'u2', {
+        imageKey: 'stonemanage/images/u2/img1',
+      }),
     ).rejects.toThrow(ErrorCodes.STONEMANAGE.FORBIDDEN);
   });
 
   it('cleans up old image when game image is replaced', async () => {
-    gamesRepo.getById.mockResolvedValue({ id: 'g1', userId: 'u1', imageKey: 'old-key' });
-    gamesRepo.update.mockResolvedValue({ id: 'g1', userId: 'u1', imageKey: 'new-key' });
+    gamesRepo.getById.mockResolvedValue({
+      id: 'g1',
+      userId: 'u1',
+      imageKey: 'old-key',
+    });
+    gamesRepo.update.mockResolvedValue({
+      id: 'g1',
+      userId: 'u1',
+      imageKey: 'new-key',
+    });
     await service.updateGame('g1', 'u1', { imageKey: 'new-key' });
     expect(storage.deleteObject).toHaveBeenCalledWith('old-key');
   });
 
   it('cleans up images when deleting a game with images', async () => {
-    gamesRepo.getById.mockResolvedValue({ id: 'g1', userId: 'u1', imageKey: 'game-img' });
-    stonesRepo.findByGameId.mockResolvedValue([{ id: 's1', imageKey: 'stone-img' }]);
+    gamesRepo.getById.mockResolvedValue({
+      id: 'g1',
+      userId: 'u1',
+      imageKey: 'game-img',
+    });
+    stonesRepo.findByGameId.mockResolvedValue([
+      { id: 's1', imageKey: 'stone-img' },
+    ]);
     await service.deleteGame('g1', 'u1');
     expect(storage.deleteObject).toHaveBeenCalledWith('stone-img');
     expect(storage.deleteObject).toHaveBeenCalledWith('game-img');

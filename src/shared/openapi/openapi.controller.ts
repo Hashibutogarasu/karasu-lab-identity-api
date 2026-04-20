@@ -11,7 +11,11 @@ export class OpenApiController {
 
   @Get('json')
   @ApiOperation({ summary: 'Get OpenAPI JSON document' })
-  @ApiResponse({ status: 200, description: 'Return the OpenAPI JSON document', type: 'object' })
+  @ApiResponse({
+    status: 200,
+    description: 'Return the OpenAPI JSON document',
+    type: 'object',
+  })
   async getDocsJson(@Res() res: Response) {
     const document = await this.openApiService.getDocument();
     res.json(document);

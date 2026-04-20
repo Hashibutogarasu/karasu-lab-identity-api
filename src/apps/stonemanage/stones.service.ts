@@ -31,7 +31,9 @@ export class StonesService implements IDeletable {
   /**
    * Attach presigned image URL to a stone entity.
    */
-  private async resolveStoneImage(stone: StoneEntity): Promise<StoneEntity & { image?: string }> {
+  private async resolveStoneImage(
+    stone: StoneEntity,
+  ): Promise<StoneEntity & { image?: string }> {
     if (stone.imageKey) {
       const url = await this.storage.getPublicUrl(stone.imageKey);
       return { ...stone, image: url };
@@ -44,7 +46,10 @@ export class StonesService implements IDeletable {
    * @param gameId The game ID.
    * @param userId The user ID.
    */
-  private async validateGameOwnership(gameId: string, userId: string): Promise<void> {
+  private async validateGameOwnership(
+    gameId: string,
+    userId: string,
+  ): Promise<void> {
     const game = await this.gamesRepo.getById(gameId);
     if (!game) {
       throw ErrorCodes.STONEMANAGE.GAME_NOT_FOUND;
@@ -65,9 +70,20 @@ export class StonesService implements IDeletable {
     query: BasePaginationQueryDto = { limit: 20 },
   ): Promise<PaginatedResult<StoneEntity & { image?: string }>> {
     const { limit, cursor } = query;
-    const { data, nextCursor, hasMore } = await this.stonesRepo.findByUserIdPaged(userId, { limit, cursor });
-    const enriched = await Promise.all(data.map((s) => this.resolveStoneImage(s)));
-    return { data: enriched, total: null, page: null, limit, totalPages: null, nextCursor, hasMore };
+    const { data, nextCursor, hasMore } =
+      await this.stonesRepo.findByUserIdPaged(userId, { limit, cursor });
+    const enriched = await Promise.all(
+      data.map((s) => this.resolveStoneImage(s)),
+    );
+    return {
+      data: enriched,
+      total: null,
+      page: null,
+      limit,
+      totalPages: null,
+      nextCursor,
+      hasMore,
+    };
   }
 
   /**
@@ -77,7 +93,11 @@ export class StonesService implements IDeletable {
    * @param userId The user's ID.
    * @returns The stone entity.
    */
-  async getStone(gameId: string, stoneId: string, userId: string): Promise<StoneEntity & { image?: string }> {
+  async getStone(
+    gameId: string,
+    stoneId: string,
+    userId: string,
+  ): Promise<StoneEntity & { image?: string }> {
     const stone = await this.stonesRepo.getById(stoneId);
     if (!stone) {
       throw ErrorCodes.STONEMANAGE.STONE_NOT_FOUND;
@@ -98,7 +118,11 @@ export class StonesService implements IDeletable {
    * @param dto Data for the new stone.
    * @returns The created stone entity.
    */
-  async createStone(gameId: string, userId: string, dto: CreateStoneDto): Promise<StoneEntity & { image?: string }> {
+  async createStone(
+    gameId: string,
+    userId: string,
+    dto: CreateStoneDto,
+  ): Promise<StoneEntity & { image?: string }> {
     await this.validateGameOwnership(gameId, userId);
 
     if (dto.imageKey) {

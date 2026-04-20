@@ -36,7 +36,8 @@ export class StoneManageStonesController {
   @ApiOperation({ summary: 'List all stones for the user' })
   @ApiResponse({
     status: 200,
-    description: 'Returns all stones across all games for the authenticated user.',
+    description:
+      'Returns all stones across all games for the authenticated user.',
     type: [StoneResponseDto],
   })
   @Get('stone')
@@ -104,10 +105,7 @@ export class StoneManageStonesController {
     type: SuccessResponseDto,
   })
   @Delete('stone/:gid')
-  async deleteStonesByGame(
-    @Req() req: Request,
-    @Param('gid') gid: string,
-  ) {
+  async deleteStonesByGame(@Req() req: Request, @Param('gid') gid: string) {
     const { user } = await this.sessionService.requireSession(req);
     await this.service.deleteStonesByGame(gid, user.id);
     return { success: true };

@@ -1,5 +1,5 @@
 /** Injection token for IObjectStorage */
-export const IObjectStorageService = "IObjectStorageService";
+export const IObjectStorageService = 'IObjectStorageService';
 
 /**
  * Interface for object storage operations targeting S3-compatible storage

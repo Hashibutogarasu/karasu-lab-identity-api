@@ -1,8 +1,8 @@
-import { dotEnvService } from "../shared/config/dotenv.service.js";
+import { dotEnvService } from '../shared/config/dotenv.service.js';
 
 dotEnvService.init();
 
-import { z } from "zod";
+import { z } from 'zod';
 
 export const storageEnvSchema = z.object({
   R2_ENDPOINT: z.string(),

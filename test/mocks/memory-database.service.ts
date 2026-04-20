@@ -1,5 +1,5 @@
-import { memoryAdapter } from "better-auth/adapters/memory";
-import { AbstractDatabaseService } from "../../src/shared/database/abstract-database.service.js";
+import { memoryAdapter } from 'better-auth/adapters/memory';
+import { AbstractDatabaseService } from '../../src/shared/database/abstract-database.service.js';
 
 const createEmptyStore = (): Record<string, any[]> => ({
   user: [],
@@ -24,7 +24,7 @@ const createEmptyStore = (): Record<string, any[]> => ({
 export class MemoryDatabaseService extends AbstractDatabaseService {
   private store: Record<string, any[]>;
 
-  constructor(environment: string = "test") {
+  constructor(environment: string = 'test') {
     super(environment);
     this.store = createEmptyStore();
   }

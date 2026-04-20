@@ -3,7 +3,7 @@ import { INestApplication } from '@nestjs/common';
 import { App } from 'supertest/types.js';
 import { AppController } from '../src/app.controller.js';
 import { AppService } from '../src/app.service.js';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vite-plus/test';
 
 describe('AppController (e2e)', () => {
   let app: INestApplication<App>;

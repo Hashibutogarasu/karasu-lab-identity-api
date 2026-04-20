@@ -9,7 +9,11 @@ import { ConfigServiceProvider } from '../shared/config/config.service.js';
 @Module({
   imports: [SessionModule],
   controllers: [AttachmentController],
-  providers: [AttachmentService, FirebaseAdminServiceProvider, ConfigServiceProvider],
+  providers: [
+    AttachmentService,
+    FirebaseAdminServiceProvider,
+    ConfigServiceProvider,
+  ],
   exports: [AttachmentService],
 })
 export class AttachmentModule {}

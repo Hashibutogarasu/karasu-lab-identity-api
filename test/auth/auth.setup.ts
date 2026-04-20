@@ -1,7 +1,7 @@
 import { dotEnvService } from '../../src/shared/config/dotenv.service.js';
 dotEnvService.init();
 
-import { beforeAll, afterAll, beforeEach, vi } from 'vitest';
+import { beforeAll, afterAll, beforeEach, vi } from 'vite-plus/test';
 
 vi.mock('../../src/firebase/index.js', () => ({
   syncFirebaseUser: vi.fn().mockResolvedValue(undefined),
@@ -9,7 +9,7 @@ vi.mock('../../src/firebase/index.js', () => ({
 }));
 
 import { createAuth } from '../../src/auth.js';
-import { genericOAuth } from "better-auth/plugins";
+import { genericOAuth } from 'better-auth/plugins';
 import { MockConfigService } from '../mocks/config.service.mock.js';
 import { MockAuthNotificationService } from '../mocks/auth-notification.service.mock.js';
 import { MemoryDatabaseService } from '../mocks/memory-database.service.js';
@@ -26,42 +26,57 @@ export let testNotificationService: MockAuthNotificationService;
 export let testAuth: ReturnType<typeof createAuth>;
 
 beforeAll(async () => {
-  const configService = new MockConfigService({
-    BETTER_AUTH_URL: 'http://localhost:3000/api/auth',
-    BETTER_AUTH_SECRET: 'super-secret-test-key',
-    FRONTEND_ORIGIN: 'http://localhost:3000',
-  }, "test");
+  const configService = new MockConfigService(
+    {
+      BETTER_AUTH_URL: 'http://localhost:3000/api/auth',
+      BETTER_AUTH_SECRET: 'super-secret-test-key',
+      FRONTEND_ORIGIN: 'http://localhost:3000',
+    },
+    'test',
+  );
 
   testNotificationService = new MockAuthNotificationService();
-  testDbService = new MemoryDatabaseService("test");
+  testDbService = new MemoryDatabaseService('test');
   const passkeyAuth = passkeyAuthFactory(configService);
   const authConfig = authConfigFactory(configService);
   const socialProviderConfig = socialProviderConfigFactory(configService);
-  const adminConfig = new MockAdminConfig([DatabaseSeedingConstants.DUMMY_USER_ID]);
+  const adminConfig = new MockAdminConfig([
+    DatabaseSeedingConstants.DUMMY_USER_ID,
+  ]);
   const rateLimitConfig = new MockRateLimitConfig({ enabled: false });
 
-  testAuth = createAuth(configService, testDbService, testNotificationService, passkeyAuth, authConfig, socialProviderConfig, adminConfig, rateLimitConfig, {
-    rateLimit: { enabled: false },
-    trustedOrigins: ['http://localhost:3000'],
-    advanced: {
-      disableCSRFCheck: true,
-    },
+  testAuth = createAuth(
+    configService,
+    testDbService,
+    testNotificationService,
+    passkeyAuth,
+    authConfig,
+    socialProviderConfig,
+    adminConfig,
+    rateLimitConfig,
+    {
+      rateLimit: { enabled: false },
+      trustedOrigins: ['http://localhost:3000'],
+      advanced: {
+        disableCSRFCheck: true,
+      },
 
-    plugins: [
-      genericOAuth({
-        config: [
-          {
-            providerId: "dummy",
-            authorizationUrl: "https://dummy.com/auth",
-            tokenUrl: "https://dummy.com/token",
-            userInfoUrl: "https://dummy.com/userinfo",
-            clientId: "dummy_client",
-            clientSecret: "dummy_secret",
-          }
-        ]
-      })
-    ]
-  });
+      plugins: [
+        genericOAuth({
+          config: [
+            {
+              providerId: 'dummy',
+              authorizationUrl: 'https://dummy.com/auth',
+              tokenUrl: 'https://dummy.com/token',
+              userInfoUrl: 'https://dummy.com/userinfo',
+              clientId: 'dummy_client',
+              clientSecret: 'dummy_secret',
+            },
+          ],
+        }),
+      ],
+    },
+  );
 
   const mockSeeding = new MockDatabaseSeedingService(testAuth);
   await mockSeeding.seed();

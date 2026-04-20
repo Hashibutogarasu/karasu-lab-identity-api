@@ -12,4 +12,6 @@ export const userProfileResponseSchema = z.object({
   updatedAt: z.string(),
 });
 
-export class UserProfileResponseDto extends createZodDto(userProfileResponseSchema) {}
+export class UserProfileResponseDto extends createZodDto(
+  userProfileResponseSchema,
+) {}

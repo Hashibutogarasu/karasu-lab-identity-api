@@ -5,10 +5,7 @@ export interface IAuthNotificationService {
     type: string | null | undefined;
   }): Promise<void>;
 
-  sendMagicLink(params: {
-    email: string;
-    token: string;
-  }): Promise<void>;
+  sendMagicLink(params: { email: string; token: string }): Promise<void>;
 
   sendVerificationEmail(params: {
     user: { email?: string };

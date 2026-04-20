@@ -10,12 +10,16 @@ export class LogsRepository extends AbstractRepository<LogEntity> {
   }
 
   async findByStoneId(stoneId: string): Promise<LogEntity[]> {
-    const snapshot = await this.collection.where('stoneId', '==', stoneId).get();
+    const snapshot = await this.collection
+      .where('stoneId', '==', stoneId)
+      .get();
     return snapshot.docs.map((doc) => this.mapDoc(doc));
   }
 
   async deleteByStoneId(stoneId: string): Promise<void> {
-    const snapshot = await this.collection.where('stoneId', '==', stoneId).get();
+    const snapshot = await this.collection
+      .where('stoneId', '==', stoneId)
+      .get();
 
     const batch = this.firebase.db.batch();
     snapshot.docs.forEach((doc) => {
@@ -29,8 +33,13 @@ export class LogsRepository extends AbstractRepository<LogEntity> {
    * @param stoneId The ID of the stone.
    * @param options Pagination options (limit, cursor).
    */
-  findByStoneIdPaged(stoneId: string, options: { limit: number; cursor?: string }) {
-    const query = this.collection.where('stoneId', '==', stoneId).orderBy('createdAt', 'desc');
+  findByStoneIdPaged(
+    stoneId: string,
+    options: { limit: number; cursor?: string },
+  ) {
+    const query = this.collection
+      .where('stoneId', '==', stoneId)
+      .orderBy('createdAt', 'desc');
     return this.paginate(query, options);
   }
 }

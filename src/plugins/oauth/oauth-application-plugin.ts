@@ -1,8 +1,7 @@
- 
-import { BetterAuthPlugin } from "better-auth";
-import { AbstractPluginEnvironment } from "../../shared/plugin/abstract-plugin-environment.js";
-import { OAuth } from "./oauth.js";
-import { IOAuth } from "./oauth.interface.js";
+import { BetterAuthPlugin } from 'better-auth';
+import { AbstractPluginEnvironment } from '../../shared/plugin/abstract-plugin-environment.js';
+import { OAuth } from './oauth.js';
+import { IOAuth } from './oauth.interface.js';
 import {
   DeleteApplicationEndpoint,
   GetApplicationByClientIdEndpoint,
@@ -11,8 +10,8 @@ import {
   RegenerateApplicationSecretEndpoint,
   UpdateApplicationDetailsEndpoint,
   UpdateApplicationDisabledStatusEndpoint,
-} from "./oauth-application-endpoints.js";
-import { Environment } from "@hashibutogarasu/common";
+} from './oauth-application-endpoints.js';
+import { Environment } from '@hashibutogarasu/common';
 
 abstract class BaseOAuthApplicationPluginEnvironment extends AbstractPluginEnvironment {
   constructor(protected oauth: IOAuth) {
@@ -21,16 +20,22 @@ abstract class BaseOAuthApplicationPluginEnvironment extends AbstractPluginEnvir
 
   resolve(): BetterAuthPlugin {
     return {
-      id: "oauthApplications",
+      id: 'oauthApplications',
       endpoints: {
         all: new ListAllApplicationsEndpoint(this.oauth).getEndpoint(),
         getApp: new GetApplicationByIdEndpoint(this.oauth).getEndpoint(),
-        byClientId: new GetApplicationByClientIdEndpoint(this.oauth).getEndpoint(),
-        updateDisabled: new UpdateApplicationDisabledStatusEndpoint(this.oauth).getEndpoint(),
+        byClientId: new GetApplicationByClientIdEndpoint(
+          this.oauth,
+        ).getEndpoint(),
+        updateDisabled: new UpdateApplicationDisabledStatusEndpoint(
+          this.oauth,
+        ).getEndpoint(),
         update: new UpdateApplicationDetailsEndpoint(this.oauth).getEndpoint(),
-        regenerateSecret: new RegenerateApplicationSecretEndpoint(this.oauth).getEndpoint(),
+        regenerateSecret: new RegenerateApplicationSecretEndpoint(
+          this.oauth,
+        ).getEndpoint(),
         delete: new DeleteApplicationEndpoint(this.oauth).getEndpoint(),
-      }
+      },
     } satisfies BetterAuthPlugin;
   }
 }
@@ -39,10 +44,15 @@ class ProductionOAuthApplicationPluginEnvironment extends BaseOAuthApplicationPl
 class DevelopmentOAuthApplicationPluginEnvironment extends BaseOAuthApplicationPluginEnvironment {}
 class TestOAuthApplicationPluginEnvironment extends BaseOAuthApplicationPluginEnvironment {}
 
-export const oauthApplicationPlugin = (oauth: IOAuth = new OAuth()): BetterAuthPlugin => {
-  return AbstractPluginEnvironment.resolve({
-    [Environment.PRODUCTION]: ProductionOAuthApplicationPluginEnvironment,
-    [Environment.DEVELOPMENT]: DevelopmentOAuthApplicationPluginEnvironment,
-    [Environment.TEST]: TestOAuthApplicationPluginEnvironment,
-  }, oauth);
+export const oauthApplicationPlugin = (
+  oauth: IOAuth = new OAuth(),
+): BetterAuthPlugin => {
+  return AbstractPluginEnvironment.resolve(
+    {
+      [Environment.PRODUCTION]: ProductionOAuthApplicationPluginEnvironment,
+      [Environment.DEVELOPMENT]: DevelopmentOAuthApplicationPluginEnvironment,
+      [Environment.TEST]: TestOAuthApplicationPluginEnvironment,
+    },
+    oauth,
+  );
 };

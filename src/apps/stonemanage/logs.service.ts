@@ -28,7 +28,10 @@ export class LogsService implements IDeletable {
    * @param stoneId The stone ID.
    * @param userId The user ID.
    */
-  private async validateStoneOwnership(stoneId: string, userId: string): Promise<void> {
+  private async validateStoneOwnership(
+    stoneId: string,
+    userId: string,
+  ): Promise<void> {
     const stone = await this.stonesRepo.getById(stoneId);
     if (!stone) {
       throw ErrorCodes.STONEMANAGE.STONE_NOT_FOUND;
@@ -63,8 +66,17 @@ export class LogsService implements IDeletable {
   ): Promise<PaginatedResult<LogEntity>> {
     await this.validateStoneOwnership(stoneId, userId);
     const { limit, cursor } = query;
-    const { data, nextCursor, hasMore } = await this.logsRepo.findByStoneIdPaged(stoneId, { limit, cursor });
-    return { data, total: null, page: null, limit, totalPages: null, nextCursor, hasMore };
+    const { data, nextCursor, hasMore } =
+      await this.logsRepo.findByStoneIdPaged(stoneId, { limit, cursor });
+    return {
+      data,
+      total: null,
+      page: null,
+      limit,
+      totalPages: null,
+      nextCursor,
+      hasMore,
+    };
   }
 
   /**
@@ -74,7 +86,11 @@ export class LogsService implements IDeletable {
    * @param userId The user ID.
    * @returns The log entity.
    */
-  async getLog(stoneId: string, logId: string, userId: string): Promise<LogEntity> {
+  async getLog(
+    stoneId: string,
+    logId: string,
+    userId: string,
+  ): Promise<LogEntity> {
     await this.validateStoneOwnership(stoneId, userId);
 
     const log = await this.logsRepo.getById(logId);
@@ -94,7 +110,11 @@ export class LogsService implements IDeletable {
    * @param dto The create dto containing the amount.
    * @returns The created log entity.
    */
-  async createLog(stoneId: string, userId: string, dto: CreateLogDto): Promise<LogEntity> {
+  async createLog(
+    stoneId: string,
+    userId: string,
+    dto: CreateLogDto,
+  ): Promise<LogEntity> {
     await this.validateStoneOwnership(stoneId, userId);
 
     const latestLog = await this.findLatestLog(stoneId);
@@ -142,12 +162,18 @@ export class LogsService implements IDeletable {
       const idx = allLogs.findIndex((l) => l.id === logId);
 
       if (idx > 0) {
-        await this.logsRepo.update(allLogs[idx - 1].id, { nextAmount: dto.amount });
+        await this.logsRepo.update(allLogs[idx - 1].id, {
+          nextAmount: dto.amount,
+        });
       }
 
       if (idx < allLogs.length - 1) {
-        await this.logsRepo.update(logId, { previousAmount: updatedLog.previousAmount });
-        await this.logsRepo.update(allLogs[idx + 1].id, { previousAmount: dto.amount });
+        await this.logsRepo.update(logId, {
+          previousAmount: updatedLog.previousAmount,
+        });
+        await this.logsRepo.update(allLogs[idx + 1].id, {
+          previousAmount: dto.amount,
+        });
       }
     }
 
@@ -160,7 +186,11 @@ export class LogsService implements IDeletable {
    * @param logId The log ID.
    * @param userId The user ID.
    */
-  async deleteLog(stoneId: string, logId: string, userId: string): Promise<void> {
+  async deleteLog(
+    stoneId: string,
+    logId: string,
+    userId: string,
+  ): Promise<void> {
     await this.getLog(stoneId, logId, userId);
     await this.logsRepo.delete(logId);
   }

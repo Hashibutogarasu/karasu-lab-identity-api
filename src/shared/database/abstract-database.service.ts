@@ -1,7 +1,10 @@
-import { AbstractEnvironment } from "@hashibutogarasu/common";
-import { IDataBaseService } from "./database.service.interface.js";
+import { AbstractEnvironment } from '@hashibutogarasu/common';
+import { IDataBaseService } from './database.service.interface.js';
 
-export abstract class AbstractDatabaseService extends AbstractEnvironment implements IDataBaseService {
+export abstract class AbstractDatabaseService
+  extends AbstractEnvironment
+  implements IDataBaseService
+{
   constructor(environment: string) {
     super(environment);
   }

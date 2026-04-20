@@ -1,11 +1,13 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 export const authEnvSchema = z.object({
-  NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
+  NODE_ENV: z
+    .enum(['development', 'production', 'test'])
+    .default('development'),
   COOKIE_DOMAIN: z.string().optional(),
   TRUSTED_ORIGINS: z.string().optional(),
-  BETTER_AUTH_URL: z.string().url().default("http://localhost:3001"),
-  BETTER_AUTH_SECRET: z.string().min(1).default("secret-for-testing"),
+  BETTER_AUTH_URL: z.string().url().default('http://localhost:3001'),
+  BETTER_AUTH_SECRET: z.string().min(1).default('secret-for-testing'),
   FRONTEND_ORIGIN: z.string().url().optional(),
   DISCORD_CLIENT_ID: z.string().optional(),
   DISCORD_CLIENT_SECRET: z.string().optional(),
@@ -13,8 +15,8 @@ export const authEnvSchema = z.object({
   GOOGLE_CLIENT_SECRET: z.string().optional(),
   X_CLIENT_ID: z.string().optional(),
   X_CLIENT_SECRET: z.string().optional(),
-  PASSKEY_RP_ID: z.string().default("localhost"),
-  PASSKEY_RP_NAME: z.string().default("Karasu Lab"),
+  PASSKEY_RP_ID: z.string().default('localhost'),
+  PASSKEY_RP_NAME: z.string().default('Karasu Lab'),
   PASSKEY_ORIGIN: z.string().url().optional(),
   DATABASE_URL: z.string().optional(),
   FIREBASE_PROJECT_ID: z.string().optional(),

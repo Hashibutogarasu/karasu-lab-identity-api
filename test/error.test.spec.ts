@@ -1,23 +1,23 @@
 import 'reflect-metadata';
 import { Test, TestingModule } from '@nestjs/testing';
-import { 
-  Controller, 
-  Get, 
-  HttpException, 
-  HttpStatus, 
-  INestApplication, 
-  Injectable, 
-  MiddlewareConsumer, 
-  Module, 
-  NestModule, 
-  Inject, 
-  NestMiddleware 
+import {
+  Controller,
+  Get,
+  HttpException,
+  HttpStatus,
+  INestApplication,
+  Injectable,
+  MiddlewareConsumer,
+  Module,
+  NestModule,
+  Inject,
+  NestMiddleware,
 } from '@nestjs/common';
 import request, { Response as SuperTestResponse } from 'supertest';
 import { ErrorCodes } from '../src/shared/errors/error.codes.js';
 import { I18nService } from '../src/shared/i18n/i18n.service.js';
 import { II18nService } from '../src/shared/i18n/i18n.service.interface.js';
-import { describe, it, expect, beforeEach, afterAll } from 'vitest';
+import { describe, it, expect, beforeEach, afterAll } from 'vite-plus/test';
 import { NextFunction, Request, Response } from 'express';
 
 import { GlobalExceptionFilter } from '../src/shared/errors/global-exception.filter.js';
@@ -37,7 +37,7 @@ class TestErrorService {
   }
 
   throwSystemError(): never {
-      throw ErrorCodes.SYSTEM.RESEND_API_KEY_REQUIRED;
+    throw ErrorCodes.SYSTEM.RESEND_API_KEY_REQUIRED;
   }
 
   throwHttpException(): never {
@@ -47,7 +47,9 @@ class TestErrorService {
 
 @Controller('test-error')
 class TestErrorController {
-  constructor(@Inject(TestErrorService) private readonly service: TestErrorService) {}
+  constructor(
+    @Inject(TestErrorService) private readonly service: TestErrorService,
+  ) {}
 
   @Get('success')
   getSuccess(): { ok: boolean } {
@@ -66,7 +68,7 @@ class TestErrorController {
 
   @Get('system')
   getSystem(): never {
-      return this.service.throwSystemError();
+    return this.service.throwSystemError();
   }
 
   @Get('http-exception')
@@ -77,22 +79,22 @@ class TestErrorController {
 
 @Injectable()
 class MockI18nMiddleware implements NestMiddleware {
-	constructor(
-		@Inject(II18nService) private readonly i18nService: II18nService
-	) {}
+  constructor(
+    @Inject(II18nService) private readonly i18nService: II18nService,
+  ) {}
 
-	async use(req: Request, _res: Response, next: NextFunction): Promise<void> {
-		const langHeader = req.get('accept-language');
-		const lang = langHeader?.split(',')[0] ?? 'en';
-        
-        try {
-		    await this.i18nService.setLanguage(lang);
-        } catch (e) {
-            process.stdout.write(`Middleware setLanguage failed: ${e}\n`);
-            throw e;
-        }
-		next();
-	}
+  async use(req: Request, _res: Response, next: NextFunction): Promise<void> {
+    const langHeader = req.get('accept-language');
+    const lang = langHeader?.split(',')[0] ?? 'en';
+
+    try {
+      await this.i18nService.setLanguage(lang);
+    } catch (e) {
+      process.stdout.write(`Middleware setLanguage failed: ${e}\n`);
+      throw e;
+    }
+    next();
+  }
 }
 
 @Module({
@@ -122,24 +124,25 @@ describe('Error I18n (Integration)', () => {
 
     const createdApp = moduleFixture.createNestApplication();
     createdApp.useGlobalFilters(new GlobalExceptionFilter());
-    
+
     const i18nService = moduleFixture.get(I18nService);
     await i18nService.init();
-    
+
     await createdApp.init();
     app = createdApp;
   });
 
   afterAll(async () => {
-      if (app) {
-        await app.close();
-      }
+    if (app) {
+      await app.close();
+    }
   });
 
   it('should return 200 for success', async () => {
     if (!app) throw new Error('App not initialized');
-    const response: SuperTestResponse = await request(app.getHttpServer())
-      .get('/test-error/success');
+    const response: SuperTestResponse = await request(app.getHttpServer()).get(
+      '/test-error/success',
+    );
 
     expect(response.status).toBe(200);
     expect(response.body).toEqual({ ok: true });
@@ -147,16 +150,18 @@ describe('Error I18n (Integration)', () => {
 
   it('should return 400 for standard HttpException', async () => {
     if (!app) throw new Error('App not initialized');
-    const response: SuperTestResponse = await request(app.getHttpServer())
-      .get('/test-error/http-exception');
+    const response: SuperTestResponse = await request(app.getHttpServer()).get(
+      '/test-error/http-exception',
+    );
 
     expect(response.status).toBe(400);
   });
 
   it('should return English message for unauthorized (Default)', async () => {
     if (!app) throw new Error('App not initialized');
-    const response: SuperTestResponse = await request(app.getHttpServer())
-      .get('/test-error/unauthorized');
+    const response: SuperTestResponse = await request(app.getHttpServer()).get(
+      '/test-error/unauthorized',
+    );
 
     expect(response.status).toBe(401);
   });

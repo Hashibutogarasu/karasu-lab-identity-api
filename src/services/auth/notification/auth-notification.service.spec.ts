@@ -1,7 +1,10 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vite-plus/test';
 import { MockConfigService } from '../../../../test/mocks/config.service.mock.js';
 import { MockMailService } from '../../../../test/mocks/mail.service.mock.js';
-import { AuthNotificationService, authNotificationServiceFactory } from './auth-notification.service.js';
+import {
+  AuthNotificationService,
+  authNotificationServiceFactory,
+} from './auth-notification.service.js';
 
 describe('AuthNotificationService', () => {
   let mailService: MockMailService;
@@ -10,16 +13,23 @@ describe('AuthNotificationService', () => {
 
   beforeEach(() => {
     mailService = new MockMailService('test');
-    configService = new MockConfigService({
-      NODE_ENV: 'test',
-      FRONTEND_ORIGIN: 'http://localhost:3000',
-    }, 'test');
+    configService = new MockConfigService(
+      {
+        NODE_ENV: 'test',
+        FRONTEND_ORIGIN: 'http://localhost:3000',
+      },
+      'test',
+    );
     service = new AuthNotificationService(mailService, configService);
   });
 
   describe('sendVerificationOTP', () => {
     it('should send an email containing the OTP and a verification link', async () => {
-      await service.sendVerificationOTP({ email: 'test@example.com', otp: '123456', type: 'sign-in' });
+      await service.sendVerificationOTP({
+        email: 'test@example.com',
+        otp: '123456',
+        type: 'sign-in',
+      });
 
       expect(mailService.sendEmail).toHaveBeenCalledOnce();
       const args = mailService.sendEmail.mock.calls[0][0];
@@ -31,18 +41,32 @@ describe('AuthNotificationService', () => {
 
     it('should not throw when type is null', async () => {
       await expect(
-        service.sendVerificationOTP({ email: 'test@example.com', otp: '123456', type: null })
+        service.sendVerificationOTP({
+          email: 'test@example.com',
+          otp: '123456',
+          type: null,
+        }),
       ).resolves.not.toThrow();
     });
 
     it('should use FRONTEND_ORIGIN from config in the verification link', async () => {
-      const customConfigService = new MockConfigService({
-        NODE_ENV: 'test',
-        FRONTEND_ORIGIN: 'https://custom.example.com',
-      }, 'test');
-      const customService = new AuthNotificationService(mailService, customConfigService);
+      const customConfigService = new MockConfigService(
+        {
+          NODE_ENV: 'test',
+          FRONTEND_ORIGIN: 'https://custom.example.com',
+        },
+        'test',
+      );
+      const customService = new AuthNotificationService(
+        mailService,
+        customConfigService,
+      );
 
-      await customService.sendVerificationOTP({ email: 'test@example.com', otp: '123456', type: 'sign-in' });
+      await customService.sendVerificationOTP({
+        email: 'test@example.com',
+        otp: '123456',
+        type: 'sign-in',
+      });
 
       const args = mailService.sendEmail.mock.calls[0][0];
       expect(args.html).toContain('https://custom.example.com');
@@ -51,7 +75,10 @@ describe('AuthNotificationService', () => {
 
   describe('sendMagicLink', () => {
     it('should send an email containing the magic link token', async () => {
-      await service.sendMagicLink({ email: 'test@example.com', token: 'my-token' });
+      await service.sendMagicLink({
+        email: 'test@example.com',
+        token: 'my-token',
+      });
 
       expect(mailService.sendEmail).toHaveBeenCalledOnce();
       const args = mailService.sendEmail.mock.calls[0][0];
@@ -60,7 +87,10 @@ describe('AuthNotificationService', () => {
     });
 
     it('should include type=magic-link in the link', async () => {
-      await service.sendMagicLink({ email: 'test@example.com', token: 'my-token' });
+      await service.sendMagicLink({
+        email: 'test@example.com',
+        token: 'my-token',
+      });
 
       const args = mailService.sendEmail.mock.calls[0][0];
       expect(args.html).toContain('magic-link');
@@ -97,7 +127,10 @@ describe('AuthNotificationService', () => {
 
   describe('authNotificationServiceFactory', () => {
     it('should return an AuthNotificationService instance', () => {
-      const instance = authNotificationServiceFactory(mailService, configService);
+      const instance = authNotificationServiceFactory(
+        mailService,
+        configService,
+      );
 
       expect(instance).toBeInstanceOf(AuthNotificationService);
     });

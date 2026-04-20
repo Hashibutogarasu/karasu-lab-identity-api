@@ -21,7 +21,10 @@ export class DeletableDiscoveryService implements OnApplicationBootstrap {
       if (!instance || !metatype) continue;
 
       const order = this.reflector.get<number>(DELETABLE_KEY, metatype);
-      if (order !== undefined && typeof (instance as IDeletable).deleteData === 'function') {
+      if (
+        order !== undefined &&
+        typeof (instance as IDeletable).deleteData === 'function'
+      ) {
         found.push({ order, service: instance as IDeletable });
       }
     }

@@ -16,7 +16,7 @@ export class GamesRepository extends AbstractRepository<GameEntity> {
    */
   async findByUserId(userId: string): Promise<GameEntity[]> {
     const snapshot = await this.collection.where('userId', '==', userId).get();
-    return snapshot.docs.map(doc => this.mapDoc(doc));
+    return snapshot.docs.map((doc) => this.mapDoc(doc));
   }
 
   /**
@@ -24,8 +24,13 @@ export class GamesRepository extends AbstractRepository<GameEntity> {
    * @param userId The ID of the user.
    * @param options Pagination options (limit, cursor).
    */
-  findByUserIdPaged(userId: string, options: { limit: number; cursor?: string }) {
-    const query = this.collection.where('userId', '==', userId).orderBy('createdAt', 'desc');
+  findByUserIdPaged(
+    userId: string,
+    options: { limit: number; cursor?: string },
+  ) {
+    const query = this.collection
+      .where('userId', '==', userId)
+      .orderBy('createdAt', 'desc');
     return this.paginate(query, options);
   }
 

@@ -1,5 +1,8 @@
 import { Module } from '@nestjs/common';
-import { AuthorController, AuthorLegacyController } from './author.controller.js';
+import {
+  AuthorController,
+  AuthorLegacyController,
+} from './author.controller.js';
 import { AuthorService } from './author.service.js';
 import { FirebaseAdminServiceProvider } from '../shared/firebase/firebase-admin.provider.js';
 import { ConfigServiceProvider } from '../shared/config/config.service.js';
@@ -9,7 +12,12 @@ import { RolesGuard } from '../shared/auth/roles.guard.js';
 @Module({
   imports: [SessionModule],
   controllers: [AuthorController, AuthorLegacyController],
-  providers: [AuthorService, FirebaseAdminServiceProvider, ConfigServiceProvider, RolesGuard],
+  providers: [
+    AuthorService,
+    FirebaseAdminServiceProvider,
+    ConfigServiceProvider,
+    RolesGuard,
+  ],
   exports: [AuthorService],
 })
 export class AuthorModule {}

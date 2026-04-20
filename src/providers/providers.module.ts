@@ -5,10 +5,7 @@ import { ConfigServiceProvider } from '../shared/config/config.service.js';
 
 @Module({
   controllers: [ProvidersController],
-  providers: [
-    ProvidersService,
-    ConfigServiceProvider,
-  ],
+  providers: [ProvidersService, ConfigServiceProvider],
   exports: [ProvidersService],
 })
 export class ProvidersModule {}

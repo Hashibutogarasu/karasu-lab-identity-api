@@ -18,5 +18,4 @@ onlyBuiltDependencies:
 
 pnpm:
   overrides:
-    "@better-auth/core": "1.5.5"
-
+    '@better-auth/core': '1.5.5'

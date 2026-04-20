@@ -1,9 +1,9 @@
-import { Test, TestingModule } from "@nestjs/testing";
-import { AppController } from "./app.controller.js";
-import { AppService } from "./app.service.js";
-import { beforeEach, describe, expect, it } from "vitest";
+import { Test, TestingModule } from '@nestjs/testing';
+import { AppController } from './app.controller.js';
+import { AppService } from './app.service.js';
+import { beforeEach, describe, expect, it } from 'vite-plus/test';
 
-describe("AppController", () => {
+describe('AppController', () => {
   let appController: AppController;
 
   beforeEach(async () => {
@@ -15,8 +15,8 @@ describe("AppController", () => {
     appController = app.get<AppController>(AppController);
   });
 
-  describe("should define", () => {
-    it("appController", () => {
+  describe('should define', () => {
+    it('appController', () => {
       expect(appController).toBeDefined();
     });
   });

@@ -1,4 +1,8 @@
-import { createParamDecorator, ExecutionContext, BadRequestException } from '@nestjs/common';
+import {
+  createParamDecorator,
+  ExecutionContext,
+  BadRequestException,
+} from '@nestjs/common';
 import { ApiQuery } from '@nestjs/swagger';
 import { z } from 'zod';
 import type { ZodSchema } from 'zod';
@@ -29,7 +33,9 @@ function resolveFieldMeta(fieldType: z.ZodTypeAny): {
   if (current instanceof z.ZodNumber) return { type: Number, required };
   if (current instanceof z.ZodBoolean) return { type: Boolean, required };
   if (current instanceof z.ZodEnum) {
-    const values = Object.values(current.enum as Record<string, string>).join(' | ');
+    const values = Object.values(current.enum as Record<string, string>).join(
+      ' | ',
+    );
     return { type: String, required, description: values };
   }
   return { type: String, required };
@@ -43,9 +49,16 @@ function applyApiQueryDecorators(
 ): void {
   if (!(schema instanceof z.ZodObject)) return;
 
-  for (const [name, fieldType] of Object.entries(schema.shape as Record<string, z.ZodTypeAny>)) {
+  for (const [name, fieldType] of Object.entries(
+    schema.shape as Record<string, z.ZodTypeAny>,
+  )) {
     const { type, required, description } = resolveFieldMeta(fieldType);
-    const decorator = ApiQuery({ name, required, type, ...(description ? { description } : {}) });
+    const decorator = ApiQuery({
+      name,
+      required,
+      type,
+      ...(description ? { description } : {}),
+    });
     (decorator as MethodDecorator)(target, propertyKey, descriptor);
   }
 }
@@ -77,13 +90,25 @@ const extractPagination = createParamDecorator(
  * async listBlogs(@Pagination(listBlogsQuerySchema) query: ListBlogsQueryDto) {}
  */
 export function Pagination(schema?: ZodSchema): ParameterDecorator {
-  return (target: object, propertyKey: string | symbol | undefined, parameterIndex: number) => {
+  return (
+    target: object,
+    propertyKey: string | symbol | undefined,
+    parameterIndex: number,
+  ) => {
     extractPagination(schema)(target, propertyKey, parameterIndex);
 
     if (propertyKey !== undefined) {
-      const descriptor = Object.getOwnPropertyDescriptor(target, propertyKey as string);
+      const descriptor = Object.getOwnPropertyDescriptor(
+        target,
+        propertyKey as string,
+      );
       if (descriptor) {
-        applyApiQueryDecorators(schema ?? basePaginationQuerySchema, target, propertyKey, descriptor);
+        applyApiQueryDecorators(
+          schema ?? basePaginationQuerySchema,
+          target,
+          propertyKey,
+          descriptor,
+        );
       }
     }
   };

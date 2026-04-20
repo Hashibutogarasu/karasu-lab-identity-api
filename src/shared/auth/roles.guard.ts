@@ -21,10 +21,10 @@ export class RolesGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const requiredRoles = this.reflector.getAllAndOverride<string[]>(ROLES_KEY, [
-      context.getHandler(),
-      context.getClass(),
-    ]);
+    const requiredRoles = this.reflector.getAllAndOverride<string[]>(
+      ROLES_KEY,
+      [context.getHandler(), context.getClass()],
+    );
 
     if (!requiredRoles || requiredRoles.length === 0) return true;
 
@@ -33,7 +33,8 @@ export class RolesGuard implements CanActivate {
 
     if (!session) throw ErrorCodes.AUTH.UNAUTHORIZED;
 
-    const userRole = (session.user as { role?: string | null }).role ?? UserRole.USER;
+    const userRole =
+      (session.user as { role?: string | null }).role ?? UserRole.USER;
     if (!requiredRoles.includes(userRole)) throw ErrorCodes.AUTH.FORBIDDEN;
 
     return true;

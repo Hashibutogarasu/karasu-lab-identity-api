@@ -1,9 +1,12 @@
-import { DynamicModule, Global, Module } from "@nestjs/common";
+import { DynamicModule, Global, Module } from '@nestjs/common';
 
-import { STORAGE_OPTIONS } from "./storage.constants.js";
-import { ObjectStorageService } from "./object-storage.service.js";
-import { IObjectStorageService } from "./object-storage.interface.js";
-import type { StorageAsyncOptions, StorageOptions } from "./storage-options.interface.js";
+import { STORAGE_OPTIONS } from './storage.constants.js';
+import { ObjectStorageService } from './object-storage.service.js';
+import { IObjectStorageService } from './object-storage.interface.js';
+import type {
+  StorageAsyncOptions,
+  StorageOptions,
+} from './storage-options.interface.js';
 
 @Global()
 @Module({})

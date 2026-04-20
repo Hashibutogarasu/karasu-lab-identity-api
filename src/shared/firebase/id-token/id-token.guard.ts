@@ -6,15 +6,13 @@ import { ErrorCodes } from '../../errors/error.codes.js';
 
 @Injectable()
 export class IdTokenGuard implements CanActivate {
-  constructor(
-    private readonly sessionService: SessionService,
-  ) {}
+  constructor(private readonly sessionService: SessionService) {}
 
-  async canActivate(
-    context: ExecutionContext,
-  ): Promise<boolean> {
+  async canActivate(context: ExecutionContext): Promise<boolean> {
     const req = context.switchToHttp().getRequest<Request>();
-    const session = await this.sessionService.requireSession(req) as unknown as { firebaseIdToken: string; };
+    const session = (await this.sessionService.requireSession(
+      req,
+    )) as unknown as { firebaseIdToken: string };
 
     if (!session || !session.firebaseIdToken) {
       throw ErrorCodes.AUTH.UNAUTHORIZED;

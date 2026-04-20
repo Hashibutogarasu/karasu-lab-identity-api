@@ -1,5 +1,5 @@
-import { Injectable } from "@nestjs/common";
-import { packageVersion } from "../version.js";
+import { Injectable } from '@nestjs/common';
+import { packageVersion } from '../version.js';
 
 @Injectable()
 export class VersionService {

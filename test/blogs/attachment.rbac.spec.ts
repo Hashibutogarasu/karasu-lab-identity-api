@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test';
 import type { ExecutionContext } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { UserRole } from '@hashibutogarasu/common';
@@ -12,12 +12,18 @@ type MockSession = {
   session: Record<string, unknown>;
 };
 
-function makeContext(handlerRoles?: string[], classRoles?: string[]): ExecutionContext {
+function makeContext(
+  handlerRoles?: string[],
+  classRoles?: string[],
+): ExecutionContext {
   return {
     getHandler: () => ({ roles: handlerRoles }),
     getClass: () => ({ roles: classRoles }),
     switchToHttp: () => ({
-      getRequest: () => ({} as ReturnType<ReturnType<ExecutionContext['switchToHttp']>['getRequest']>),
+      getRequest: () =>
+        ({}) as ReturnType<
+          ReturnType<ExecutionContext['switchToHttp']>['getRequest']
+        >,
     }),
   } as unknown as ExecutionContext;
 }
@@ -72,14 +78,18 @@ describe('AttachmentController — RolesGuard', () => {
 
   describe('POST /attachments/:blogId — requires ADMIN', () => {
     beforeEach(() => {
-      vi.spyOn(reflector, 'getAllAndOverride').mockReturnValue([UserRole.ADMIN]);
+      vi.spyOn(reflector, 'getAllAndOverride').mockReturnValue([
+        UserRole.ADMIN,
+      ]);
     });
 
     it('throws AUTH.UNAUTHORIZED when session is absent', async () => {
       vi.mocked(sessionService.optionalSession).mockResolvedValue(null);
 
       const ctx = makeContext([UserRole.ADMIN]);
-      await expect(guard.canActivate(ctx)).rejects.toThrow(ErrorCodes.AUTH.UNAUTHORIZED);
+      await expect(guard.canActivate(ctx)).rejects.toThrow(
+        ErrorCodes.AUTH.UNAUTHORIZED,
+      );
     });
 
     it('throws AUTH.FORBIDDEN when user role is "user"', async () => {
@@ -88,7 +98,9 @@ describe('AttachmentController — RolesGuard', () => {
       );
 
       const ctx = makeContext([UserRole.ADMIN]);
-      await expect(guard.canActivate(ctx)).rejects.toThrow(ErrorCodes.AUTH.FORBIDDEN);
+      await expect(guard.canActivate(ctx)).rejects.toThrow(
+        ErrorCodes.AUTH.FORBIDDEN,
+      );
     });
 
     it('throws AUTH.FORBIDDEN when user role is null (treated as user)', async () => {
@@ -97,7 +109,9 @@ describe('AttachmentController — RolesGuard', () => {
       );
 
       const ctx = makeContext([UserRole.ADMIN]);
-      await expect(guard.canActivate(ctx)).rejects.toThrow(ErrorCodes.AUTH.FORBIDDEN);
+      await expect(guard.canActivate(ctx)).rejects.toThrow(
+        ErrorCodes.AUTH.FORBIDDEN,
+      );
     });
 
     it('passes through when user role is "admin"', async () => {
@@ -114,14 +128,18 @@ describe('AttachmentController — RolesGuard', () => {
 
   describe('PUT /attachments/:id — requires ADMIN', () => {
     beforeEach(() => {
-      vi.spyOn(reflector, 'getAllAndOverride').mockReturnValue([UserRole.ADMIN]);
+      vi.spyOn(reflector, 'getAllAndOverride').mockReturnValue([
+        UserRole.ADMIN,
+      ]);
     });
 
     it('throws AUTH.UNAUTHORIZED when session is absent', async () => {
       vi.mocked(sessionService.optionalSession).mockResolvedValue(null);
 
       const ctx = makeContext([UserRole.ADMIN]);
-      await expect(guard.canActivate(ctx)).rejects.toThrow(ErrorCodes.AUTH.UNAUTHORIZED);
+      await expect(guard.canActivate(ctx)).rejects.toThrow(
+        ErrorCodes.AUTH.UNAUTHORIZED,
+      );
     });
 
     it('throws AUTH.FORBIDDEN when user role is "user"', async () => {
@@ -130,7 +148,9 @@ describe('AttachmentController — RolesGuard', () => {
       );
 
       const ctx = makeContext([UserRole.ADMIN]);
-      await expect(guard.canActivate(ctx)).rejects.toThrow(ErrorCodes.AUTH.FORBIDDEN);
+      await expect(guard.canActivate(ctx)).rejects.toThrow(
+        ErrorCodes.AUTH.FORBIDDEN,
+      );
     });
 
     it('passes through when user role is "admin"', async () => {
@@ -147,14 +167,18 @@ describe('AttachmentController — RolesGuard', () => {
 
   describe('DELETE /attachments/:id — requires ADMIN', () => {
     beforeEach(() => {
-      vi.spyOn(reflector, 'getAllAndOverride').mockReturnValue([UserRole.ADMIN]);
+      vi.spyOn(reflector, 'getAllAndOverride').mockReturnValue([
+        UserRole.ADMIN,
+      ]);
     });
 
     it('throws AUTH.UNAUTHORIZED when session is absent', async () => {
       vi.mocked(sessionService.optionalSession).mockResolvedValue(null);
 
       const ctx = makeContext([UserRole.ADMIN]);
-      await expect(guard.canActivate(ctx)).rejects.toThrow(ErrorCodes.AUTH.UNAUTHORIZED);
+      await expect(guard.canActivate(ctx)).rejects.toThrow(
+        ErrorCodes.AUTH.UNAUTHORIZED,
+      );
     });
 
     it('throws AUTH.FORBIDDEN when user role is "user"', async () => {
@@ -163,7 +187,9 @@ describe('AttachmentController — RolesGuard', () => {
       );
 
       const ctx = makeContext([UserRole.ADMIN]);
-      await expect(guard.canActivate(ctx)).rejects.toThrow(ErrorCodes.AUTH.FORBIDDEN);
+      await expect(guard.canActivate(ctx)).rejects.toThrow(
+        ErrorCodes.AUTH.FORBIDDEN,
+      );
     });
 
     it('passes through when user role is "admin"', async () => {
@@ -180,14 +206,18 @@ describe('AttachmentController — RolesGuard', () => {
 
   describe('POST /attachments/:blogId/upload-url — requires ADMIN', () => {
     beforeEach(() => {
-      vi.spyOn(reflector, 'getAllAndOverride').mockReturnValue([UserRole.ADMIN]);
+      vi.spyOn(reflector, 'getAllAndOverride').mockReturnValue([
+        UserRole.ADMIN,
+      ]);
     });
 
     it('throws AUTH.UNAUTHORIZED when session is absent', async () => {
       vi.mocked(sessionService.optionalSession).mockResolvedValue(null);
 
       const ctx = makeContext([UserRole.ADMIN]);
-      await expect(guard.canActivate(ctx)).rejects.toThrow(ErrorCodes.AUTH.UNAUTHORIZED);
+      await expect(guard.canActivate(ctx)).rejects.toThrow(
+        ErrorCodes.AUTH.UNAUTHORIZED,
+      );
     });
 
     it('throws AUTH.FORBIDDEN when user role is "user"', async () => {
@@ -196,7 +226,9 @@ describe('AttachmentController — RolesGuard', () => {
       );
 
       const ctx = makeContext([UserRole.ADMIN]);
-      await expect(guard.canActivate(ctx)).rejects.toThrow(ErrorCodes.AUTH.FORBIDDEN);
+      await expect(guard.canActivate(ctx)).rejects.toThrow(
+        ErrorCodes.AUTH.FORBIDDEN,
+      );
     });
 
     it('passes through when user role is "admin"', async () => {
@@ -213,14 +245,18 @@ describe('AttachmentController — RolesGuard', () => {
 
   describe('POST /attachments/:id/sync — requires ADMIN', () => {
     beforeEach(() => {
-      vi.spyOn(reflector, 'getAllAndOverride').mockReturnValue([UserRole.ADMIN]);
+      vi.spyOn(reflector, 'getAllAndOverride').mockReturnValue([
+        UserRole.ADMIN,
+      ]);
     });
 
     it('throws AUTH.UNAUTHORIZED when session is absent', async () => {
       vi.mocked(sessionService.optionalSession).mockResolvedValue(null);
 
       const ctx = makeContext([UserRole.ADMIN]);
-      await expect(guard.canActivate(ctx)).rejects.toThrow(ErrorCodes.AUTH.UNAUTHORIZED);
+      await expect(guard.canActivate(ctx)).rejects.toThrow(
+        ErrorCodes.AUTH.UNAUTHORIZED,
+      );
     });
 
     it('throws AUTH.FORBIDDEN when user role is "user"', async () => {
@@ -229,7 +265,9 @@ describe('AttachmentController — RolesGuard', () => {
       );
 
       const ctx = makeContext([UserRole.ADMIN]);
-      await expect(guard.canActivate(ctx)).rejects.toThrow(ErrorCodes.AUTH.FORBIDDEN);
+      await expect(guard.canActivate(ctx)).rejects.toThrow(
+        ErrorCodes.AUTH.FORBIDDEN,
+      );
     });
 
     it('passes through when user role is "admin"', async () => {

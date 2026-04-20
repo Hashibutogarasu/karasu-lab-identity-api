@@ -53,12 +53,15 @@ export class UserController {
   @Put('profile')
   async updateProfile(
     @Req() req: Request,
-    @Body(new ZodValidationPipe(updateUserProfileSchema)) dto: UpdateUserProfileDto,
+    @Body(new ZodValidationPipe(updateUserProfileSchema))
+    dto: UpdateUserProfileDto,
   ) {
     return this.userService.updateProfile(req, dto);
   }
 
-  @ApiOperation({ summary: 'Delete all custom data for the authenticated user' })
+  @ApiOperation({
+    summary: 'Delete all custom data for the authenticated user',
+  })
   @ApiResponse({ status: 204, description: 'User data deleted successfully.' })
   @HttpCode(HttpStatus.NO_CONTENT)
   @Delete()

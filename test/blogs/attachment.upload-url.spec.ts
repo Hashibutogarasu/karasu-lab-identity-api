@@ -1,7 +1,10 @@
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vite-plus/test';
 import { NullObjectStorageService } from '../mocks/null-object-storage.service.js';
 import { BlogService } from '../../src/blogs/blog.service.js';
-import { AttachmentService, UPLOAD_PRESIGNED_URL_EXPIRES_IN } from '../../src/attachments/attachment.service.js';
+import {
+  AttachmentService,
+  UPLOAD_PRESIGNED_URL_EXPIRES_IN,
+} from '../../src/attachments/attachment.service.js';
 import { IFirebaseAdminProvider } from '../../src/shared/firebase/firebase-admin.provider.interface.js';
 import { MockFirebaseAdminProvider } from '../mocks/firebase-admin.provider.mock.js';
 import { ErrorDefinition } from '../../src/shared/errors/error.codes.js';
@@ -49,15 +52,21 @@ describe('BlogService — presigned upload URL and sync', () => {
         status: 'published',
       });
 
-      const result = await attachmentService.issueAttachmentUploadUrl(blog.id, authorId, {
-        contentType: 'image/png',
-      });
+      const result = await attachmentService.issueAttachmentUploadUrl(
+        blog.id,
+        authorId,
+        {
+          contentType: 'image/png',
+        },
+      );
 
       expect(result.uploadUrl).toBeDefined();
       expect(typeof result.uploadUrl).toBe('string');
       expect(result.attachmentId).toBeDefined();
       expect(typeof result.attachmentId).toBe('string');
-      expect(result.key).toBe(`blogs/${blog.id}/attachments/${result.attachmentId}`);
+      expect(result.key).toBe(
+        `blogs/${blog.id}/attachments/${result.attachmentId}`,
+      );
       expect(result.expiresIn).toBe(UPLOAD_PRESIGNED_URL_EXPIRES_IN);
     });
 
@@ -68,11 +77,15 @@ describe('BlogService — presigned upload URL and sync', () => {
         status: 'published',
       });
 
-      const { uploadUrl, key } = await attachmentService.issueAttachmentUploadUrl(blog.id, authorId, {
-        contentType: 'image/png',
-      });
+      const { uploadUrl, key } =
+        await attachmentService.issueAttachmentUploadUrl(blog.id, authorId, {
+          contentType: 'image/png',
+        });
 
-      await storage.simulateUploadViaPresignedUrl(uploadUrl, Buffer.from('fake png data'));
+      await storage.simulateUploadViaPresignedUrl(
+        uploadUrl,
+        Buffer.from('fake png data'),
+      );
 
       const meta = await storage.getObjectMetadata(key);
       expect(meta).not.toBeNull();
@@ -81,9 +94,13 @@ describe('BlogService — presigned upload URL and sync', () => {
 
     it('throws BLOG.NOT_FOUND when the blog does not exist', async () => {
       await expect(
-        attachmentService.issueAttachmentUploadUrl('nonexistent-blog', authorId, {
-          contentType: 'image/png',
-        }),
+        attachmentService.issueAttachmentUploadUrl(
+          'nonexistent-blog',
+          authorId,
+          {
+            contentType: 'image/png',
+          },
+        ),
       ).rejects.toBeInstanceOf(ErrorDefinition);
     });
 
@@ -108,9 +125,13 @@ describe('BlogService — presigned upload URL and sync', () => {
         status: 'published',
       });
 
-      const result = await attachmentService.issueAttachmentUploadUrl(blog.id, authorId, {
-        contentType: 'image/jpeg',
-      });
+      const result = await attachmentService.issueAttachmentUploadUrl(
+        blog.id,
+        authorId,
+        {
+          contentType: 'image/jpeg',
+        },
+      );
 
       const attachments = await attachmentService.listAttachments(authorId);
       const ids = attachments.map((a) => a.id);
@@ -126,13 +147,15 @@ describe('BlogService — presigned upload URL and sync', () => {
         status: 'published',
       });
 
-      const { uploadUrl, attachmentId, key } = await attachmentService.issueAttachmentUploadUrl(
-        blog.id,
-        authorId,
-        { contentType: 'image/png' },
-      );
+      const { uploadUrl, attachmentId, key } =
+        await attachmentService.issueAttachmentUploadUrl(blog.id, authorId, {
+          contentType: 'image/png',
+        });
 
-      await storage.simulateUploadViaPresignedUrl(uploadUrl, Buffer.from('fake image data'));
+      await storage.simulateUploadViaPresignedUrl(
+        uploadUrl,
+        Buffer.from('fake image data'),
+      );
 
       const attachment = await attachmentService.syncAttachmentFromStorage(
         attachmentId,
@@ -156,13 +179,15 @@ describe('BlogService — presigned upload URL and sync', () => {
         status: 'published',
       });
 
-      const { uploadUrl, attachmentId } = await attachmentService.issueAttachmentUploadUrl(
-        blog.id,
-        authorId,
-        { contentType: 'image/webp' },
-      );
+      const { uploadUrl, attachmentId } =
+        await attachmentService.issueAttachmentUploadUrl(blog.id, authorId, {
+          contentType: 'image/webp',
+        });
 
-      await storage.simulateUploadViaPresignedUrl(uploadUrl, Buffer.from('data'));
+      await storage.simulateUploadViaPresignedUrl(
+        uploadUrl,
+        Buffer.from('data'),
+      );
 
       const attachment = await attachmentService.syncAttachmentFromStorage(
         attachmentId,
@@ -181,22 +206,36 @@ describe('BlogService — presigned upload URL and sync', () => {
         status: 'published',
       });
 
-      const { attachmentId } = await attachmentService.issueAttachmentUploadUrl(blog.id, authorId, {
-        contentType: 'image/png',
-      });
+      const { attachmentId } = await attachmentService.issueAttachmentUploadUrl(
+        blog.id,
+        authorId,
+        {
+          contentType: 'image/png',
+        },
+      );
 
       await expect(
-        attachmentService.syncAttachmentFromStorage(attachmentId, blog.id, authorId, {
-          blogId: blog.id,
-        }),
+        attachmentService.syncAttachmentFromStorage(
+          attachmentId,
+          blog.id,
+          authorId,
+          {
+            blogId: blog.id,
+          },
+        ),
       ).rejects.toBeInstanceOf(ErrorDefinition);
     });
 
     it('throws BLOG.NOT_FOUND when the blog does not exist', async () => {
       await expect(
-        attachmentService.syncAttachmentFromStorage('any-id', 'nonexistent-blog', authorId, {
-          blogId: 'nonexistent-blog',
-        }),
+        attachmentService.syncAttachmentFromStorage(
+          'any-id',
+          'nonexistent-blog',
+          authorId,
+          {
+            blogId: 'nonexistent-blog',
+          },
+        ),
       ).rejects.toBeInstanceOf(ErrorDefinition);
     });
 
@@ -208,9 +247,14 @@ describe('BlogService — presigned upload URL and sync', () => {
       });
 
       await expect(
-        attachmentService.syncAttachmentFromStorage('any-id', blog.id, authorId, {
-          blogId: blog.id,
-        }),
+        attachmentService.syncAttachmentFromStorage(
+          'any-id',
+          blog.id,
+          authorId,
+          {
+            blogId: blog.id,
+          },
+        ),
       ).rejects.toBeInstanceOf(ErrorDefinition);
     });
   });

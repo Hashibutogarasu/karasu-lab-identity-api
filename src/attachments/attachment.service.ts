@@ -5,7 +5,10 @@ import { IFirebaseAdminProvider } from '../shared/firebase/firebase-admin.provid
 import { ErrorCodes } from '../shared/errors/error.codes.js';
 import { Deletable } from '../shared/deletable/deletable.decorator.js';
 import type { IDeletable } from '../shared/deletable/deletable.interface.js';
-import { IObjectStorageService, type IObjectStorage } from '../storage/object-storage.interface.js';
+import {
+  IObjectStorageService,
+  type IObjectStorage,
+} from '../storage/object-storage.interface.js';
 import { AbstractRepository } from '../shared/repository/abstract.repository.js';
 import type { SyncAttachmentDto } from '../blogs/dto/sync-attachment.dto.js';
 import type { CreateAttachmentDto } from '../blogs/dto/create-attachment.dto.js';
@@ -44,10 +47,13 @@ export interface AttachmentUploadUrlResult {
 
 @Deletable(2)
 @Injectable()
-export class AttachmentService extends AbstractRepository<AttachmentData> implements IDeletable {
+export class AttachmentService
+  extends AbstractRepository<AttachmentData>
+  implements IDeletable
+{
   constructor(
     @Inject(IObjectStorageService) private readonly storage: IObjectStorage,
-    firebase: IFirebaseAdminProvider
+    firebase: IFirebaseAdminProvider,
   ) {
     super(firebase, 'attachments');
   }
@@ -73,12 +79,13 @@ export class AttachmentService extends AbstractRepository<AttachmentData> implem
     blogId: string,
     authorId: string,
     file: AttachmentFile,
-    dto: CreateAttachmentDto
+    dto: CreateAttachmentDto,
   ): Promise<AttachmentData> {
     const blogDoc = await this.blogsCol.doc(blogId).get();
     if (!blogDoc.exists) throw ErrorCodes.BLOG.NOT_FOUND;
     if (blogDoc.data()?.['status'] === 'locked') throw ErrorCodes.BLOG.LOCKED;
-    if (file.size > MAX_ATTACHMENT_SIZE) throw ErrorCodes.BLOG.ATTACHMENT_TOO_LARGE;
+    if (file.size > MAX_ATTACHMENT_SIZE)
+      throw ErrorCodes.BLOG.ATTACHMENT_TOO_LARGE;
 
     const attachmentId = cuid();
     const key = `blogs/${blogId}/attachments/${attachmentId}`;
@@ -102,7 +109,9 @@ export class AttachmentService extends AbstractRepository<AttachmentData> implem
     return this.mapDoc(doc);
   }
 
-  async getAttachment(id: string): Promise<{ url: string; metadata: AttachmentData }> {
+  async getAttachment(
+    id: string,
+  ): Promise<{ url: string; metadata: AttachmentData }> {
     const doc = await this.collection.doc(id).get();
     if (!doc.exists) throw ErrorCodes.BLOG.ATTACHMENT_NOT_FOUND;
 
@@ -115,7 +124,7 @@ export class AttachmentService extends AbstractRepository<AttachmentData> implem
     id: string,
     authorId: string,
     file: AttachmentFile,
-    dto: UpdateAttachmentDto
+    dto: UpdateAttachmentDto,
   ): Promise<AttachmentData> {
     const doc = await this.collection.doc(id).get();
     if (!doc.exists) throw ErrorCodes.BLOG.ATTACHMENT_NOT_FOUND;
@@ -123,12 +132,19 @@ export class AttachmentService extends AbstractRepository<AttachmentData> implem
     const metadata = doc.data();
     if (metadata?.['authorId'] !== authorId) throw ErrorCodes.BLOG.FORBIDDEN;
 
-    const blogDoc = await this.blogsCol.doc(metadata?.['blogId'] as string).get();
+    const blogDoc = await this.blogsCol
+      .doc(metadata?.['blogId'] as string)
+      .get();
     if (blogDoc.data()?.['status'] === 'locked') throw ErrorCodes.BLOG.LOCKED;
 
-    if (file.size > MAX_ATTACHMENT_SIZE) throw ErrorCodes.BLOG.ATTACHMENT_TOO_LARGE;
+    if (file.size > MAX_ATTACHMENT_SIZE)
+      throw ErrorCodes.BLOG.ATTACHMENT_TOO_LARGE;
 
-    await this.storage.putObject(metadata?.['key'] as string, file.buffer, file.mimetype);
+    await this.storage.putObject(
+      metadata?.['key'] as string,
+      file.buffer,
+      file.mimetype,
+    );
 
     const updateData: Record<string, unknown> = {
       contentType: file.mimetype,
@@ -149,7 +165,9 @@ export class AttachmentService extends AbstractRepository<AttachmentData> implem
     const metadata = doc.data();
     if (metadata?.['authorId'] !== authorId) throw ErrorCodes.BLOG.FORBIDDEN;
 
-    const blogDoc = await this.blogsCol.doc(metadata?.['blogId'] as string).get();
+    const blogDoc = await this.blogsCol
+      .doc(metadata?.['blogId'] as string)
+      .get();
     if (blogDoc.data()?.['status'] === 'locked') throw ErrorCodes.BLOG.LOCKED;
 
     await this.storage.deleteObject(metadata?.['key'] as string);
@@ -171,13 +189,14 @@ export class AttachmentService extends AbstractRepository<AttachmentData> implem
   ): Promise<AttachmentUploadUrlResult> {
     const blogDoc = await this.blogsCol.doc(blogId).get();
     if (!blogDoc.exists) throw ErrorCodes.BLOG.NOT_FOUND;
-    
+
     const blogData = blogDoc.data();
     if (blogData?.authorId !== authorId) {
       throw ErrorCodes.BLOG.FORBIDDEN;
     }
 
-    if ((blogData?.status as BlogStatus) === 'locked') throw ErrorCodes.BLOG.LOCKED;
+    if ((blogData?.status as BlogStatus) === 'locked')
+      throw ErrorCodes.BLOG.LOCKED;
 
     const attachmentId = cuid();
     const key = `blogs/${blogId}/attachments/${attachmentId}`;
@@ -188,7 +207,12 @@ export class AttachmentService extends AbstractRepository<AttachmentData> implem
       UPLOAD_PRESIGNED_URL_EXPIRES_IN,
     );
 
-    return { uploadUrl, attachmentId, key, expiresIn: UPLOAD_PRESIGNED_URL_EXPIRES_IN };
+    return {
+      uploadUrl,
+      attachmentId,
+      key,
+      expiresIn: UPLOAD_PRESIGNED_URL_EXPIRES_IN,
+    };
   }
 
   /**
@@ -208,12 +232,12 @@ export class AttachmentService extends AbstractRepository<AttachmentData> implem
   ): Promise<AttachmentData> {
     const blogDoc = await this.blogsCol.doc(blogId).get();
     if (!blogDoc.exists) throw ErrorCodes.BLOG.NOT_FOUND;
-    
+
     const blogData = blogDoc.data();
     if (blogData?.authorId !== authorId) {
       throw ErrorCodes.BLOG.FORBIDDEN;
     }
-    
+
     if (blogData?.['status'] === 'locked') throw ErrorCodes.BLOG.LOCKED;
 
     const key = `blogs/${blogId}/attachments/${attachmentId}`;
@@ -238,7 +262,9 @@ export class AttachmentService extends AbstractRepository<AttachmentData> implem
   }
 
   async deleteData(userId: string): Promise<void> {
-    const snapshot = await this.collection.where('authorId', '==', userId).get();
+    const snapshot = await this.collection
+      .where('authorId', '==', userId)
+      .get();
     for (const doc of snapshot.docs) {
       const metadata = doc.data();
       if (metadata?.['key']) {

@@ -98,7 +98,11 @@ export class AttachmentController {
     body: CreateAttachmentUploadUrlDto,
   ) {
     const { user } = await this.sessionService.requireSession(req);
-    return this.attachmentService.issueAttachmentUploadUrl(blogId, user.id, body);
+    return this.attachmentService.issueAttachmentUploadUrl(
+      blogId,
+      user.id,
+      body,
+    );
   }
 
   /**

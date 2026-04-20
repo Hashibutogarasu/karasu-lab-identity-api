@@ -1,4 +1,4 @@
-import { describe, expect, it, vi, beforeEach } from 'vitest';
+import { describe, expect, it, vi, beforeEach } from 'vite-plus/test';
 
 const mockStorageConfig: Record<string, string | undefined> = {
   R2_ENDPOINT: 'https://fake.r2.endpoint',

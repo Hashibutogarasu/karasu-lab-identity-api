@@ -1,4 +1,4 @@
-import { describe, expect, it, beforeEach, vi, Mock } from 'vitest';
+import { describe, expect, it, beforeEach, vi, Mock } from 'vite-plus/test';
 import { UserService } from './user.service.js';
 import type { SessionService } from '../shared/auth/session.service.js';
 import type { DeletableDiscoveryService } from '../shared/deletable/deletable-discovery.service.js';
@@ -46,7 +46,11 @@ describe('UserService', () => {
       const mockServiceB: IDeletable = { deleteData: deleteDataB };
       const mockServiceC: IDeletable = { deleteData: deleteDataC };
 
-      deletableDiscovery.getDeletableServices.mockReturnValue([mockServiceA, mockServiceB, mockServiceC]);
+      deletableDiscovery.getDeletableServices.mockReturnValue([
+        mockServiceA,
+        mockServiceB,
+        mockServiceC,
+      ]);
 
       await service.deleteUserData(userId);
 
@@ -58,16 +62,29 @@ describe('UserService', () => {
     it('executes deletable services in order (sequential)', async () => {
       const callOrder: number[] = [];
       const mockServiceA: IDeletable = {
-        deleteData: vi.fn().mockImplementation(() => { callOrder.push(1); return Promise.resolve(); }),
+        deleteData: vi.fn().mockImplementation(() => {
+          callOrder.push(1);
+          return Promise.resolve();
+        }),
       };
       const mockServiceB: IDeletable = {
-        deleteData: vi.fn().mockImplementation(() => { callOrder.push(2); return Promise.resolve(); }),
+        deleteData: vi.fn().mockImplementation(() => {
+          callOrder.push(2);
+          return Promise.resolve();
+        }),
       };
       const mockServiceC: IDeletable = {
-        deleteData: vi.fn().mockImplementation(() => { callOrder.push(3); return Promise.resolve(); }),
+        deleteData: vi.fn().mockImplementation(() => {
+          callOrder.push(3);
+          return Promise.resolve();
+        }),
       };
 
-      deletableDiscovery.getDeletableServices.mockReturnValue([mockServiceA, mockServiceB, mockServiceC]);
+      deletableDiscovery.getDeletableServices.mockReturnValue([
+        mockServiceA,
+        mockServiceB,
+        mockServiceC,
+      ]);
 
       await service.deleteUserData('user-456');
 
@@ -77,10 +94,15 @@ describe('UserService', () => {
     it('passes only the session user.id to deleteUserData, not an arbitrary id', async () => {
       const req = {} as never;
       const sessionUser = { id: 'session-user-id', name: 'Test' };
-      sessionService.requireSession.mockResolvedValue({ user: sessionUser, session: {} });
+      sessionService.requireSession.mockResolvedValue({
+        user: sessionUser,
+        session: {},
+      });
       deletableDiscovery.getDeletableServices.mockReturnValue([]);
 
-      const { user } = (await sessionService.requireSession(req)) as { user: { id: string } };
+      const { user } = (await sessionService.requireSession(req)) as {
+        user: { id: string };
+      };
       await service.deleteUserData(user.id);
 
       expect(deletableDiscovery.getDeletableServices).toHaveBeenCalled();
@@ -90,7 +112,11 @@ describe('UserService', () => {
   describe('getProfile', () => {
     it('returns the session user', async () => {
       const req = {} as never;
-      const sessionUser = { id: 'u1', name: 'Alice', email: 'alice@example.com' };
+      const sessionUser = {
+        id: 'u1',
+        name: 'Alice',
+        email: 'alice@example.com',
+      };
       sessionService.requireSession.mockResolvedValue({ user: sessionUser });
 
       const result = await service.getProfile(req);
@@ -101,9 +127,13 @@ describe('UserService', () => {
 
     it('throws UNAUTHORIZED when no session exists', async () => {
       const req = {} as never;
-      sessionService.requireSession.mockRejectedValue(ErrorCodes.AUTH.UNAUTHORIZED);
+      sessionService.requireSession.mockRejectedValue(
+        ErrorCodes.AUTH.UNAUTHORIZED,
+      );
 
-      await expect(service.getProfile(req)).rejects.toThrow(ErrorCodes.AUTH.UNAUTHORIZED);
+      await expect(service.getProfile(req)).rejects.toThrow(
+        ErrorCodes.AUTH.UNAUTHORIZED,
+      );
     });
   });
 });

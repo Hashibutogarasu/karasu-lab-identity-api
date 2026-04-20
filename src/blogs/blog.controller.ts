@@ -54,9 +54,7 @@ export class BlogController {
   })
   @Get()
   @AllowAnonymous()
-  async listBlogs(
-    @Pagination(listBlogsQuerySchema) query: ListBlogsQueryDto,
-  ) {
+  async listBlogs(@Pagination(listBlogsQuerySchema) query: ListBlogsQueryDto) {
     return this.blogService.listPublishedBlogs(query);
   }
 

@@ -8,28 +8,28 @@ import { initializeApp, getApps } from 'firebase-admin/app';
  * Configures connection to Firestore Emulator
  */
 export class MockFirebaseAdminProvider extends IFirebaseAdminProvider {
-	private _firestore: Firestore;
+  private _firestore: Firestore;
 
-	constructor() {
-		super(Environment.TEST);
-	}
+  constructor() {
+    super(Environment.TEST);
+  }
 
-	onModuleInit() {
-		// Port 8080 is default for Firestore emulator.
-		if (!process.env.FIRESTORE_EMULATOR_HOST) {
-			process.env.FIRESTORE_EMULATOR_HOST = '127.0.0.1:8080';
-		}
+  onModuleInit() {
+    // Port 8080 is default for Firestore emulator.
+    if (!process.env.FIRESTORE_EMULATOR_HOST) {
+      process.env.FIRESTORE_EMULATOR_HOST = '127.0.0.1:8080';
+    }
 
-		if (!getApps().length) {
-			initializeApp({
-				projectId: IFirebaseAdminProvider.DUMMY_PROJECT_ID,
-			});
-		}
+    if (!getApps().length) {
+      initializeApp({
+        projectId: IFirebaseAdminProvider.DUMMY_PROJECT_ID,
+      });
+    }
 
-		this._firestore = getFirestore();
-	}
+    this._firestore = getFirestore();
+  }
 
-	get db(): Firestore {
-		return this._firestore;
-	}
+  get db(): Firestore {
+    return this._firestore;
+  }
 }

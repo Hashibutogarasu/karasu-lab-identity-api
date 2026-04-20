@@ -1,9 +1,9 @@
-import { Test, TestingModule } from "@nestjs/testing";
-import { beforeEach, describe, expect, it } from "vitest";
-import { VersionService } from "./version.service.js";
-import { packageVersion } from "../version.js";
+import { Test, TestingModule } from '@nestjs/testing';
+import { beforeEach, describe, expect, it } from 'vite-plus/test';
+import { VersionService } from './version.service.js';
+import { packageVersion } from '../version.js';
 
-describe("VersionService", () => {
+describe('VersionService', () => {
   let service: VersionService;
 
   beforeEach(async () => {
@@ -14,11 +14,11 @@ describe("VersionService", () => {
     service = module.get<VersionService>(VersionService);
   });
 
-  it("should be defined", () => {
+  it('should be defined', () => {
     expect(service).toBeDefined();
   });
 
-  it("should return the package version", () => {
+  it('should return the package version', () => {
     expect(service.getVersion()).toBe(packageVersion);
   });
 });

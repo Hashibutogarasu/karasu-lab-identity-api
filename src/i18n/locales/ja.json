@@ -1,41 +1,41 @@
 {
-	"auth": {
-		"unauthorized": "認証されていません",
-		"forbidden": "この操作を行う権限がありません",
-		"password_not_set": "パスワードが設定されていません",
-		"password_already_set": "パスワードは既に設定されています",
-		"password_invalid": "パスワードが違います",
-		"not_found": "リソースが見つかりません"
-	},
-	"oauth": {
-		"application_not_found": "OAuthアプリケーションが見つかりません"
-	},
-	"firebase": {
-		"sync_failed": "Firebaseへのユーザー同期に失敗しました",
-		"not_initialized": "Firebase認証が初期化されていません"
-	},
-	"blog": {
-		"not_found": "ブログ記事が見つかりません",
-		"attachment_not_found": "添付ファイルが見つかりません",
-		"forbidden": "この操作を行う権限がありません",
-		"locked": "このブログ記事はロックされており、変更できません",
-		"mine_requires_auth": "自分の記事一覧を取得するには認証が必要です",
-		"attachment_too_large": "添付ファイルが最大許容サイズを超えています",
-		"not_implemented": "この機能は実装されていません"
-	},
-	"system": {
-		"resend_api_key_required": "本番環境ではRESEND_API_KEYが必要です。",
-		"auth_initialization_failed": "認証の初期化に失敗しました。",
-		"openapi_uninitialized": "OpenAPIドキュメントが初期化されていません。先にsetup()を呼び出してください。",
-		"openapi_unauthorized": "ドキュメントを表示するには認証が必要です。"
-	},
-	"stonemanage": {
-		"game_not_found": "ゲームが見つかりません",
-		"stone_not_found": "ゲーム内通貨データが見つかりません",
-		"log_not_found": "石の記録が見つかりません",
-		"forbidden": "この操作を行う権限がありません"
-	},
-	"user": {
-		"not_found": "ユーザーが見つかりません"
-	}
+  "auth": {
+    "unauthorized": "認証されていません",
+    "forbidden": "この操作を行う権限がありません",
+    "password_not_set": "パスワードが設定されていません",
+    "password_already_set": "パスワードは既に設定されています",
+    "password_invalid": "パスワードが違います",
+    "not_found": "リソースが見つかりません"
+  },
+  "oauth": {
+    "application_not_found": "OAuthアプリケーションが見つかりません"
+  },
+  "firebase": {
+    "sync_failed": "Firebaseへのユーザー同期に失敗しました",
+    "not_initialized": "Firebase認証が初期化されていません"
+  },
+  "blog": {
+    "not_found": "ブログ記事が見つかりません",
+    "attachment_not_found": "添付ファイルが見つかりません",
+    "forbidden": "この操作を行う権限がありません",
+    "locked": "このブログ記事はロックされており、変更できません",
+    "mine_requires_auth": "自分の記事一覧を取得するには認証が必要です",
+    "attachment_too_large": "添付ファイルが最大許容サイズを超えています",
+    "not_implemented": "この機能は実装されていません"
+  },
+  "system": {
+    "resend_api_key_required": "本番環境ではRESEND_API_KEYが必要です。",
+    "auth_initialization_failed": "認証の初期化に失敗しました。",
+    "openapi_uninitialized": "OpenAPIドキュメントが初期化されていません。先にsetup()を呼び出してください。",
+    "openapi_unauthorized": "ドキュメントを表示するには認証が必要です。"
+  },
+  "stonemanage": {
+    "game_not_found": "ゲームが見つかりません",
+    "stone_not_found": "ゲーム内通貨データが見つかりません",
+    "log_not_found": "石の記録が見つかりません",
+    "forbidden": "この操作を行う権限がありません"
+  },
+  "user": {
+    "not_found": "ユーザーが見つかりません"
+  }
 }

@@ -1,4 +1,4 @@
-import { describe, it, expect, afterEach } from 'vitest';
+import { describe, it, expect, afterEach } from 'vite-plus/test';
 import { MockConfigService } from '../../../../test/mocks/config.service.mock.js';
 import { authConfigFactory } from './auth-config.service.js';
 
@@ -13,11 +13,14 @@ describe('AuthConfigService', () => {
     it('should return ProductionAuthConfig for production environment', () => {
       process.env.NODE_ENV = 'production';
 
-      const configService = new MockConfigService({
-        NODE_ENV: 'production',
-        BETTER_AUTH_URL: 'https://api.karasu256.com',
-        BETTER_AUTH_SECRET: 'prod-secret',
-      }, 'production');
+      const configService = new MockConfigService(
+        {
+          NODE_ENV: 'production',
+          BETTER_AUTH_URL: 'https://api.karasu256.com',
+          BETTER_AUTH_SECRET: 'prod-secret',
+        },
+        'production',
+      );
 
       const config = authConfigFactory(configService);
       const origins = config.getTrustedOrigins();
@@ -35,11 +38,14 @@ describe('AuthConfigService', () => {
     it('should return DevelopmentAuthConfig for development environment', () => {
       process.env.NODE_ENV = 'development';
 
-      const configService = new MockConfigService({
-        NODE_ENV: 'development',
-        BETTER_AUTH_URL: 'http://localhost:3001',
-        BETTER_AUTH_SECRET: 'dev-secret',
-      }, 'development');
+      const configService = new MockConfigService(
+        {
+          NODE_ENV: 'development',
+          BETTER_AUTH_URL: 'http://localhost:3001',
+          BETTER_AUTH_SECRET: 'dev-secret',
+        },
+        'development',
+      );
 
       const config = authConfigFactory(configService);
       const origins = config.getTrustedOrigins();
@@ -51,10 +57,13 @@ describe('AuthConfigService', () => {
     it('should default to DevelopmentAuthConfig when NODE_ENV is undefined', () => {
       delete process.env.NODE_ENV;
 
-      const configService = new MockConfigService({
-        BETTER_AUTH_URL: 'http://localhost:3001',
-        BETTER_AUTH_SECRET: 'dev-secret',
-      }, 'development');
+      const configService = new MockConfigService(
+        {
+          BETTER_AUTH_URL: 'http://localhost:3001',
+          BETTER_AUTH_SECRET: 'dev-secret',
+        },
+        'development',
+      );
 
       const config = authConfigFactory(configService);
       const origins = config.getTrustedOrigins();
@@ -67,12 +76,15 @@ describe('AuthConfigService', () => {
     it('should merge environment variable origins with defaults', () => {
       process.env.NODE_ENV = 'development';
 
-      const configService = new MockConfigService({
-        NODE_ENV: 'development',
-        TRUSTED_ORIGINS: 'https://custom1.com,https://custom2.com',
-        BETTER_AUTH_URL: 'http://localhost:3001',
-        BETTER_AUTH_SECRET: 'dev-secret',
-      }, 'development');
+      const configService = new MockConfigService(
+        {
+          NODE_ENV: 'development',
+          TRUSTED_ORIGINS: 'https://custom1.com,https://custom2.com',
+          BETTER_AUTH_URL: 'http://localhost:3001',
+          BETTER_AUTH_SECRET: 'dev-secret',
+        },
+        'development',
+      );
 
       const config = authConfigFactory(configService);
       const origins = config.getTrustedOrigins();
@@ -85,31 +97,41 @@ describe('AuthConfigService', () => {
     it('should remove duplicate origins', () => {
       process.env.NODE_ENV = 'development';
 
-      const configService = new MockConfigService({
-        NODE_ENV: 'development',
-        TRUSTED_ORIGINS: 'http://localhost:3000,https://karasu256.com',
-        BETTER_AUTH_URL: 'http://localhost:3001',
-        BETTER_AUTH_SECRET: 'dev-secret',
-      }, 'development');
+      const configService = new MockConfigService(
+        {
+          NODE_ENV: 'development',
+          TRUSTED_ORIGINS: 'http://localhost:3000,https://karasu256.com',
+          BETTER_AUTH_URL: 'http://localhost:3001',
+          BETTER_AUTH_SECRET: 'dev-secret',
+        },
+        'development',
+      );
 
       const config = authConfigFactory(configService);
       const origins = config.getTrustedOrigins();
 
       const uniqueOrigins = Array.from(new Set(origins));
       expect(origins.length).toBe(uniqueOrigins.length);
-      expect(origins.filter((o) => o === 'http://localhost:3000')).toHaveLength(1);
-      expect(origins.filter((o) => o === 'https://karasu256.com')).toHaveLength(1);
+      expect(origins.filter((o) => o === 'http://localhost:3000')).toHaveLength(
+        1,
+      );
+      expect(origins.filter((o) => o === 'https://karasu256.com')).toHaveLength(
+        1,
+      );
     });
 
     it('should handle empty TRUSTED_ORIGINS environment variable', () => {
       process.env.NODE_ENV = 'production';
 
-      const configService = new MockConfigService({
-        NODE_ENV: 'production',
-        TRUSTED_ORIGINS: '',
-        BETTER_AUTH_URL: 'https://api.karasu256.com',
-        BETTER_AUTH_SECRET: 'prod-secret',
-      }, 'production');
+      const configService = new MockConfigService(
+        {
+          NODE_ENV: 'production',
+          TRUSTED_ORIGINS: '',
+          BETTER_AUTH_URL: 'https://api.karasu256.com',
+          BETTER_AUTH_SECRET: 'prod-secret',
+        },
+        'production',
+      );
 
       const config = authConfigFactory(configService);
       const origins = config.getTrustedOrigins();
@@ -126,12 +148,15 @@ describe('AuthConfigService', () => {
     it('should trim whitespace from environment variable origins', () => {
       process.env.NODE_ENV = 'test';
 
-      const configService = new MockConfigService({
-        NODE_ENV: 'test',
-        TRUSTED_ORIGINS: ' https://custom1.com , https://custom2.com ',
-        BETTER_AUTH_URL: 'http://localhost:3001',
-        BETTER_AUTH_SECRET: 'test-secret',
-      }, 'test');
+      const configService = new MockConfigService(
+        {
+          NODE_ENV: 'test',
+          TRUSTED_ORIGINS: ' https://custom1.com , https://custom2.com ',
+          BETTER_AUTH_URL: 'http://localhost:3001',
+          BETTER_AUTH_SECRET: 'test-secret',
+        },
+        'test',
+      );
 
       const config = authConfigFactory(configService);
       const origins = config.getTrustedOrigins();
@@ -146,12 +171,15 @@ describe('AuthConfigService', () => {
     it('should return environment variable COOKIE_DOMAIN when provided', () => {
       process.env.NODE_ENV = 'production';
 
-      const configService = new MockConfigService({
-        NODE_ENV: 'production',
-        COOKIE_DOMAIN: '.custom-domain.com',
-        BETTER_AUTH_URL: 'https://api.karasu256.com',
-        BETTER_AUTH_SECRET: 'prod-secret',
-      }, 'production');
+      const configService = new MockConfigService(
+        {
+          NODE_ENV: 'production',
+          COOKIE_DOMAIN: '.custom-domain.com',
+          BETTER_AUTH_URL: 'https://api.karasu256.com',
+          BETTER_AUTH_SECRET: 'prod-secret',
+        },
+        'production',
+      );
 
       const config = authConfigFactory(configService);
       expect(config.getCookieDomain()).toBe('.custom-domain.com');
@@ -160,11 +188,14 @@ describe('AuthConfigService', () => {
     it('should return default cookie domain when environment variable is not provided', () => {
       process.env.NODE_ENV = 'production';
 
-      const configService = new MockConfigService({
-        NODE_ENV: 'production',
-        BETTER_AUTH_URL: 'https://api.karasu256.com',
-        BETTER_AUTH_SECRET: 'prod-secret',
-      }, 'production');
+      const configService = new MockConfigService(
+        {
+          NODE_ENV: 'production',
+          BETTER_AUTH_URL: 'https://api.karasu256.com',
+          BETTER_AUTH_SECRET: 'prod-secret',
+        },
+        'production',
+      );
 
       const config = authConfigFactory(configService);
       expect(config.getCookieDomain()).toBe('.karasu256.com');
@@ -175,12 +206,15 @@ describe('AuthConfigService', () => {
     it('should return enabled configuration with correct domain', () => {
       process.env.NODE_ENV = 'production';
 
-      const configService = new MockConfigService({
-        NODE_ENV: 'production',
-        COOKIE_DOMAIN: '.test-domain.com',
-        BETTER_AUTH_URL: 'https://api.karasu256.com',
-        BETTER_AUTH_SECRET: 'prod-secret',
-      }, 'production');
+      const configService = new MockConfigService(
+        {
+          NODE_ENV: 'production',
+          COOKIE_DOMAIN: '.test-domain.com',
+          BETTER_AUTH_URL: 'https://api.karasu256.com',
+          BETTER_AUTH_SECRET: 'prod-secret',
+        },
+        'production',
+      );
 
       const config = authConfigFactory(configService);
       const crossSubDomainConfig = config.getCrossSubDomainCookies();
@@ -194,11 +228,14 @@ describe('AuthConfigService', () => {
     it('should always return enabled: true', () => {
       process.env.NODE_ENV = 'development';
 
-      const configService = new MockConfigService({
-        NODE_ENV: 'development',
-        BETTER_AUTH_URL: 'http://localhost:3001',
-        BETTER_AUTH_SECRET: 'dev-secret',
-      }, 'development');
+      const configService = new MockConfigService(
+        {
+          NODE_ENV: 'development',
+          BETTER_AUTH_URL: 'http://localhost:3001',
+          BETTER_AUTH_SECRET: 'dev-secret',
+        },
+        'development',
+      );
 
       const config = authConfigFactory(configService);
       const crossSubDomainConfig = config.getCrossSubDomainCookies();
@@ -211,11 +248,14 @@ describe('AuthConfigService', () => {
     it('should have correct production defaults', () => {
       process.env.NODE_ENV = 'production';
 
-      const configService = new MockConfigService({
-        NODE_ENV: 'production',
-        BETTER_AUTH_URL: 'https://api.karasu256.com',
-        BETTER_AUTH_SECRET: 'prod-secret',
-      }, 'production');
+      const configService = new MockConfigService(
+        {
+          NODE_ENV: 'production',
+          BETTER_AUTH_URL: 'https://api.karasu256.com',
+          BETTER_AUTH_SECRET: 'prod-secret',
+        },
+        'production',
+      );
 
       const config = authConfigFactory(configService);
 
@@ -226,11 +266,14 @@ describe('AuthConfigService', () => {
     it('should have correct development defaults', () => {
       process.env.NODE_ENV = 'development';
 
-      const configService = new MockConfigService({
-        NODE_ENV: 'development',
-        BETTER_AUTH_URL: 'http://localhost:3001',
-        BETTER_AUTH_SECRET: 'dev-secret',
-      }, 'development');
+      const configService = new MockConfigService(
+        {
+          NODE_ENV: 'development',
+          BETTER_AUTH_URL: 'http://localhost:3001',
+          BETTER_AUTH_SECRET: 'dev-secret',
+        },
+        'development',
+      );
 
       const config = authConfigFactory(configService);
 

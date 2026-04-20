@@ -1,87 +1,95 @@
-import { IPasskeyAuth } from "./passkey.interface.js";
-import { IConfigService } from "../../shared/config/config.service.interface.js";
-import { AbstractEnvironment, Environment } from "@hashibutogarasu/common";
+import { IPasskeyAuth } from './passkey.interface.js';
+import { IConfigService } from '../../shared/config/config.service.interface.js';
+import { AbstractEnvironment, Environment } from '@hashibutogarasu/common';
 
-export abstract class AbstractPasskeyAuth extends AbstractEnvironment implements IPasskeyAuth {
-    constructor(
-        protected readonly configService: IConfigService,
-        environment: Environment
-    ) {
-        super(environment);
+export abstract class AbstractPasskeyAuth
+  extends AbstractEnvironment
+  implements IPasskeyAuth
+{
+  constructor(
+    protected readonly configService: IConfigService,
+    environment: Environment,
+  ) {
+    super(environment);
+  }
+
+  protected abstract getDefaultOrigins(): string[];
+
+  getOrigin(): string[] {
+    const env = this.configService.getAll();
+
+    const origins: string[] = [];
+    if (env.PASSKEY_ORIGIN) {
+      origins.push(...env.PASSKEY_ORIGIN.split(',').map((s) => s.trim()));
     }
 
-    protected abstract getDefaultOrigins(): string[];
+    origins.push(...this.getDefaultOrigins());
 
-    getOrigin(): string[] {
-        const env = this.configService.getAll();
-        
-        const origins: string[] = [];
-        if (env.PASSKEY_ORIGIN) {
-            origins.push(...env.PASSKEY_ORIGIN.split(',').map(s => s.trim()));
-        }
-        
-        origins.push(...this.getDefaultOrigins());
+    return Array.from(new Set(origins));
+  }
 
-        return Array.from(new Set(origins));
-    }
+  getRPID(): string {
+    const env = this.configService.getAll();
+    return env.PASSKEY_RP_ID;
+  }
 
-    getRPID(): string {
-        const env = this.configService.getAll();
-        return env.PASSKEY_RP_ID;
-    }
-
-    getRPName(): string {
-        const env = this.configService.getAll();
-        return env.PASSKEY_RP_NAME;
-    }
+  getRPName(): string {
+    const env = this.configService.getAll();
+    return env.PASSKEY_RP_NAME;
+  }
 }
 
 export class ProductionPasskeyAuth extends AbstractPasskeyAuth {
-    constructor(configService: IConfigService) {
-        super(configService, Environment.PRODUCTION);
-    }
+  constructor(configService: IConfigService) {
+    super(configService, Environment.PRODUCTION);
+  }
 
-    protected getDefaultOrigins(): string[] {
-        return [
-            'https://sso.karasu256.com',
-            'https://karasu256.com',
-            'https://www.karasu256.com'
-        ];
-    }
+  protected getDefaultOrigins(): string[] {
+    return [
+      'https://sso.karasu256.com',
+      'https://karasu256.com',
+      'https://www.karasu256.com',
+    ];
+  }
 }
 
 export class DevelopmentPasskeyAuth extends AbstractPasskeyAuth {
-    constructor(configService: IConfigService) {
-        super(configService, Environment.DEVELOPMENT);
-    }
+  constructor(configService: IConfigService) {
+    super(configService, Environment.DEVELOPMENT);
+  }
 
-    protected getDefaultOrigins(): string[] {
-        return [
-            'http://localhost:3000',
-            'http://127.0.0.1:3000',
-            'https://sso.karasu256.com',
-            'https://www.karasu256.com'
-        ];
-    }
+  protected getDefaultOrigins(): string[] {
+    return [
+      'http://localhost:3000',
+      'http://127.0.0.1:3000',
+      'https://sso.karasu256.com',
+      'https://www.karasu256.com',
+    ];
+  }
 }
 
 export class TestPasskeyAuth extends AbstractPasskeyAuth {
-    constructor(configService: IConfigService) {
-        super(configService, Environment.TEST);
-    }
+  constructor(configService: IConfigService) {
+    super(configService, Environment.TEST);
+  }
 
-    protected getDefaultOrigins(): string[] {
-        return ['http://localhost:3001'];
-    }
+  protected getDefaultOrigins(): string[] {
+    return ['http://localhost:3001'];
+  }
 }
 
-const passkeyAuthClasses: Record<Environment, new (configService: IConfigService) => IPasskeyAuth> = {
-    [Environment.PRODUCTION]: ProductionPasskeyAuth,
-    [Environment.DEVELOPMENT]: DevelopmentPasskeyAuth,
-    [Environment.TEST]: TestPasskeyAuth
+const passkeyAuthClasses: Record<
+  Environment,
+  new (configService: IConfigService) => IPasskeyAuth
+> = {
+  [Environment.PRODUCTION]: ProductionPasskeyAuth,
+  [Environment.DEVELOPMENT]: DevelopmentPasskeyAuth,
+  [Environment.TEST]: TestPasskeyAuth,
 };
 
-export function passkeyAuthFactory(configService: IConfigService): IPasskeyAuth {
-    const PasskeyAuthClass = passkeyAuthClasses[configService.environment];
-    return new PasskeyAuthClass(configService);
+export function passkeyAuthFactory(
+  configService: IConfigService,
+): IPasskeyAuth {
+  const PasskeyAuthClass = passkeyAuthClasses[configService.environment];
+  return new PasskeyAuthClass(configService);
 }

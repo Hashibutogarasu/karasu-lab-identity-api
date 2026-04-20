@@ -1,8 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { AuthorController, AuthorLegacyController } from '../../src/authors/author.controller.js';
+import { afterAll, beforeAll, describe, expect, it } from 'vite-plus/test';
+import {
+  AuthorController,
+  AuthorLegacyController,
+} from '../../src/authors/author.controller.js';
 import { AuthorService } from '../../src/authors/author.service.js';
 import { IConfigService } from '../../src/shared/config/config.service.interface.js';
 import { RolesGuard } from '../../src/shared/auth/roles.guard.js';
@@ -55,11 +58,11 @@ describe('AuthorController (e2e)', () => {
         },
       ],
     })
-    .overrideGuard(RolesGuard)
-    .useValue({
-      canActivate: () => Promise.resolve(true),
-    })
-    .compile();
+      .overrideGuard(RolesGuard)
+      .useValue({
+        canActivate: () => Promise.resolve(true),
+      })
+      .compile();
 
     await setupI18n();
 
@@ -96,7 +99,9 @@ describe('AuthorController (e2e)', () => {
   });
 
   it('GET /author/:id - should return a single author', async () => {
-    const response = await request(app.getHttpServer()).get(`/author/${testUserId}`);
+    const response = await request(app.getHttpServer()).get(
+      `/author/${testUserId}`,
+    );
     expect(response.status).toBe(200);
     const author = response.body as UserResponseDto;
     expect(author.id).toBe(testUserId);
@@ -104,7 +109,9 @@ describe('AuthorController (e2e)', () => {
   });
 
   it('GET /author/:id - should return 200 and empty object for non-existent author', async () => {
-    const response = await request(app.getHttpServer()).get('/author/non-existent-id');
+    const response = await request(app.getHttpServer()).get(
+      '/author/non-existent-id',
+    );
     expect(response.status).toBe(200);
     expect(response.body).toEqual({});
   });
@@ -112,7 +119,11 @@ describe('AuthorController (e2e)', () => {
   it('GET /authors - should return paginated list of authors', async () => {
     const response = await request(app.getHttpServer()).get('/authors');
     expect(response.status).toBe(200);
-    const body = response.body as { data: UserResponseDto[]; hasMore: boolean; nextCursor: string | null };
+    const body = response.body as {
+      data: UserResponseDto[];
+      hasMore: boolean;
+      nextCursor: string | null;
+    };
     expect(Array.isArray(body.data)).toBe(true);
     expect(body).toHaveProperty('hasMore');
     expect(body).toHaveProperty('nextCursor');
@@ -129,7 +140,9 @@ describe('AuthorController (e2e)', () => {
   });
 
   it('GET /authors/:id - should return a single author', async () => {
-    const response = await request(app.getHttpServer()).get(`/authors/${testUserId}`);
+    const response = await request(app.getHttpServer()).get(
+      `/authors/${testUserId}`,
+    );
     expect(response.status).toBe(200);
     const author = response.body as UserResponseDto;
     expect(author.id).toBe(testUserId);
@@ -137,7 +150,9 @@ describe('AuthorController (e2e)', () => {
   });
 
   it('GET /authors/:id - should return 200 and empty object for non-existent author', async () => {
-    const response = await request(app.getHttpServer()).get('/authors/non-existent-id');
+    const response = await request(app.getHttpServer()).get(
+      '/authors/non-existent-id',
+    );
     expect(response.status).toBe(200);
     expect(response.body).toEqual({});
   });
