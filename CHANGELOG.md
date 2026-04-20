@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.8.2](https://github.com/Karasu-Lab/karasu-lab-api/compare/karasu-lab-api-v3.8.1...karasu-lab-api-v3.8.2) (2026-04-20)
+
+
+### Code Refactoring
+
+* migrated to vite plus ([a3977fd](https://github.com/Karasu-Lab/karasu-lab-api/commit/a3977fd4cb6bd0a1e94a3adcd2b9325a65cc1c32))
+
 ## [3.8.1](https://github.com/Karasu-Lab/karasu-lab-api/compare/karasu-lab-api-v3.8.0...karasu-lab-api-v3.8.1) (2026-03-21)
 
 ### Bug Fixes
