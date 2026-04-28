@@ -46,6 +46,7 @@ COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/package.json ./
 COPY --from=builder /app/prisma ./prisma/
 COPY --from=builder /app/prisma.config.js ./
+COPY --from=builder /app/configs ./configs
 
 COPY scripts/docker-entrypoint.sh ./
 RUN sed -i 's/\r$//' docker-entrypoint.sh && chmod +x docker-entrypoint.sh
