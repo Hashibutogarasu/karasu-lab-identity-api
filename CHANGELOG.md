@@ -1,5 +1,16 @@
 # Changelog
 
+## [4.0.0](https://github.com/Karasu-Lab/karasu-lab-api/compare/karasu-lab-api-v3.13.0...karasu-lab-api-v4.0.0) (2026-04-28)
+
+
+### ⚠ BREAKING CHANGES
+
+* added yml config files
+
+### Features
+
+* added yml config files ([c801020](https://github.com/Karasu-Lab/karasu-lab-api/commit/c80102007476a0481c38827bc9cf49ceb54e7edf))
+
 ## [3.13.0](https://github.com/Karasu-Lab/karasu-lab-api/compare/karasu-lab-api-v3.12.0...karasu-lab-api-v3.13.0) (2026-04-28)
 
 
