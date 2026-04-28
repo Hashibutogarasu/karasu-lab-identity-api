@@ -1,5 +1,17 @@
 # Changelog
 
+## [4.2.0](https://github.com/Karasu-Lab/karasu-lab-api/compare/karasu-lab-api-v4.1.0...karasu-lab-api-v4.2.0) (2026-04-28)
+
+
+### Features
+
+* refactored yml config loaders ([77257b5](https://github.com/Karasu-Lab/karasu-lab-api/commit/77257b5a2a696ab644ebc637ca881dff59c23094))
+
+
+### Bug Fixes
+
+* fixed coonfig file not loaded ([39eaf3f](https://github.com/Karasu-Lab/karasu-lab-api/commit/39eaf3f259391bb712570b8e8c072e37366cd2e5))
+
 ## [4.1.0](https://github.com/Karasu-Lab/karasu-lab-api/compare/karasu-lab-api-v4.0.0...karasu-lab-api-v4.1.0) (2026-04-28)
 
 
