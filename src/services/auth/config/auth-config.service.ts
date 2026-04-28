@@ -1,146 +1,45 @@
-import { Environment } from '@hashibutogarasu/common';
 import { IConfigService } from '../../../shared/config/config.service.interface.js';
-import { loadApiConfig } from '../../../utils/config.util.js';
+import type { ApiYamlConfig } from '../../../utils/config.util.js';
 import { IAuthConfig } from './auth-config.interface.js';
-import { AbstractPluginEnvironment } from '../../../shared/plugin/abstract-plugin-environment.js';
 
-/**
- * Abstract base class for auth configuration
- * Handles environment variable merging and duplicate removal
- */
-abstract class AbstractAuthConfig
-  extends AbstractPluginEnvironment<IAuthConfig>
-  implements IAuthConfig
-{
-  constructor(protected configService: IConfigService) {
-    super();
-  }
-
-  resolve(): IAuthConfig {
-    return this;
-  }
-
-  /**
-   * Get default trusted origins for this environment
-   * Override in subclasses to provide environment-specific defaults
-   */
-  protected abstract getDefaultTrustedOrigins(): string[];
-
-  /**
-   * Get default cookie domain for this environment
-   * Override in subclasses to provide environment-specific defaults
-   */
-  protected abstract getDefaultCookieDomain(): string;
-
-  /**
-   * Get trusted origins, merging environment variables with defaults
-   * Automatically removes duplicates
-   */
-  getTrustedOrigins(): string[] {
-    const env = this.configService.getAll();
-    const defaults = this.getDefaultTrustedOrigins();
-
-    const envOrigins = env.TRUSTED_ORIGINS
-      ? env.TRUSTED_ORIGINS.split(',').map((origin) => origin.trim())
-      : [];
-
-    const allOrigins = [...defaults, ...envOrigins];
-    return Array.from(new Set(allOrigins));
-  }
-
-  /**
-   * Get cookie domain, preferring environment variable over default
-   */
-  getCookieDomain(): string {
-    const env = this.configService.getAll();
-    return env.COOKIE_DOMAIN ?? this.getDefaultCookieDomain();
-  }
-
-  /**
-   * Get cross-subdomain cookie configuration
-   */
-  getCrossSubDomainCookies(): { enabled: boolean; domain: string } {
-    const domain = this.getCookieDomain();
-    return {
-      enabled: domain !== '',
-      domain: domain,
-    };
-  }
-
-  /**
-   * Get allowed headers for CORS
-   */
-  getAllowedHeaders(): string {
-    return 'Origin, X-Requested-With, Content-Type, Accept, Authorization';
-  }
-
-  /**
-   * Get whether to allow credentials for CORS
-   */
-  getCredentials(): boolean {
-    return true;
-  }
-
-  /**
-   * Get default trusted proxies for this environment
-   */
-  protected abstract getDefaultTrustedProxies(): string[];
-
-  /**
-   * Get trusted proxies, merging environment variables with defaults
-   */
-  getTrustedProxies(): string[] {
-    const env = this.configService.getAll();
-    const defaults = this.getDefaultTrustedProxies();
-
-    const envProxies = env.TRUSTED_PROXIES
-      ? env.TRUSTED_PROXIES.split(',').map((proxy) => proxy.trim())
-      : [];
-
-    const allProxies = [...defaults, ...envProxies];
-    return Array.from(new Set(allProxies));
-  }
-}
-
-/**
- * Auth configuration loaded from configs/{env}.yml
- */
-class YamlAuthConfig extends AbstractAuthConfig {
-  protected getDefaultTrustedOrigins(): string[] {
-    return loadApiConfig(this.configService.environment).auth.trustedOrigins;
-  }
-
-  protected getDefaultCookieDomain(): string {
-    return loadApiConfig(this.configService.environment).auth.cookieDomain;
-  }
-
-  protected getDefaultTrustedProxies(): string[] {
-    return loadApiConfig(this.configService.environment).auth.trustedProxies;
-  }
-}
-
-/**
- * Factory function to create auth config based on environment
- * @param configService Configuration service instance
- * @returns Auth config instance for current environment
- */
-export function authConfigFactory(configService: IConfigService): IAuthConfig {
-  return AbstractPluginEnvironment.resolve<
-    IAuthConfig,
-    AbstractAuthConfig,
-    [IConfigService]
-  >(
-    {
-      [Environment.PRODUCTION]: YamlAuthConfig as new (
-        configService: IConfigService,
-      ) => AbstractAuthConfig,
-      [Environment.DEVELOPMENT]: YamlAuthConfig as new (
-        configService: IConfigService,
-      ) => AbstractAuthConfig,
-      [Environment.TEST]: YamlAuthConfig as new (
-        configService: IConfigService,
-      ) => AbstractAuthConfig,
+export function authConfigFactory(
+  configService: IConfigService,
+  yaml: ApiYamlConfig['auth'],
+): IAuthConfig {
+  return {
+    getTrustedOrigins(): string[] {
+      const envOrigins =
+        configService
+          .getAll()
+          .TRUSTED_ORIGINS?.split(',')
+          .map((o) => o.trim()) ?? [];
+      return Array.from(new Set([...yaml.trustedOrigins, ...envOrigins]));
     },
-    configService,
-  );
+
+    getCookieDomain(): string {
+      return configService.getAll().COOKIE_DOMAIN ?? yaml.cookieDomain;
+    },
+
+    getCrossSubDomainCookies(): { enabled: boolean; domain: string } {
+      const domain = configService.getAll().COOKIE_DOMAIN ?? yaml.cookieDomain;
+      return { enabled: domain !== '', domain };
+    },
+
+    getAllowedHeaders(): string {
+      return 'Origin, X-Requested-With, Content-Type, Accept, Authorization';
+    },
+
+    getCredentials(): boolean {
+      return true;
+    },
+
+    getTrustedProxies(): string[] {
+      const envProxies =
+        configService
+          .getAll()
+          .TRUSTED_PROXIES?.split(',')
+          .map((p) => p.trim()) ?? [];
+      return Array.from(new Set([...yaml.trustedProxies, ...envProxies]));
+    },
+  };
 }

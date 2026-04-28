@@ -32,7 +32,10 @@ export class InitializeService implements IBetterAuthBootStrapper {
       mailServiceInstance,
       configService,
     );
-    this.context.passkeyAuth = passkeyAuthFactory(configService);
+    this.context.passkeyAuth = passkeyAuthFactory(
+      configService,
+      this.context.yamlConfig!.passkey,
+    );
 
     this.context.auth = this.authFactory(
       configService,

@@ -1,24 +1,25 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { parse } from 'yaml';
+import { z } from 'zod';
 
-import type { Environment } from '@hashibutogarasu/common';
+const apiYamlConfigSchema = z.object({
+  auth: z.object({
+    trustedOrigins: z.array(z.string()),
+    cookieDomain: z.string(),
+    trustedProxies: z.array(z.string()),
+  }),
+  passkey: z.object({
+    origins: z.array(z.string()),
+  }),
+  rateLimit: z.object({
+    enabled: z.boolean(),
+    window: z.number().optional(),
+    max: z.number().optional(),
+  }),
+});
 
-export interface ApiYamlConfig {
-  auth: {
-    trustedOrigins: string[];
-    cookieDomain: string;
-    trustedProxies: string[];
-  };
-  passkey: {
-    origins: string[];
-  };
-  rateLimit: {
-    enabled: boolean;
-    window?: number;
-    max?: number;
-  };
-}
+export type ApiYamlConfig = z.infer<typeof apiYamlConfigSchema>;
 
 /**
  * Reads content from a configuration file relative to the project root.
@@ -37,19 +38,18 @@ export const readConfigContent = (...relativePath: string[]): string | null => {
   return null;
 };
 
-const configCache = new Map<string, ApiYamlConfig>();
+let _config: ApiYamlConfig | null = null;
 
 /**
- * Loads and caches the YAML config file for the given environment.
- * Reads from configs/{env}.yml relative to the project root (process.cwd()).
- * In Docker, process.cwd() = /app, so /app/configs/{env}.yml matches the volume mount.
+ * Loads, Zod-validates, and caches the YAML config for the current environment.
+ * Reads from configs/{NODE_ENV}.yml relative to process.cwd().
+ * In Docker, /app/configs/{env}.yml is available via image COPY or volume mount.
  */
-export const loadApiConfig = (env: Environment): ApiYamlConfig => {
-  const cached = configCache.get(env);
-  if (cached) return cached;
+export const getApiConfig = (): ApiYamlConfig => {
+  if (_config) return _config;
+  const env = process.env.NODE_ENV ?? 'development';
   const content = readConfigContent('configs', `${env}.yml`);
   if (!content) throw new Error(`configs/${env}.yml not found`);
-  const parsed = parse(content) as ApiYamlConfig;
-  configCache.set(env, parsed);
-  return parsed;
+  _config = apiYamlConfigSchema.parse(parse(content));
+  return _config;
 };

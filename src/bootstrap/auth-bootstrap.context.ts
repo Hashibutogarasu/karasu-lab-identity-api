@@ -8,10 +8,12 @@ import { IAuthNotificationService } from '../services/auth/notification/auth-not
 import { IPasskeyAuth } from '../plugins/passkey/passkey.interface.js';
 import { IAdminConfig } from '../services/auth/admin/admin-config.interface.js';
 import { IRateLimitConfig } from '../services/auth/rateLimit/rate-limit-config.interface.js';
+import type { ApiYamlConfig } from '../utils/config.util.js';
 
 export class AuthBootstrapContext {
   authEnv?: AuthEnvironment;
   configService?: IConfigService;
+  yamlConfig?: ApiYamlConfig;
   dbService?: PostgresDatabaseService;
   authConfigInstance?: IAuthConfig;
   socialProviderConfigInstance?: ISocialProviderConfig;
