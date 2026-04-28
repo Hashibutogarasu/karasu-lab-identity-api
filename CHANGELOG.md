@@ -1,5 +1,17 @@
 # Changelog
 
+## [3.9.0](https://github.com/Karasu-Lab/karasu-lab-api/compare/karasu-lab-api-v3.8.1...karasu-lab-api-v3.9.0) (2026-04-28)
+
+
+### Features
+
+* added android config and minecraft services ([eae2b09](https://github.com/Karasu-Lab/karasu-lab-api/commit/eae2b09024e1fa9b8a067a8be79d356ae4cb4622))
+
+
+### Code Refactoring
+
+* migrated to vite plus ([a3977fd](https://github.com/Karasu-Lab/karasu-lab-api/commit/a3977fd4cb6bd0a1e94a3adcd2b9325a65cc1c32))
+
 ## [3.8.1](https://github.com/Karasu-Lab/karasu-lab-api/compare/karasu-lab-api-v3.8.0...karasu-lab-api-v3.8.1) (2026-03-21)
 
 ### Bug Fixes
