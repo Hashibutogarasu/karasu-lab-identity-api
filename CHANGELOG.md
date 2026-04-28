@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.10.0](https://github.com/Karasu-Lab/karasu-lab-api/compare/karasu-lab-api-v3.9.0...karasu-lab-api-v3.10.0) (2026-04-28)
+
+
+### Features
+
+* updated prod passkey config ([d9b616a](https://github.com/Karasu-Lab/karasu-lab-api/commit/d9b616ae2c7c4e12f5b27e6568e8b109ac2e69ad))
+
 ## [3.9.0](https://github.com/Karasu-Lab/karasu-lab-api/compare/karasu-lab-api-v3.8.1...karasu-lab-api-v3.9.0) (2026-04-28)
 
 
