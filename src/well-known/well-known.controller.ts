@@ -1,7 +1,9 @@
 import { Controller, Get, Inject } from '@nestjs/common';
+import { AllowAnonymous } from '@thallesp/nestjs-better-auth';
 import { WellKnownService } from './well-known.service.js';
 
 /** Serves standard well-known discovery documents required by platform clients. */
+@AllowAnonymous()
 @Controller('.well-known')
 export class WellKnownController {
   constructor(
