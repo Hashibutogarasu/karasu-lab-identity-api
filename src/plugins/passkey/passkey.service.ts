@@ -49,6 +49,7 @@ export class ProductionPasskeyAuth extends AbstractPasskeyAuth {
       'https://sso.karasu256.com',
       'https://karasu256.com',
       'https://www.karasu256.com',
+      'https://id.karasu256.com',
       'android:apk-key-hash:SEhtZj8Q-Fb0z9qGqUpYG3s1PbYvmiwZHYqmXe3tVHc',
     ];
   }
