@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.2.2](https://github.com/Karasu-Lab/karasu-lab-api/compare/karasu-lab-api-v4.2.1...karasu-lab-api-v4.2.2) (2026-04-28)
+
+
+### Bug Fixes
+
+* fixed build errors ([8f72576](https://github.com/Karasu-Lab/karasu-lab-api/commit/8f72576cfcae6d4168897c8cab2d46004982e8a1))
+
 ## [4.2.1](https://github.com/Karasu-Lab/karasu-lab-api/compare/karasu-lab-api-v4.2.0...karasu-lab-api-v4.2.1) (2026-04-28)
 
 
