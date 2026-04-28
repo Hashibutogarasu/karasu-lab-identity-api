@@ -12,6 +12,7 @@ import { setupI18n } from './shared/i18n/i18n.setup.js';
 import { II18nService } from './shared/i18n/i18n.service.interface.js';
 import { configServiceFactory } from './shared/config/config.service.js';
 import { IConfigService } from './shared/config/config.service.interface.js';
+import { getApiConfig } from './utils/config.util.js';
 import { packageVersion } from './version.js';
 
 async function bootstrap() {
@@ -28,7 +29,10 @@ async function bootstrap() {
 
   const configService: IConfigService = configServiceFactory();
 
-  const authConfigInstance = authConfigFactory(configService);
+  const authConfigInstance = authConfigFactory(
+    configService,
+    getApiConfig().auth,
+  );
   const allowedOrigins = authConfigInstance.getTrustedOrigins();
   const allowedHeaders = authConfigInstance.getAllowedHeaders();
   const allowCredentials = authConfigInstance.getCredentials();

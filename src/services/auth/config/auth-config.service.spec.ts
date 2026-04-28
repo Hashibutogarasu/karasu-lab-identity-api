@@ -1,6 +1,36 @@
 import { describe, it, expect, afterEach } from 'vite-plus/test';
 import { MockConfigService } from '../../../../test/mocks/config.service.mock.js';
 import { authConfigFactory } from './auth-config.service.js';
+import type { ApiYamlConfig } from '../../../utils/config.util.js';
+
+const productionYaml: ApiYamlConfig['auth'] = {
+  trustedOrigins: [
+    'https://api.karasu256.com',
+    'https://sso.karasu256.com',
+    'https://www.karasu256.com',
+    'https://karasu256.com',
+    'https://id.karasu256.com',
+    'android:apk-key-hash:SEhtZj8Q-Fb0z9qGqUpYG3s1PbYvmiwZHYqmXe3tVHc',
+  ],
+  cookieDomain: '.karasu256.com',
+  trustedProxies: [],
+};
+
+const developmentYaml: ApiYamlConfig['auth'] = {
+  trustedOrigins: [
+    'http://localhost:3000',
+    'http://localhost:3001',
+    'http://192.168.0.5:3001',
+  ],
+  cookieDomain: '',
+  trustedProxies: ['127.0.0.1', '::1'],
+};
+
+const testYaml: ApiYamlConfig['auth'] = {
+  trustedOrigins: ['http://localhost:3000', 'http://localhost:3001'],
+  cookieDomain: '',
+  trustedProxies: ['127.0.0.1', '::1'],
+};
 
 describe('AuthConfigService', () => {
   const originalNodeEnv = process.env.NODE_ENV;
@@ -10,9 +40,7 @@ describe('AuthConfigService', () => {
   });
 
   describe('authConfigFactory', () => {
-    it('should return ProductionAuthConfig for production environment', () => {
-      process.env.NODE_ENV = 'production';
-
+    it('should use production yaml origins', () => {
       const configService = new MockConfigService(
         {
           NODE_ENV: 'production',
@@ -22,22 +50,16 @@ describe('AuthConfigService', () => {
         'production',
       );
 
-      const config = authConfigFactory(configService);
+      const config = authConfigFactory(configService, productionYaml);
       const origins = config.getTrustedOrigins();
 
-      expect(origins).toEqual([
-        'https://api.karasu256.com',
-        'https://sso.karasu256.com',
-        'https://www.karasu256.com',
-        'https://karasu256.com',
-        'https://id.karasu256.com',
-      ]);
+      expect(origins).toContain('https://api.karasu256.com');
+      expect(origins).toContain('https://sso.karasu256.com');
+      expect(origins).toContain('https://karasu256.com');
       expect(config.getCookieDomain()).toBe('.karasu256.com');
     });
 
-    it('should return DevelopmentAuthConfig for development environment', () => {
-      process.env.NODE_ENV = 'development';
-
+    it('should use development yaml origins', () => {
       const configService = new MockConfigService(
         {
           NODE_ENV: 'development',
@@ -47,35 +69,16 @@ describe('AuthConfigService', () => {
         'development',
       );
 
-      const config = authConfigFactory(configService);
+      const config = authConfigFactory(configService, developmentYaml);
       const origins = config.getTrustedOrigins();
 
       expect(origins).toContain('http://localhost:3000');
-      expect(config.getCookieDomain()).toBe('localhost');
-    });
-
-    it('should default to DevelopmentAuthConfig when NODE_ENV is undefined', () => {
-      delete process.env.NODE_ENV;
-
-      const configService = new MockConfigService(
-        {
-          BETTER_AUTH_URL: 'http://localhost:3001',
-          BETTER_AUTH_SECRET: 'dev-secret',
-        },
-        'development',
-      );
-
-      const config = authConfigFactory(configService);
-      const origins = config.getTrustedOrigins();
-
-      expect(origins).toContain('http://localhost:3000');
+      expect(config.getCookieDomain()).toBe('');
     });
   });
 
   describe('getTrustedOrigins', () => {
     it('should merge environment variable origins with defaults', () => {
-      process.env.NODE_ENV = 'development';
-
       const configService = new MockConfigService(
         {
           NODE_ENV: 'development',
@@ -86,7 +89,7 @@ describe('AuthConfigService', () => {
         'development',
       );
 
-      const config = authConfigFactory(configService);
+      const config = authConfigFactory(configService, developmentYaml);
       const origins = config.getTrustedOrigins();
 
       expect(origins).toContain('http://localhost:3000');
@@ -95,8 +98,6 @@ describe('AuthConfigService', () => {
     });
 
     it('should remove duplicate origins', () => {
-      process.env.NODE_ENV = 'development';
-
       const configService = new MockConfigService(
         {
           NODE_ENV: 'development',
@@ -107,7 +108,7 @@ describe('AuthConfigService', () => {
         'development',
       );
 
-      const config = authConfigFactory(configService);
+      const config = authConfigFactory(configService, developmentYaml);
       const origins = config.getTrustedOrigins();
 
       const uniqueOrigins = Array.from(new Set(origins));
@@ -115,14 +116,9 @@ describe('AuthConfigService', () => {
       expect(origins.filter((o) => o === 'http://localhost:3000')).toHaveLength(
         1,
       );
-      expect(origins.filter((o) => o === 'https://karasu256.com')).toHaveLength(
-        1,
-      );
     });
 
     it('should handle empty TRUSTED_ORIGINS environment variable', () => {
-      process.env.NODE_ENV = 'production';
-
       const configService = new MockConfigService(
         {
           NODE_ENV: 'production',
@@ -133,21 +129,14 @@ describe('AuthConfigService', () => {
         'production',
       );
 
-      const config = authConfigFactory(configService);
+      const config = authConfigFactory(configService, productionYaml);
       const origins = config.getTrustedOrigins();
 
-      expect(origins).toEqual([
-        'https://api.karasu256.com',
-        'https://sso.karasu256.com',
-        'https://www.karasu256.com',
-        'https://karasu256.com',
-        'https://id.karasu256.com',
-      ]);
+      expect(origins).toContain('https://api.karasu256.com');
+      expect(origins).toContain('https://sso.karasu256.com');
     });
 
     it('should trim whitespace from environment variable origins', () => {
-      process.env.NODE_ENV = 'test';
-
       const configService = new MockConfigService(
         {
           NODE_ENV: 'test',
@@ -158,7 +147,7 @@ describe('AuthConfigService', () => {
         'test',
       );
 
-      const config = authConfigFactory(configService);
+      const config = authConfigFactory(configService, testYaml);
       const origins = config.getTrustedOrigins();
 
       expect(origins).toContain('https://custom1.com');
@@ -169,8 +158,6 @@ describe('AuthConfigService', () => {
 
   describe('getCookieDomain', () => {
     it('should return environment variable COOKIE_DOMAIN when provided', () => {
-      process.env.NODE_ENV = 'production';
-
       const configService = new MockConfigService(
         {
           NODE_ENV: 'production',
@@ -181,13 +168,11 @@ describe('AuthConfigService', () => {
         'production',
       );
 
-      const config = authConfigFactory(configService);
+      const config = authConfigFactory(configService, productionYaml);
       expect(config.getCookieDomain()).toBe('.custom-domain.com');
     });
 
-    it('should return default cookie domain when environment variable is not provided', () => {
-      process.env.NODE_ENV = 'production';
-
+    it('should return yaml cookie domain when environment variable is not provided', () => {
       const configService = new MockConfigService(
         {
           NODE_ENV: 'production',
@@ -197,15 +182,13 @@ describe('AuthConfigService', () => {
         'production',
       );
 
-      const config = authConfigFactory(configService);
+      const config = authConfigFactory(configService, productionYaml);
       expect(config.getCookieDomain()).toBe('.karasu256.com');
     });
   });
 
   describe('getCrossSubDomainCookies', () => {
-    it('should return enabled configuration with correct domain', () => {
-      process.env.NODE_ENV = 'production';
-
+    it('should return enabled=true when COOKIE_DOMAIN is set', () => {
       const configService = new MockConfigService(
         {
           NODE_ENV: 'production',
@@ -216,7 +199,7 @@ describe('AuthConfigService', () => {
         'production',
       );
 
-      const config = authConfigFactory(configService);
+      const config = authConfigFactory(configService, productionYaml);
       const crossSubDomainConfig = config.getCrossSubDomainCookies();
 
       expect(crossSubDomainConfig).toEqual({
@@ -225,29 +208,7 @@ describe('AuthConfigService', () => {
       });
     });
 
-    it('should always return enabled: true', () => {
-      process.env.NODE_ENV = 'development';
-
-      const configService = new MockConfigService(
-        {
-          NODE_ENV: 'development',
-          BETTER_AUTH_URL: 'http://localhost:3001',
-          BETTER_AUTH_SECRET: 'dev-secret',
-        },
-        'development',
-      );
-
-      const config = authConfigFactory(configService);
-      const crossSubDomainConfig = config.getCrossSubDomainCookies();
-
-      expect(crossSubDomainConfig.enabled).toBe(true);
-    });
-  });
-
-  describe('Environment-specific defaults', () => {
-    it('should have correct production defaults', () => {
-      process.env.NODE_ENV = 'production';
-
+    it('should return enabled=true when yaml cookieDomain is non-empty', () => {
       const configService = new MockConfigService(
         {
           NODE_ENV: 'production',
@@ -257,15 +218,14 @@ describe('AuthConfigService', () => {
         'production',
       );
 
-      const config = authConfigFactory(configService);
+      const config = authConfigFactory(configService, productionYaml);
+      const crossSubDomainConfig = config.getCrossSubDomainCookies();
 
-      expect(config.getCookieDomain()).toBe('.karasu256.com');
-      expect(config.getTrustedOrigins()).not.toContain('http://localhost:3000');
+      expect(crossSubDomainConfig.enabled).toBe(true);
+      expect(crossSubDomainConfig.domain).toBe('.karasu256.com');
     });
 
-    it('should have correct development defaults', () => {
-      process.env.NODE_ENV = 'development';
-
+    it('should return enabled=false when cookieDomain is empty', () => {
       const configService = new MockConfigService(
         {
           NODE_ENV: 'development',
@@ -275,10 +235,41 @@ describe('AuthConfigService', () => {
         'development',
       );
 
-      const config = authConfigFactory(configService);
+      const config = authConfigFactory(configService, developmentYaml);
+      const crossSubDomainConfig = config.getCrossSubDomainCookies();
 
-      expect(config.getCookieDomain()).toBe('localhost');
-      expect(config.getTrustedOrigins()).toContain('http://localhost:3000');
+      expect(crossSubDomainConfig.enabled).toBe(false);
+    });
+  });
+
+  describe('getTrustedProxies', () => {
+    it('should return yaml trusted proxies', () => {
+      const configService = new MockConfigService(
+        {
+          NODE_ENV: 'development',
+          BETTER_AUTH_URL: 'http://localhost:3001',
+          BETTER_AUTH_SECRET: 'dev-secret',
+        },
+        'development',
+      );
+
+      const config = authConfigFactory(configService, developmentYaml);
+      expect(config.getTrustedProxies()).toContain('127.0.0.1');
+      expect(config.getTrustedProxies()).toContain('::1');
+    });
+
+    it('should return empty array for production yaml', () => {
+      const configService = new MockConfigService(
+        {
+          NODE_ENV: 'production',
+          BETTER_AUTH_URL: 'https://api.karasu256.com',
+          BETTER_AUTH_SECRET: 'prod-secret',
+        },
+        'production',
+      );
+
+      const config = authConfigFactory(configService, productionYaml);
+      expect(config.getTrustedProxies()).toEqual([]);
     });
   });
 });
