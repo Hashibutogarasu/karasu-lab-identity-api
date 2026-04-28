@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.2.1](https://github.com/Karasu-Lab/karasu-lab-api/compare/karasu-lab-api-v4.2.0...karasu-lab-api-v4.2.1) (2026-04-28)
+
+
+### Bug Fixes
+
+* fixed github actions docker build step is too slow ([ed7f3e6](https://github.com/Karasu-Lab/karasu-lab-api/commit/ed7f3e674f0c39f33f309a3f3f1be6817bf1d3f0))
+
 ## [4.2.0](https://github.com/Karasu-Lab/karasu-lab-api/compare/karasu-lab-api-v4.1.0...karasu-lab-api-v4.2.0) (2026-04-28)
 
 
