@@ -14,6 +14,8 @@ abstract class AbstractSocialProvider implements ISocialProvider {
 
   abstract isEnabled(): boolean;
   abstract getCredentials(): { clientId: string; clientSecret: string } | null;
+  getScope?(): string[];
+  getAuthorizationQuery?(): Record<string, string>;
 }
 
 /**
@@ -61,6 +63,37 @@ class GoogleProvider extends AbstractSocialProvider {
 }
 
 /**
+ * Microsoft OAuth provider
+ */
+class MicrosoftProvider extends AbstractSocialProvider {
+  readonly id = 'microsoft';
+
+  isEnabled(): boolean {
+    const env = this.configService.getAll();
+    return !!(env.MICROSOFT_CLIENT_ID && env.MICROSOFT_CLIENT_SECRET);
+  }
+
+  getCredentials(): {
+    clientId: string;
+    clientSecret: string;
+    tenantId?: string;
+  } | null {
+    if (!this.isEnabled()) return null;
+
+    const env = this.configService.getAll();
+    return {
+      clientId: env.MICROSOFT_CLIENT_ID,
+      clientSecret: env.MICROSOFT_CLIENT_SECRET,
+      tenantId: env.MICROSOFT_TENANT_ID,
+    };
+  }
+
+  getScope(): string[] {
+    return ['openid', 'profile', 'email', 'offline_access'];
+  }
+}
+
+/**
  * Social provider configuration service
  * Aggregates all social providers and provides their configurations
  */
@@ -68,24 +101,45 @@ export class SocialProviderConfigService implements ISocialProviderConfig {
   private providers: ISocialProvider[];
 
   constructor(configService: IConfigService) {
-    // Initialize all available providers
     this.providers = [
       new DiscordProvider(configService),
       new GoogleProvider(configService),
+      new MicrosoftProvider(configService),
     ];
   }
 
-  getProviders(): Record<string, { clientId: string; clientSecret: string }> {
-    const result: Record<string, { clientId: string; clientSecret: string }> =
-      {};
-
+  getProviders(): Record<
+    string,
+    {
+      clientId: string;
+      clientSecret: string;
+      tenantId?: string;
+      scope?: string[];
+      authorizationQuery?: Record<string, string>;
+    }
+  > {
+    const result: Record<
+      string,
+      {
+        clientId: string;
+        clientSecret: string;
+        tenantId?: string;
+        scope?: string[];
+        authorizationQuery?: Record<string, string>;
+      }
+    > = {};
+ 
     for (const provider of this.providers) {
       const credentials = provider.getCredentials();
       if (credentials) {
-        result[provider.id] = credentials;
+        result[provider.id] = {
+          ...credentials,
+          scope: provider.getScope?.(),
+          authorizationQuery: provider.getAuthorizationQuery?.(),
+        };
       }
     }
-
+ 
     return result;
   }
 

@@ -39,12 +39,10 @@ abstract class AbstractAuthConfig
     const env = this.configService.getAll();
     const defaults = this.getDefaultTrustedOrigins();
 
-    // Parse TRUSTED_ORIGINS from environment variable (comma-separated)
     const envOrigins = env.TRUSTED_ORIGINS
       ? env.TRUSTED_ORIGINS.split(',').map((origin) => origin.trim())
       : [];
 
-    // Merge and remove duplicates
     const allOrigins = [...defaults, ...envOrigins];
     return Array.from(new Set(allOrigins));
   }
@@ -61,9 +59,10 @@ abstract class AbstractAuthConfig
    * Get cross-subdomain cookie configuration
    */
   getCrossSubDomainCookies(): { enabled: boolean; domain: string } {
+    const domain = this.getCookieDomain();
     return {
-      enabled: true,
-      domain: this.getCookieDomain(),
+      enabled: domain !== '',
+      domain: domain,
     };
   }
 
@@ -79,6 +78,26 @@ abstract class AbstractAuthConfig
    */
   getCredentials(): boolean {
     return true;
+  }
+
+  /**
+   * Get default trusted proxies for this environment
+   */
+  protected abstract getDefaultTrustedProxies(): string[];
+
+  /**
+   * Get trusted proxies, merging environment variables with defaults
+   */
+  getTrustedProxies(): string[] {
+    const env = this.configService.getAll();
+    const defaults = this.getDefaultTrustedProxies();
+
+    const envProxies = env.TRUSTED_PROXIES
+      ? env.TRUSTED_PROXIES.split(',').map((proxy) => proxy.trim())
+      : [];
+
+    const allProxies = [...defaults, ...envProxies];
+    return Array.from(new Set(allProxies));
   }
 }
 
@@ -100,6 +119,10 @@ class ProductionAuthConfig extends AbstractAuthConfig {
   protected getDefaultCookieDomain(): string {
     return '.karasu256.com';
   }
+
+  protected getDefaultTrustedProxies(): string[] {
+    return [];
+  }
 }
 
 /**
@@ -108,11 +131,15 @@ class ProductionAuthConfig extends AbstractAuthConfig {
  */
 class DevelopmentAuthConfig extends AbstractAuthConfig {
   protected getDefaultTrustedOrigins(): string[] {
-    return ['http://localhost:3000', 'http://localhost:3001'];
+    return ['http://localhost:3000', 'http://localhost:3001', 'http://192.168.0.5:3001'];
   }
 
   protected getDefaultCookieDomain(): string {
-    return 'localhost';
+    return '';
+  }
+
+  protected getDefaultTrustedProxies(): string[] {
+    return ['127.0.0.1', '::1'];
   }
 }
 
@@ -126,7 +153,11 @@ class TestAuthConfig extends AbstractAuthConfig {
   }
 
   protected getDefaultCookieDomain(): string {
-    return 'localhost';
+    return '';
+  }
+
+  protected getDefaultTrustedProxies(): string[] {
+    return ['127.0.0.1', '::1'];
   }
 }
 

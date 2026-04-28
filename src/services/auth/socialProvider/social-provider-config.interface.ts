@@ -7,7 +7,16 @@ export interface ISocialProviderConfig {
    * Get all configured social providers
    * @returns Record of provider IDs to their credentials
    */
-  getProviders(): Record<string, { clientId: string; clientSecret: string }>;
+  getProviders(): Record<
+    string,
+    {
+      clientId: string;
+      clientSecret: string;
+      tenantId?: string;
+      scope?: string[];
+      authorizationQuery?: Record<string, string>;
+    }
+  >;
 
   /**
    * Check if a specific provider is configured
@@ -36,5 +45,21 @@ export interface ISocialProvider {
    * Get provider credentials if enabled
    * @returns Provider credentials or null if not enabled
    */
-  getCredentials(): { clientId: string; clientSecret: string } | null;
+  getCredentials(): {
+    clientId: string;
+    clientSecret: string;
+    tenantId?: string;
+  } | null;
+
+  /**
+   * Get provider scopes
+   * @returns Provider scopes or undefined if using default
+   */
+  getScope?(): string[];
+
+  /**
+   * Get additional authorization query parameters
+   * @returns Record of query parameters or undefined
+   */
+  getAuthorizationQuery?(): Record<string, string>;
 }

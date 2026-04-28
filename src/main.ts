@@ -2,6 +2,7 @@ import { dotEnvService } from './shared/config/dotenv.service.js';
 dotEnvService.init();
 
 import { NestFactory } from '@nestjs/core';
+import { RequestMethod } from '@nestjs/common';
 import { Request, Response, NextFunction } from 'express';
 import { AppModule } from './app.module.js';
 import { authConfigFactory } from './services/auth/config/auth-config.service.js';
@@ -21,7 +22,9 @@ async function bootstrap() {
   });
 
   app.useGlobalFilters(new GlobalExceptionFilter());
-  app.setGlobalPrefix('api');
+  app.setGlobalPrefix('api', {
+    exclude: [{ path: '.well-known/(.*)', method: RequestMethod.GET }],
+  });
 
   const configService: IConfigService = configServiceFactory();
 

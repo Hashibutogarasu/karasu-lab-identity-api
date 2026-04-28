@@ -64,6 +64,7 @@ export class DevelopmentPasskeyAuth extends AbstractPasskeyAuth {
       'http://127.0.0.1:3000',
       'https://sso.karasu256.com',
       'https://www.karasu256.com',
+      'android:apk-key-hash:SEhtZj8Q-Fb0z9qGqUpYG3s1PbYvmiwZHYqmXe3tVHc',
     ];
   }
 }

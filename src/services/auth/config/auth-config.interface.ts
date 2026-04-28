@@ -35,4 +35,10 @@ export interface IAuthConfig {
    * @returns Boolean indicating if credentials are allowed
    */
   getCredentials(): boolean;
+
+  /**
+   * Get list of trusted proxies for better-auth
+   * @returns Array of IP addresses or ranges
+   */
+  getTrustedProxies(): string[];
 }
