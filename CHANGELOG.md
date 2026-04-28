@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.11.0](https://github.com/Karasu-Lab/karasu-lab-api/compare/karasu-lab-api-v3.10.0...karasu-lab-api-v3.11.0) (2026-04-28)
+
+
+### Features
+
+* added android relation config ([536df44](https://github.com/Karasu-Lab/karasu-lab-api/commit/536df4447486e6e55b3098e7b23f1d71921af9d4))
+
 ## [3.10.0](https://github.com/Karasu-Lab/karasu-lab-api/compare/karasu-lab-api-v3.9.0...karasu-lab-api-v3.10.0) (2026-04-28)
 
 
