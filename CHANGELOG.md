@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.1.0](https://github.com/Karasu-Lab/karasu-lab-api/compare/karasu-lab-api-v4.0.0...karasu-lab-api-v4.1.0) (2026-04-28)
+
+
+### Features
+
+* updated pnpm version ([cd08823](https://github.com/Karasu-Lab/karasu-lab-api/commit/cd0882334a58df0e44ca3a60cabe9eb08b10a9eb))
+
 ## [4.0.0](https://github.com/Karasu-Lab/karasu-lab-api/compare/karasu-lab-api-v3.13.0...karasu-lab-api-v4.0.0) (2026-04-28)
 
 
