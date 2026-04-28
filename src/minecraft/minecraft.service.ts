@@ -42,7 +42,9 @@ export class MinecraftService {
 
     if (!response.ok) {
       const errorBody = await response.text();
-      throw new UnauthorizedException(`Failed to refresh Microsoft token: ${errorBody}`);
+      throw new UnauthorizedException(
+        `Failed to refresh Microsoft token: ${errorBody}`,
+      );
     }
 
     const data = (await response.json()) as { access_token: string };
@@ -58,11 +60,15 @@ export class MinecraftService {
     });
 
     if (!account || !account.refreshToken) {
-      throw new NotFoundException('Microsoft account not linked or refresh token missing');
+      throw new NotFoundException(
+        'Microsoft account not linked or refresh token missing',
+      );
     }
 
     try {
-      const xboxAccessToken = await this.getMicrosoftXboxToken(account.refreshToken);
+      const xboxAccessToken = await this.getMicrosoftXboxToken(
+        account.refreshToken,
+      );
 
       const xblResponse = await fetch(
         'https://user.auth.xboxlive.com/user/authenticate',
@@ -86,7 +92,9 @@ export class MinecraftService {
 
       if (!xblResponse.ok) {
         const errorBody = await xblResponse.text();
-        throw new UnauthorizedException(`Xbox Live authentication failed ${xblResponse.status} ${errorBody}`);
+        throw new UnauthorizedException(
+          `Xbox Live authentication failed ${xblResponse.status} ${errorBody}`,
+        );
       }
 
       const xblData = xblResponseSchema.parse(await xblResponse.json());

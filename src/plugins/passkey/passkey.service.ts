@@ -1,5 +1,6 @@
 import { IPasskeyAuth } from './passkey.interface.js';
 import { IConfigService } from '../../shared/config/config.service.interface.js';
+import { loadApiConfig } from '../../utils/config.util.js';
 import { AbstractEnvironment, Environment } from '@hashibutogarasu/common';
 
 export abstract class AbstractPasskeyAuth
@@ -39,60 +40,18 @@ export abstract class AbstractPasskeyAuth
   }
 }
 
-export class ProductionPasskeyAuth extends AbstractPasskeyAuth {
+export class YamlPasskeyAuth extends AbstractPasskeyAuth {
   constructor(configService: IConfigService) {
-    super(configService, Environment.PRODUCTION);
+    super(configService, configService.environment);
   }
 
   protected getDefaultOrigins(): string[] {
-    return [
-      'https://sso.karasu256.com',
-      'https://karasu256.com',
-      'https://www.karasu256.com',
-      'https://id.karasu256.com',
-      'android:apk-key-hash:SEhtZj8Q-Fb0z9qGqUpYG3s1PbYvmiwZHYqmXe3tVHc',
-    ];
+    return loadApiConfig(this.environment).passkey.origins;
   }
 }
-
-export class DevelopmentPasskeyAuth extends AbstractPasskeyAuth {
-  constructor(configService: IConfigService) {
-    super(configService, Environment.DEVELOPMENT);
-  }
-
-  protected getDefaultOrigins(): string[] {
-    return [
-      'http://localhost:3000',
-      'http://127.0.0.1:3000',
-      'https://sso.karasu256.com',
-      'https://www.karasu256.com',
-      'android:apk-key-hash:SEhtZj8Q-Fb0z9qGqUpYG3s1PbYvmiwZHYqmXe3tVHc',
-    ];
-  }
-}
-
-export class TestPasskeyAuth extends AbstractPasskeyAuth {
-  constructor(configService: IConfigService) {
-    super(configService, Environment.TEST);
-  }
-
-  protected getDefaultOrigins(): string[] {
-    return ['http://localhost:3001'];
-  }
-}
-
-const passkeyAuthClasses: Record<
-  Environment,
-  new (configService: IConfigService) => IPasskeyAuth
-> = {
-  [Environment.PRODUCTION]: ProductionPasskeyAuth,
-  [Environment.DEVELOPMENT]: DevelopmentPasskeyAuth,
-  [Environment.TEST]: TestPasskeyAuth,
-};
 
 export function passkeyAuthFactory(
   configService: IConfigService,
 ): IPasskeyAuth {
-  const PasskeyAuthClass = passkeyAuthClasses[configService.environment];
-  return new PasskeyAuthClass(configService);
+  return new YamlPasskeyAuth(configService);
 }

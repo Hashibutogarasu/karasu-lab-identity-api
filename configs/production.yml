@@ -1,0 +1,23 @@
+auth:
+  trustedOrigins:
+    - https://api.karasu256.com
+    - https://sso.karasu256.com
+    - https://www.karasu256.com
+    - https://karasu256.com
+    - https://id.karasu256.com
+    - 'android:apk-key-hash:SEhtZj8Q-Fb0z9qGqUpYG3s1PbYvmiwZHYqmXe3tVHc'
+  cookieDomain: '.karasu256.com'
+  trustedProxies: []
+
+passkey:
+  origins:
+    - https://sso.karasu256.com
+    - https://karasu256.com
+    - https://www.karasu256.com
+    - https://id.karasu256.com
+    - 'android:apk-key-hash:SEhtZj8Q-Fb0z9qGqUpYG3s1PbYvmiwZHYqmXe3tVHc'
+
+rateLimit:
+  enabled: true
+  window: 60
+  max: 100

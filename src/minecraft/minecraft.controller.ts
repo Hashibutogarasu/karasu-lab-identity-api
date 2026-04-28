@@ -1,5 +1,10 @@
 import { Controller, Get, UseGuards, Req } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiTags, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import { AuthGuard } from '@thallesp/nestjs-better-auth';
 import type { Request } from 'express';
 

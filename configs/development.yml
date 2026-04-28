@@ -1,0 +1,22 @@
+auth:
+  trustedOrigins:
+    - http://localhost:3000
+    - http://localhost:3001
+    - http://192.168.0.5:3001
+  cookieDomain: ''
+  trustedProxies:
+    - 127.0.0.1
+    - '::1'
+
+passkey:
+  origins:
+    - http://localhost:3000
+    - http://127.0.0.1:3000
+    - https://sso.karasu256.com
+    - https://www.karasu256.com
+    - 'android:apk-key-hash:SEhtZj8Q-Fb0z9qGqUpYG3s1PbYvmiwZHYqmXe3tVHc'
+
+rateLimit:
+  enabled: true
+  window: 60
+  max: 1000

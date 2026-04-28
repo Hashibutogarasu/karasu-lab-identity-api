@@ -128,7 +128,7 @@ export class SocialProviderConfigService implements ISocialProviderConfig {
         authorizationQuery?: Record<string, string>;
       }
     > = {};
- 
+
     for (const provider of this.providers) {
       const credentials = provider.getCredentials();
       if (credentials) {
@@ -139,7 +139,7 @@ export class SocialProviderConfigService implements ISocialProviderConfig {
         };
       }
     }
- 
+
     return result;
   }
 

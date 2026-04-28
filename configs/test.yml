@@ -1,0 +1,15 @@
+auth:
+  trustedOrigins:
+    - http://localhost:3000
+    - http://localhost:3001
+  cookieDomain: ''
+  trustedProxies:
+    - 127.0.0.1
+    - '::1'
+
+passkey:
+  origins:
+    - http://localhost:3001
+
+rateLimit:
+  enabled: false

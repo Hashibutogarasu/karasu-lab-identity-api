@@ -1,5 +1,6 @@
 import { Environment } from '@hashibutogarasu/common';
 import { BetterAuthOptions } from 'better-auth';
+import { loadApiConfig } from '../../../utils/config.util.js';
 import { IRateLimitConfig } from './rate-limit-config.interface.js';
 import { AbstractPluginEnvironment } from '../../../shared/plugin/abstract-plugin-environment.js';
 
@@ -18,39 +19,11 @@ export abstract class AbstractRateLimitConfig
 }
 
 /**
- * Production environment rate limit configuration
+ * Rate limit configuration loaded from configs/{env}.yml
  */
-class ProductionRateLimitConfig extends AbstractRateLimitConfig {
+class YamlRateLimitConfig extends AbstractRateLimitConfig {
   getConfig(): NonNullable<BetterAuthOptions['rateLimit']> {
-    return {
-      enabled: true,
-      window: 60,
-      max: 100,
-    };
-  }
-}
-
-/**
- * Development environment rate limit configuration
- */
-class DevelopmentRateLimitConfig extends AbstractRateLimitConfig {
-  getConfig(): NonNullable<BetterAuthOptions['rateLimit']> {
-    return {
-      enabled: true,
-      window: 60,
-      max: 1000,
-    };
-  }
-}
-
-/**
- * Test environment rate limit configuration
- */
-class TestRateLimitConfig extends AbstractRateLimitConfig {
-  getConfig(): NonNullable<BetterAuthOptions['rateLimit']> {
-    return {
-      enabled: false,
-    };
+    return loadApiConfig(this.environment).rateLimit;
   }
 }
 
@@ -65,10 +38,10 @@ export function rateLimitConfigFactory(): IRateLimitConfig {
     []
   >({
     [Environment.PRODUCTION]:
-      ProductionRateLimitConfig as new () => AbstractRateLimitConfig,
+      YamlRateLimitConfig as new () => AbstractRateLimitConfig,
     [Environment.DEVELOPMENT]:
-      DevelopmentRateLimitConfig as new () => AbstractRateLimitConfig,
+      YamlRateLimitConfig as new () => AbstractRateLimitConfig,
     [Environment.TEST]:
-      TestRateLimitConfig as new () => AbstractRateLimitConfig,
+      YamlRateLimitConfig as new () => AbstractRateLimitConfig,
   });
 }

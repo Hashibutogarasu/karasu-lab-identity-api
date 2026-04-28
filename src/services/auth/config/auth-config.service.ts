@@ -1,5 +1,6 @@
 import { Environment } from '@hashibutogarasu/common';
 import { IConfigService } from '../../../shared/config/config.service.interface.js';
+import { loadApiConfig } from '../../../utils/config.util.js';
 import { IAuthConfig } from './auth-config.interface.js';
 import { AbstractPluginEnvironment } from '../../../shared/plugin/abstract-plugin-environment.js';
 
@@ -102,62 +103,19 @@ abstract class AbstractAuthConfig
 }
 
 /**
- * Production environment auth configuration
- * Only allows production domains by default
+ * Auth configuration loaded from configs/{env}.yml
  */
-class ProductionAuthConfig extends AbstractAuthConfig {
+class YamlAuthConfig extends AbstractAuthConfig {
   protected getDefaultTrustedOrigins(): string[] {
-    return [
-      'https://api.karasu256.com',
-      'https://sso.karasu256.com',
-      'https://www.karasu256.com',
-      'https://karasu256.com',
-      'https://id.karasu256.com',
-    ];
+    return loadApiConfig(this.configService.environment).auth.trustedOrigins;
   }
 
   protected getDefaultCookieDomain(): string {
-    return '.karasu256.com';
+    return loadApiConfig(this.configService.environment).auth.cookieDomain;
   }
 
   protected getDefaultTrustedProxies(): string[] {
-    return [];
-  }
-}
-
-/**
- * Development environment auth configuration
- * Allows localhost and production domains for testing
- */
-class DevelopmentAuthConfig extends AbstractAuthConfig {
-  protected getDefaultTrustedOrigins(): string[] {
-    return ['http://localhost:3000', 'http://localhost:3001', 'http://192.168.0.5:3001'];
-  }
-
-  protected getDefaultCookieDomain(): string {
-    return '';
-  }
-
-  protected getDefaultTrustedProxies(): string[] {
-    return ['127.0.0.1', '::1'];
-  }
-}
-
-/**
- * Test environment auth configuration
- * Only allows localhost for isolated testing
- */
-class TestAuthConfig extends AbstractAuthConfig {
-  protected getDefaultTrustedOrigins(): string[] {
-    return ['http://localhost:3000', 'http://localhost:3001'];
-  }
-
-  protected getDefaultCookieDomain(): string {
-    return '';
-  }
-
-  protected getDefaultTrustedProxies(): string[] {
-    return ['127.0.0.1', '::1'];
+    return loadApiConfig(this.configService.environment).auth.trustedProxies;
   }
 }
 
@@ -173,13 +131,13 @@ export function authConfigFactory(configService: IConfigService): IAuthConfig {
     [IConfigService]
   >(
     {
-      [Environment.PRODUCTION]: ProductionAuthConfig as new (
+      [Environment.PRODUCTION]: YamlAuthConfig as new (
         configService: IConfigService,
       ) => AbstractAuthConfig,
-      [Environment.DEVELOPMENT]: DevelopmentAuthConfig as new (
+      [Environment.DEVELOPMENT]: YamlAuthConfig as new (
         configService: IConfigService,
       ) => AbstractAuthConfig,
-      [Environment.TEST]: TestAuthConfig as new (
+      [Environment.TEST]: YamlAuthConfig as new (
         configService: IConfigService,
       ) => AbstractAuthConfig,
     },
