@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.12.0](https://github.com/Karasu-Lab/karasu-lab-api/compare/karasu-lab-api-v3.11.0...karasu-lab-api-v3.12.0) (2026-04-28)
+
+
+### Features
+
+* added config in ProductionPasskeyAuth ([9771749](https://github.com/Karasu-Lab/karasu-lab-api/commit/9771749134f8a0b7dcfd459ab92b5f3baa81e3b9))
+
 ## [3.11.0](https://github.com/Karasu-Lab/karasu-lab-api/compare/karasu-lab-api-v3.10.0...karasu-lab-api-v3.11.0) (2026-04-28)
 
 
