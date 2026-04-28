@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.13.0](https://github.com/Karasu-Lab/karasu-lab-api/compare/karasu-lab-api-v3.12.0...karasu-lab-api-v3.13.0) (2026-04-28)
+
+
+### Features
+
+* added AllowAnonymous to WellKnownController ([6cd8593](https://github.com/Karasu-Lab/karasu-lab-api/commit/6cd85936dbb34e62ef8397511418c53e258699eb))
+
 ## [3.12.0](https://github.com/Karasu-Lab/karasu-lab-api/compare/karasu-lab-api-v3.11.0...karasu-lab-api-v3.12.0) (2026-04-28)
 
 
