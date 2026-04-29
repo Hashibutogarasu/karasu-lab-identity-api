@@ -8,11 +8,7 @@ import { UserController } from './user.controller.js';
 import { UserService } from './user.service.js';
 
 @Module({
-  imports: [
-    SessionModule,
-    DeletableModule,
-    StoneManageModule,
-  ],
+  imports: [SessionModule, DeletableModule, StoneManageModule],
   controllers: [UserController],
   providers: [UserService, RolesGuard],
 })

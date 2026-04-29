@@ -19,7 +19,7 @@ export function passkeyAuthFactory(
     getRPID(): string {
       return yaml.rpId;
     },
-    
+
     getRPName(): string {
       return yaml.rpName;
     },

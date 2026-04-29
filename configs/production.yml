@@ -10,8 +10,8 @@ auth:
   trustedProxies: []
 
 passkey:
-  rpId: "karasu256.com"
-  rpName: "Karasu Lab"
+  rpId: 'karasu256.com'
+  rpName: 'Karasu Lab'
   origins:
     - https://sso.karasu256.com
     - https://karasu256.com

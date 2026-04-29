@@ -11,7 +11,8 @@ import type { Request } from 'express';
 import { IFirebaseAdminProvider } from '../firebase/firebase-admin.provider.interface.js';
 import { User } from '../../apps/stonemanage/stonemanage.schema.js';
 
-export const RequireOwnership = (collection: string) => SetMetadata('ownership', collection);
+export const RequireOwnership = (collection: string) =>
+  SetMetadata('ownership', collection);
 
 @Injectable()
 export class OwnershipGuard implements CanActivate {
@@ -21,7 +22,10 @@ export class OwnershipGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const collection = this.reflector.get<string>('ownership', context.getHandler());
+    const collection = this.reflector.get<string>(
+      'ownership',
+      context.getHandler(),
+    );
     if (!collection) return true;
 
     const gqlContext = GqlExecutionContext.create(context);
@@ -33,12 +37,17 @@ export class OwnershipGuard implements CanActivate {
     const resourceId = args.id;
     if (!resourceId) return true;
 
-    const doc = await this.firebase.db.collection(collection).doc(resourceId).get();
+    const doc = await this.firebase.db
+      .collection(collection)
+      .doc(resourceId)
+      .get();
     if (!doc.exists) return true;
 
     const data = doc.data() as { userId?: string };
     if (data?.userId !== user.id) {
-      throw new ForbiddenException('You do not have permission to access this resource.');
+      throw new ForbiddenException(
+        'You do not have permission to access this resource.',
+      );
     }
 
     return true;
