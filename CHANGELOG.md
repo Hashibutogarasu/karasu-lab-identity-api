@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.3.0](https://github.com/Karasu-Lab/karasu-lab-api/compare/karasu-lab-api-v4.2.2...karasu-lab-api-v4.3.0) (2026-04-29)
+
+
+### Features
+
+* migrated passkey rpid config to yml ([29db388](https://github.com/Karasu-Lab/karasu-lab-api/commit/29db388b7323b5edacc00223ddc82b9f7bdf503d))
+
 ## [4.2.2](https://github.com/Karasu-Lab/karasu-lab-api/compare/karasu-lab-api-v4.2.1...karasu-lab-api-v4.2.2) (2026-04-28)
 
 
