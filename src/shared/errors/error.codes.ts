@@ -71,15 +71,6 @@ export const ErrorCodes = createErrorMap({
     ],
     OPENAPI_UNAUTHORIZED: ['system.openapi_unauthorized', 'UNAUTHORIZED'],
   },
-  BLOG: {
-    NOT_FOUND: ['blog.not_found', 'NOT_FOUND'],
-    ATTACHMENT_NOT_FOUND: ['blog.attachment_not_found', 'NOT_FOUND'],
-    FORBIDDEN: ['blog.forbidden', 'FORBIDDEN'],
-    LOCKED: ['blog.locked', 'FORBIDDEN'],
-    MINE_REQUIRES_AUTH: ['blog.mine_requires_auth', 'UNAUTHORIZED'],
-    ATTACHMENT_TOO_LARGE: ['blog.attachment_too_large', 'BAD_REQUEST'],
-    NOT_IMPLEMENTED: ['blog.not_implemented', 'BAD_REQUEST'],
-  },
   FIREBASE: {
     SYNC_FAILED: ['firebase.sync_failed', 'INTERNAL_SERVER_ERROR'],
     NOT_INITIALIZED: ['firebase.not_initialized', 'INTERNAL_SERVER_ERROR'],

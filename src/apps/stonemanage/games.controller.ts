@@ -18,7 +18,7 @@ import { GamesService } from './games.service.js';
 import { CreateGameDto, createGameSchema } from './dto/create-game.dto.js';
 import { UpdateGameDto, updateGameSchema } from './dto/update-game.dto.js';
 import { GameResponseDto } from './dto/game-response.dto.js';
-import { SuccessResponseDto } from '../../blogs/dto/success-response.dto.js';
+import { SuccessResponseDto } from '../../shared/dto/success-response.dto.js';
 import { AuthGuard } from '@thallesp/nestjs-better-auth';
 import { ZodValidationPipe } from '../../shared/pipes/zod-validation.pipe.js';
 import { Pagination } from '../../shared/decorators/pagination.decorator.js';

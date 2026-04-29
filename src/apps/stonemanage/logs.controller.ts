@@ -18,7 +18,7 @@ import { LogsService } from './logs.service.js';
 import { CreateLogDto, createLogSchema } from './dto/create-log.dto.js';
 import { UpdateLogDto, updateLogSchema } from './dto/update-log.dto.js';
 import { LogResponseDto } from './dto/log-response.dto.js';
-import { SuccessResponseDto } from '../../blogs/dto/success-response.dto.js';
+import { SuccessResponseDto } from '../../shared/dto/success-response.dto.js';
 import { AuthGuard } from '@thallesp/nestjs-better-auth';
 import { ZodValidationPipe } from '../../shared/pipes/zod-validation.pipe.js';
 import { Pagination } from '../../shared/decorators/pagination.decorator.js';

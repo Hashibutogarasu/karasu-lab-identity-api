@@ -18,7 +18,7 @@ import { StonesService } from './stones.service.js';
 import { CreateStoneDto, createStoneSchema } from './dto/create-stone.dto.js';
 import { UpdateStoneDto, updateStoneSchema } from './dto/update-stone.dto.js';
 import { StoneResponseDto } from './dto/stone-response.dto.js';
-import { SuccessResponseDto } from '../../blogs/dto/success-response.dto.js';
+import { SuccessResponseDto } from '../../shared/dto/success-response.dto.js';
 import { AuthGuard } from '@thallesp/nestjs-better-auth';
 import { ZodValidationPipe } from '../../shared/pipes/zod-validation.pipe.js';
 import { Pagination } from '../../shared/decorators/pagination.decorator.js';

@@ -7,9 +7,6 @@ import { II18nService } from './shared/i18n/i18n.service.interface.js';
 import { I18nService } from './shared/i18n/i18n.service.js';
 import { StorageModule } from './storage/storage.module.js';
 import { storageConfig } from './config/storage.env.js';
-import { BlogModule } from './blogs/blog.module.js';
-import { AuthorModule } from './authors/author.module.js';
-import { AttachmentModule } from './attachments/attachment.module.js';
 import { OpenApiModule } from './shared/openapi/openapi.module.js';
 import { AuthMiddlewareModule } from './shared/auth/auth-middleware.module.js';
 import { StoneManageModule } from './apps/stonemanage/stone-manage.module.js';
@@ -34,9 +31,6 @@ import { SessionService } from './shared/auth/session.service.js';
       bucket: storageConfig.R2_BUCKET,
       publicUrl: storageConfig.R2_PUBLIC_URL,
     }),
-    BlogModule,
-    AuthorModule,
-    AttachmentModule,
     OpenApiModule,
     StoneManageModule,
     UserModule,
