@@ -11,6 +11,8 @@ const apiYamlConfigSchema = z.object({
   }),
   passkey: z.object({
     origins: z.array(z.string()),
+    rpId: z.string(),
+    rpName: z.string(),
   }),
   rateLimit: z.object({
     enabled: z.boolean(),

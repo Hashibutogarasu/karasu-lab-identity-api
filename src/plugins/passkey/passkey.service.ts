@@ -17,11 +17,11 @@ export function passkeyAuthFactory(
     },
 
     getRPID(): string {
-      return configService.getAll().PASSKEY_RP_ID;
+      return yaml.rpId;
     },
-
+    
     getRPName(): string {
-      return configService.getAll().PASSKEY_RP_NAME;
+      return yaml.rpName;
     },
   };
 }
