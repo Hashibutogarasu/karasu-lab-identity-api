@@ -1,0 +1,81 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+input CreateGameInput {
+  imageKey: String
+  title: String!
+}
+
+input CreateLogInput {
+  amount: Int!
+  stoneId: String!
+}
+
+input CreateStoneInput {
+  amount: Int!
+  gameId: String!
+  imageKey: String
+  name: String!
+}
+
+type GameModel {
+  createdAt: String!
+  id: ID!
+  image: String
+  imageKey: String
+  title: String!
+  updatedAt: String!
+  userId: String!
+}
+
+type Mutation {
+  createGame(input: CreateGameInput!): GameModel!
+  createStone(input: CreateStoneInput!): StoneModel!
+  createStoneLog(input: CreateLogInput!): StoneLogModel!
+  deleteGame(id: ID!): Boolean!
+  deleteStone(id: ID!): Boolean!
+  updateGame(id: ID!, input: UpdateGameInput!): GameModel!
+  updateStone(id: ID!, input: UpdateStoneInput!): StoneModel!
+}
+
+type Query {
+  game(id: ID!): GameModel!
+  games: [GameModel!]!
+  stoneLogs(stoneId: ID!): [StoneLogModel!]!
+  stones(gameId: ID): [StoneModel!]!
+}
+
+type StoneLogModel {
+  amount: Int!
+  createdAt: String!
+  id: ID!
+  nextAmount: Int
+  previousAmount: Int
+  stoneId: String!
+  updatedAt: String!
+  userId: String!
+}
+
+type StoneModel {
+  amount: Int!
+  createdAt: String!
+  gameId: String!
+  id: ID!
+  image: String
+  imageKey: String
+  name: String!
+  updatedAt: String!
+  userId: String!
+}
+
+input UpdateGameInput {
+  imageKey: String
+  title: String
+}
+
+input UpdateStoneInput {
+  amount: Int
+  imageKey: String
+  name: String
+}

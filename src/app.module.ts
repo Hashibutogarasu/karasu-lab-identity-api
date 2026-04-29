@@ -3,6 +3,8 @@ import { APP_GUARD } from '@nestjs/core';
 import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
 import { AuthModule } from '@thallesp/nestjs-better-auth';
+import { GraphQLModule } from '@nestjs/graphql';
+import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { II18nService } from './shared/i18n/i18n.service.interface.js';
 import { I18nService } from './shared/i18n/i18n.service.js';
 import { StorageModule } from './storage/storage.module.js';
@@ -30,6 +32,14 @@ import { SessionService } from './shared/auth/session.service.js';
       secretAccessKey: storageConfig.R2_SECRET_ACCESS_KEY,
       bucket: storageConfig.R2_BUCKET,
       publicUrl: storageConfig.R2_PUBLIC_URL,
+    }),
+    GraphQLModule.forRoot<ApolloDriverConfig>({
+      driver: ApolloDriver,
+      autoSchemaFile: 'schema.gql',
+      sortSchema: true,
+      playground: true,
+      path: '/api/graphql',
+      context: ({ req, res }) => ({ req, res }),
     }),
     OpenApiModule,
     StoneManageModule,
