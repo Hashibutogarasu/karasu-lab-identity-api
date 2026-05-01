@@ -11,5 +11,8 @@ passkey:
   origins:
     - http://localhost:3001
 
+bluesky:
+  redirectUri: 'net.karasuniki.karasulab://oauth/callback'
+
 rateLimit:
   enabled: false

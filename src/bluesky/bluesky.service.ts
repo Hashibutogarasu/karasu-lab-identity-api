@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { IConfigService } from '../shared/config/config.service.interface.js';
-
-const REDIRECT_URI = 'net.karasuniki.karasulab://oauth/callback';
+import { getApiConfig } from '../utils/config.util.js';
 
 interface BlueskyClientMetadata {
   client_id: string;
@@ -24,12 +23,13 @@ export class BlueskyService {
   getClientMetadata(): BlueskyClientMetadata {
     const baseUrl = this.configService.get('BETTER_AUTH_URL');
     const clientId = `${baseUrl}/api/bluesky/oauth/client-metadata.json`;
+    const redirectUri = getApiConfig().bluesky.redirectUri;
 
     return {
       client_id: clientId,
       client_name: 'KarasuLab',
       client_uri: baseUrl,
-      redirect_uris: [REDIRECT_URI],
+      redirect_uris: [redirectUri],
       grant_types: ['authorization_code', 'refresh_token'],
       response_types: ['code'],
       scope: 'atproto transition:generic',

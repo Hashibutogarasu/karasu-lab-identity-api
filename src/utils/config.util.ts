@@ -14,6 +14,9 @@ const apiYamlConfigSchema = z.object({
     rpId: z.string(),
     rpName: z.string(),
   }),
+  bluesky: z.object({
+    redirectUri: z.string(),
+  }),
   rateLimit: z.object({
     enabled: z.boolean(),
     window: z.number().optional(),
