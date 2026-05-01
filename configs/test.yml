@@ -12,7 +12,7 @@ passkey:
     - http://localhost:3001
 
 bluesky:
-  redirectUri: 'net.karasuniki.karasulab://oauth/callback'
+  redirectUri: 'net.karasuniki.karasulab:/oauth/callback'
 
 rateLimit:
   enabled: false

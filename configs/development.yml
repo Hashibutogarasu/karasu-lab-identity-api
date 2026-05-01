@@ -19,7 +19,7 @@ passkey:
     - 'android:apk-key-hash:SEhtZj8Q-Fb0z9qGqUpYG3s1PbYvmiwZHYqmXe3tVHc'
 
 bluesky:
-  redirectUri: 'net.karasuniki.karasulab://oauth/callback'
+  redirectUri: 'net.karasuniki.karasulab:/oauth/callback'
 
 rateLimit:
   enabled: true
