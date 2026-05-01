@@ -20,10 +20,22 @@ interface BlueskyClientMetadata {
 export class BlueskyService {
   constructor(private readonly configService: IConfigService) {}
 
+  private normalizeRedirectUri(rawUri: string): string {
+    const match = rawUri.match(/^([a-z][a-z0-9+.-]*):\/\/(.*)$/i);
+    if (!match) return rawUri;
+
+    const scheme = match[1].toLowerCase();
+    if (scheme === 'http' || scheme === 'https') return rawUri;
+
+    return `${scheme}:/${match[2]}`;
+  }
+
   getClientMetadata(): BlueskyClientMetadata {
     const baseUrl = this.configService.get('BETTER_AUTH_URL');
     const clientId = `${baseUrl}/api/bluesky/oauth/client-metadata.json`;
-    const redirectUri = getApiConfig().bluesky.redirectUri;
+    const redirectUri = this.normalizeRedirectUri(
+      getApiConfig().bluesky.redirectUri,
+    );
 
     return {
       client_id: clientId,
