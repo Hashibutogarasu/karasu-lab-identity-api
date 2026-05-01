@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.1.1](https://github.com/Karasu-Lab/karasu-lab-api/compare/karasu-lab-api-v5.1.0...karasu-lab-api-v5.1.1) (2026-05-01)
+
+
+### Bug Fixes
+
+* fixed bluesky redirect uri format ([5a8ddd1](https://github.com/Karasu-Lab/karasu-lab-api/commit/5a8ddd169c1970289a218560473ab2bd77500663))
+
 ## [5.1.0](https://github.com/Karasu-Lab/karasu-lab-api/compare/karasu-lab-api-v5.0.0...karasu-lab-api-v5.1.0) (2026-05-01)
 
 
