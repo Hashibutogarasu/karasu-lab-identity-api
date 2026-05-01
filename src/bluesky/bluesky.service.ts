@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { IConfigService } from '../shared/config/config.service.interface.js';
 
-const REDIRECT_URI = 'io.github.kikin81:/oauth-redirect';
+const REDIRECT_URI = 'net.karasuniki.karasulab://oauth/callback';
 
 interface BlueskyClientMetadata {
   client_id: string;
