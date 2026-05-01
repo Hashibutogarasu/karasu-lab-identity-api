@@ -2,142 +2,122 @@
 
 ## [5.2.0](https://github.com/Karasu-Lab/karasu-lab-api/compare/karasu-lab-api-v5.1.1...karasu-lab-api-v5.2.0) (2026-05-01)
 
-
 ### Features
 
-* updated yml schema ([d5a3e58](https://github.com/Karasu-Lab/karasu-lab-api/commit/d5a3e587708fa11cc658d47dc38ad6eeb3e04cc2))
-
+- updated yml schema ([d5a3e58](https://github.com/Karasu-Lab/karasu-lab-api/commit/d5a3e587708fa11cc658d47dc38ad6eeb3e04cc2))
 
 ### Bug Fixes
 
-* fixed bluesky redirectUri ([133fad9](https://github.com/Karasu-Lab/karasu-lab-api/commit/133fad9ea3b050ae6a2e9d6147180a4e8c37451e))
-* fixed redirectUri ([8dc5cd2](https://github.com/Karasu-Lab/karasu-lab-api/commit/8dc5cd2a0ca8d8bac4eaf53c55f0799c27c8331c))
+- fixed bluesky redirectUri ([133fad9](https://github.com/Karasu-Lab/karasu-lab-api/commit/133fad9ea3b050ae6a2e9d6147180a4e8c37451e))
+- fixed redirectUri ([8dc5cd2](https://github.com/Karasu-Lab/karasu-lab-api/commit/8dc5cd2a0ca8d8bac4eaf53c55f0799c27c8331c))
 
 ## [5.1.1](https://github.com/Karasu-Lab/karasu-lab-api/compare/karasu-lab-api-v5.1.0...karasu-lab-api-v5.1.1) (2026-05-01)
 
-
 ### Bug Fixes
 
-* fixed bluesky redirect uri format ([5a8ddd1](https://github.com/Karasu-Lab/karasu-lab-api/commit/5a8ddd169c1970289a218560473ab2bd77500663))
+- fixed bluesky redirect uri format ([5a8ddd1](https://github.com/Karasu-Lab/karasu-lab-api/commit/5a8ddd169c1970289a218560473ab2bd77500663))
 
 ## [5.1.0](https://github.com/Karasu-Lab/karasu-lab-api/compare/karasu-lab-api-v5.0.0...karasu-lab-api-v5.1.0) (2026-05-01)
 
-
 ### Features
 
-* removed hardcoded redirect uri and added yml config ([1082672](https://github.com/Karasu-Lab/karasu-lab-api/commit/1082672130952244a197fad961e56e61a57e59b1))
-
+- removed hardcoded redirect uri and added yml config ([1082672](https://github.com/Karasu-Lab/karasu-lab-api/commit/1082672130952244a197fad961e56e61a57e59b1))
 
 ### Bug Fixes
 
-* fixed redirecturi ([cdbbb18](https://github.com/Karasu-Lab/karasu-lab-api/commit/cdbbb1857c2562a2183c921c4ce08d1dd994d7d0))
+- fixed redirecturi ([cdbbb18](https://github.com/Karasu-Lab/karasu-lab-api/commit/cdbbb1857c2562a2183c921c4ce08d1dd994d7d0))
 
 ## [5.0.0](https://github.com/Karasu-Lab/karasu-lab-api/compare/karasu-lab-api-v4.3.0...karasu-lab-api-v5.0.0) (2026-05-01)
 
-
 ### ⚠ BREAKING CHANGES
 
-* migrated stone manage api to graphql
+- migrated stone manage api to graphql
 
 ### Features
 
-* add Bluesky module with OAuth client metadata functionality ([5547720](https://github.com/Karasu-Lab/karasu-lab-api/commit/55477200ab62aa6c659ffdb7eca85e63e692c253))
-
+- add Bluesky module with OAuth client metadata functionality ([5547720](https://github.com/Karasu-Lab/karasu-lab-api/commit/55477200ab62aa6c659ffdb7eca85e63e692c253))
 
 ### Code Refactoring
 
-* migrated stone manage api to graphql ([034dd3a](https://github.com/Karasu-Lab/karasu-lab-api/commit/034dd3a31363917a85151499b56550efa60643b4))
+- migrated stone manage api to graphql ([034dd3a](https://github.com/Karasu-Lab/karasu-lab-api/commit/034dd3a31363917a85151499b56550efa60643b4))
 
 ## [4.3.0](https://github.com/Karasu-Lab/karasu-lab-api/compare/karasu-lab-api-v4.2.2...karasu-lab-api-v4.3.0) (2026-04-29)
 
-
 ### Features
 
-* migrated passkey rpid config to yml ([29db388](https://github.com/Karasu-Lab/karasu-lab-api/commit/29db388b7323b5edacc00223ddc82b9f7bdf503d))
+- migrated passkey rpid config to yml ([29db388](https://github.com/Karasu-Lab/karasu-lab-api/commit/29db388b7323b5edacc00223ddc82b9f7bdf503d))
 
 ## [4.2.2](https://github.com/Karasu-Lab/karasu-lab-api/compare/karasu-lab-api-v4.2.1...karasu-lab-api-v4.2.2) (2026-04-28)
 
-
 ### Bug Fixes
 
-* fixed build errors ([8f72576](https://github.com/Karasu-Lab/karasu-lab-api/commit/8f72576cfcae6d4168897c8cab2d46004982e8a1))
+- fixed build errors ([8f72576](https://github.com/Karasu-Lab/karasu-lab-api/commit/8f72576cfcae6d4168897c8cab2d46004982e8a1))
 
 ## [4.2.1](https://github.com/Karasu-Lab/karasu-lab-api/compare/karasu-lab-api-v4.2.0...karasu-lab-api-v4.2.1) (2026-04-28)
 
-
 ### Bug Fixes
 
-* fixed github actions docker build step is too slow ([ed7f3e6](https://github.com/Karasu-Lab/karasu-lab-api/commit/ed7f3e674f0c39f33f309a3f3f1be6817bf1d3f0))
+- fixed github actions docker build step is too slow ([ed7f3e6](https://github.com/Karasu-Lab/karasu-lab-api/commit/ed7f3e674f0c39f33f309a3f3f1be6817bf1d3f0))
 
 ## [4.2.0](https://github.com/Karasu-Lab/karasu-lab-api/compare/karasu-lab-api-v4.1.0...karasu-lab-api-v4.2.0) (2026-04-28)
 
-
 ### Features
 
-* refactored yml config loaders ([77257b5](https://github.com/Karasu-Lab/karasu-lab-api/commit/77257b5a2a696ab644ebc637ca881dff59c23094))
-
+- refactored yml config loaders ([77257b5](https://github.com/Karasu-Lab/karasu-lab-api/commit/77257b5a2a696ab644ebc637ca881dff59c23094))
 
 ### Bug Fixes
 
-* fixed coonfig file not loaded ([39eaf3f](https://github.com/Karasu-Lab/karasu-lab-api/commit/39eaf3f259391bb712570b8e8c072e37366cd2e5))
+- fixed coonfig file not loaded ([39eaf3f](https://github.com/Karasu-Lab/karasu-lab-api/commit/39eaf3f259391bb712570b8e8c072e37366cd2e5))
 
 ## [4.1.0](https://github.com/Karasu-Lab/karasu-lab-api/compare/karasu-lab-api-v4.0.0...karasu-lab-api-v4.1.0) (2026-04-28)
 
-
 ### Features
 
-* updated pnpm version ([cd08823](https://github.com/Karasu-Lab/karasu-lab-api/commit/cd0882334a58df0e44ca3a60cabe9eb08b10a9eb))
+- updated pnpm version ([cd08823](https://github.com/Karasu-Lab/karasu-lab-api/commit/cd0882334a58df0e44ca3a60cabe9eb08b10a9eb))
 
 ## [4.0.0](https://github.com/Karasu-Lab/karasu-lab-api/compare/karasu-lab-api-v3.13.0...karasu-lab-api-v4.0.0) (2026-04-28)
 
-
 ### ⚠ BREAKING CHANGES
 
-* added yml config files
+- added yml config files
 
 ### Features
 
-* added yml config files ([c801020](https://github.com/Karasu-Lab/karasu-lab-api/commit/c80102007476a0481c38827bc9cf49ceb54e7edf))
+- added yml config files ([c801020](https://github.com/Karasu-Lab/karasu-lab-api/commit/c80102007476a0481c38827bc9cf49ceb54e7edf))
 
 ## [3.13.0](https://github.com/Karasu-Lab/karasu-lab-api/compare/karasu-lab-api-v3.12.0...karasu-lab-api-v3.13.0) (2026-04-28)
 
-
 ### Features
 
-* added AllowAnonymous to WellKnownController ([6cd8593](https://github.com/Karasu-Lab/karasu-lab-api/commit/6cd85936dbb34e62ef8397511418c53e258699eb))
+- added AllowAnonymous to WellKnownController ([6cd8593](https://github.com/Karasu-Lab/karasu-lab-api/commit/6cd85936dbb34e62ef8397511418c53e258699eb))
 
 ## [3.12.0](https://github.com/Karasu-Lab/karasu-lab-api/compare/karasu-lab-api-v3.11.0...karasu-lab-api-v3.12.0) (2026-04-28)
 
-
 ### Features
 
-* added config in ProductionPasskeyAuth ([9771749](https://github.com/Karasu-Lab/karasu-lab-api/commit/9771749134f8a0b7dcfd459ab92b5f3baa81e3b9))
+- added config in ProductionPasskeyAuth ([9771749](https://github.com/Karasu-Lab/karasu-lab-api/commit/9771749134f8a0b7dcfd459ab92b5f3baa81e3b9))
 
 ## [3.11.0](https://github.com/Karasu-Lab/karasu-lab-api/compare/karasu-lab-api-v3.10.0...karasu-lab-api-v3.11.0) (2026-04-28)
 
-
 ### Features
 
-* added android relation config ([536df44](https://github.com/Karasu-Lab/karasu-lab-api/commit/536df4447486e6e55b3098e7b23f1d71921af9d4))
+- added android relation config ([536df44](https://github.com/Karasu-Lab/karasu-lab-api/commit/536df4447486e6e55b3098e7b23f1d71921af9d4))
 
 ## [3.10.0](https://github.com/Karasu-Lab/karasu-lab-api/compare/karasu-lab-api-v3.9.0...karasu-lab-api-v3.10.0) (2026-04-28)
 
-
 ### Features
 
-* updated prod passkey config ([d9b616a](https://github.com/Karasu-Lab/karasu-lab-api/commit/d9b616ae2c7c4e12f5b27e6568e8b109ac2e69ad))
+- updated prod passkey config ([d9b616a](https://github.com/Karasu-Lab/karasu-lab-api/commit/d9b616ae2c7c4e12f5b27e6568e8b109ac2e69ad))
 
 ## [3.9.0](https://github.com/Karasu-Lab/karasu-lab-api/compare/karasu-lab-api-v3.8.1...karasu-lab-api-v3.9.0) (2026-04-28)
 
-
 ### Features
 
-* added android config and minecraft services ([eae2b09](https://github.com/Karasu-Lab/karasu-lab-api/commit/eae2b09024e1fa9b8a067a8be79d356ae4cb4622))
-
+- added android config and minecraft services ([eae2b09](https://github.com/Karasu-Lab/karasu-lab-api/commit/eae2b09024e1fa9b8a067a8be79d356ae4cb4622))
 
 ### Code Refactoring
 
-* migrated to vite plus ([a3977fd](https://github.com/Karasu-Lab/karasu-lab-api/commit/a3977fd4cb6bd0a1e94a3adcd2b9325a65cc1c32))
+- migrated to vite plus ([a3977fd](https://github.com/Karasu-Lab/karasu-lab-api/commit/a3977fd4cb6bd0a1e94a3adcd2b9325a65cc1c32))
 
 ## [3.8.1](https://github.com/Karasu-Lab/karasu-lab-api/compare/karasu-lab-api-v3.8.0...karasu-lab-api-v3.8.1) (2026-03-21)
 
