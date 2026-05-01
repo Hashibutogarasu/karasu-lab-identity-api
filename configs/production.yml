@@ -20,7 +20,9 @@ passkey:
     - 'android:apk-key-hash:SEhtZj8Q-Fb0z9qGqUpYG3s1PbYvmiwZHYqmXe3tVHc'
 
 bluesky:
-  redirectUri: 'com.karasu256.id:oauth-redirect'
+  redirectUri:
+    - 'com.karasu256.id://oauth/'
+    - 'com.karasu256.id://oauth'
 
 rateLimit:
   enabled: true
