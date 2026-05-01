@@ -21,6 +21,7 @@ import { ConfigServiceProvider } from './shared/config/config.service.js';
 import { DotEnvServiceProvider } from './shared/config/dotenv.service.js';
 import { VersionModule } from './version/version.module.js';
 import { WellKnownModule } from './well-known/well-known.module.js';
+import { BlueskyModule } from './bluesky/bluesky.module.js';
 import { RolesGuard } from './shared/auth/roles.guard.js';
 import { SessionService } from './shared/auth/session.service.js';
 
@@ -49,6 +50,7 @@ import { SessionService } from './shared/auth/session.service.js';
     FirebaseModule,
     MinecraftModule,
     WellKnownModule,
+    BlueskyModule,
     AuthMiddlewareModule.forRoot({ path: '/api/auth' }),
     AuthModule.forRootAsync({
       useFactory: async () => {
