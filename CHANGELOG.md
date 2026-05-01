@@ -1,5 +1,17 @@
 # Changelog
 
+## [5.1.0](https://github.com/Karasu-Lab/karasu-lab-api/compare/karasu-lab-api-v5.0.0...karasu-lab-api-v5.1.0) (2026-05-01)
+
+
+### Features
+
+* removed hardcoded redirect uri and added yml config ([1082672](https://github.com/Karasu-Lab/karasu-lab-api/commit/1082672130952244a197fad961e56e61a57e59b1))
+
+
+### Bug Fixes
+
+* fixed redirecturi ([cdbbb18](https://github.com/Karasu-Lab/karasu-lab-api/commit/cdbbb1857c2562a2183c921c4ce08d1dd994d7d0))
+
 ## [5.0.0](https://github.com/Karasu-Lab/karasu-lab-api/compare/karasu-lab-api-v4.3.0...karasu-lab-api-v5.0.0) (2026-05-01)
 
 
