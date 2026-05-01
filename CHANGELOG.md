@@ -1,5 +1,21 @@
 # Changelog
 
+## [5.0.0](https://github.com/Karasu-Lab/karasu-lab-api/compare/karasu-lab-api-v4.3.0...karasu-lab-api-v5.0.0) (2026-05-01)
+
+
+### ⚠ BREAKING CHANGES
+
+* migrated stone manage api to graphql
+
+### Features
+
+* add Bluesky module with OAuth client metadata functionality ([5547720](https://github.com/Karasu-Lab/karasu-lab-api/commit/55477200ab62aa6c659ffdb7eca85e63e692c253))
+
+
+### Code Refactoring
+
+* migrated stone manage api to graphql ([034dd3a](https://github.com/Karasu-Lab/karasu-lab-api/commit/034dd3a31363917a85151499b56550efa60643b4))
+
 ## [4.3.0](https://github.com/Karasu-Lab/karasu-lab-api/compare/karasu-lab-api-v4.2.2...karasu-lab-api-v4.3.0) (2026-04-29)
 
 
