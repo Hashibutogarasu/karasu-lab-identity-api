@@ -1,8 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { Injectable } from '@nestjs/common';
-import { IConfigService } from '../shared/config/config.service.interface.js';
-
-const ANDROID_PACKAGE_NAME = 'net.karasuniki.karasulab';
+import { getApiConfig } from '../utils/config.util.js';
 interface AndroidTarget {
   namespace: 'android_app';
   package_name: string;
@@ -17,18 +15,8 @@ interface AssetLink {
 /** Builds the Digital Asset Links document for Android passkey support. */
 @Injectable()
 export class WellKnownService {
-  constructor(private readonly configService: IConfigService) {}
-
   getAssetLinks(): AssetLink[] {
-    const env = this.configService.getAll();
-
-    const fingerprints: string[] = [];
-
-    if (env.ANDROID_SHA256_FINGERPRINTS) {
-      fingerprints.push(
-        ...env.ANDROID_SHA256_FINGERPRINTS.split(',').map((fp) => fp.trim()),
-      );
-    }
+    const { android } = getApiConfig();
 
     return [
       {
@@ -38,8 +26,10 @@ export class WellKnownService {
         ],
         target: {
           namespace: 'android_app',
-          package_name: ANDROID_PACKAGE_NAME,
-          sha256_cert_fingerprints: [...new Set(fingerprints)],
+          package_name: android.packageName,
+          sha256_cert_fingerprints: Array.from(
+            new Set(android.sha256CertFingerprints),
+          ),
         },
       },
     ];

@@ -14,8 +14,12 @@ const apiYamlConfigSchema = z.object({
     rpId: z.string(),
     rpName: z.string(),
   }),
+  android: z.object({
+    packageName: z.string(),
+    sha256CertFingerprints: z.array(z.string()),
+  }),
   bluesky: z.object({
-    redirectUri: z.string(),
+    redirectUris: z.array(z.string()),
   }),
   rateLimit: z.object({
     enabled: z.boolean(),

@@ -33,15 +33,15 @@ export class BlueskyService {
   getClientMetadata(): BlueskyClientMetadata {
     const baseUrl = this.configService.get('BETTER_AUTH_URL');
     const clientId = `${baseUrl}/api/bluesky/oauth/client-metadata.json`;
-    const redirectUri = this.normalizeRedirectUri(
-      getApiConfig().bluesky.redirectUri,
+    const redirectUris = getApiConfig().bluesky.redirectUris.map((uri) =>
+      this.normalizeRedirectUri(uri),
     );
 
     return {
       client_id: clientId,
       client_name: 'KarasuLab',
       client_uri: baseUrl,
-      redirect_uris: [redirectUri],
+      redirect_uris: redirectUris,
       grant_types: ['authorization_code', 'refresh_token'],
       response_types: ['code'],
       scope: 'atproto transition:generic',

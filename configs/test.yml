@@ -11,8 +11,15 @@ passkey:
   origins:
     - http://localhost:3001
 
+android:
+  packageName: 'net.karasuniki.karasulab'
+  sha256CertFingerprints:
+    - '48:48:6d:66:3f:10:f8:56:f4:cf:da:86:a9:4a:58:1b:7b:35:3d:b6:2f:9a:2c:19:1d:8a:a6:5d:ed:ed:54:77'
+
 bluesky:
-  redirectUri: 'com.karasu256.id:oauth-redirect'
+  redirectUris:
+    - 'com.karasu256.id://oauth/'
+    - 'com.karasu256.id://oauth'
 
 rateLimit:
   enabled: false
