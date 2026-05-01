@@ -1,5 +1,18 @@
 # Changelog
 
+## [5.2.0](https://github.com/Karasu-Lab/karasu-lab-api/compare/karasu-lab-api-v5.1.1...karasu-lab-api-v5.2.0) (2026-05-01)
+
+
+### Features
+
+* updated yml schema ([d5a3e58](https://github.com/Karasu-Lab/karasu-lab-api/commit/d5a3e587708fa11cc658d47dc38ad6eeb3e04cc2))
+
+
+### Bug Fixes
+
+* fixed bluesky redirectUri ([133fad9](https://github.com/Karasu-Lab/karasu-lab-api/commit/133fad9ea3b050ae6a2e9d6147180a4e8c37451e))
+* fixed redirectUri ([8dc5cd2](https://github.com/Karasu-Lab/karasu-lab-api/commit/8dc5cd2a0ca8d8bac4eaf53c55f0799c27c8331c))
+
 ## [5.1.1](https://github.com/Karasu-Lab/karasu-lab-api/compare/karasu-lab-api-v5.1.0...karasu-lab-api-v5.1.1) (2026-05-01)
 
 
