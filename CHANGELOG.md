@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.3.10](https://github.com/Karasu-Lab/karasu-lab-api/compare/karasu-lab-api-v5.3.9...karasu-lab-api-v5.3.10) (2026-05-02)
+
+
+### Code Refactoring
+
+* exported duplicated type ([45fedb4](https://github.com/Karasu-Lab/karasu-lab-api/commit/45fedb4de52ffe563a0ee4fe7b6cc84bb13c7397))
+
 ## [5.3.9](https://github.com/Karasu-Lab/karasu-lab-api/compare/karasu-lab-api-v5.3.8...karasu-lab-api-v5.3.9) (2026-05-02)
 
 
