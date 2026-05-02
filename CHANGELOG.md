@@ -1,5 +1,17 @@
 # Changelog
 
+## [5.3.11](https://github.com/Karasu-Lab/karasu-lab-api/compare/karasu-lab-api-v5.3.10...karasu-lab-api-v5.3.11) (2026-05-02)
+
+
+### Bug Fixes
+
+* fixed type error ([8ed5502](https://github.com/Karasu-Lab/karasu-lab-api/commit/8ed550283e6de7c50c2416104020a2bc4408d48a))
+
+
+### Code Refactoring
+
+* removed hardcoded providers ([0af6e1f](https://github.com/Karasu-Lab/karasu-lab-api/commit/0af6e1fa8cf30a8df9eb43385dfab87619c2fdc7))
+
 ## [5.3.10](https://github.com/Karasu-Lab/karasu-lab-api/compare/karasu-lab-api-v5.3.9...karasu-lab-api-v5.3.10) (2026-05-02)
 
 
