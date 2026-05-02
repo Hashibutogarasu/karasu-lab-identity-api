@@ -22,6 +22,7 @@ import { passwordPlugin } from './plugins/password/password-plugin.js';
 import { oauthApplicationPlugin } from './plugins/oauth/oauth-application-plugin.js';
 import { passkeyPlugin } from './plugins/passkey/passkey-plugin.js';
 import { openAPIPlugin } from './plugins/openapi/openapi-plugin.js';
+import { blueskyPlugin } from './plugins/bluesky/bluesky-plugin.js';
 import { databaseSeedingFactory } from './shared/database/database-seeding.service.js';
 import { IPasskeyAuth } from './plugins/passkey/passkey.interface.js';
 import { IConfigService } from './shared/config/config.service.interface.js';
@@ -44,6 +45,7 @@ import { IRateLimitConfig } from './services/auth/rateLimit/rate-limit-config.in
 import { dash } from '@better-auth/infra';
 import { createFirebaseCustomToken } from './firebase/index.js';
 import { apiKey } from '@better-auth/api-key';
+import { socialProviderList } from 'better-auth/social-providers';
 
 export function createAuth(
 	configService: IConfigService,
@@ -69,9 +71,15 @@ export function createAuth(
 		});
 	}
 
+	const providerConfig = socialProviderConfig.getProviders();
+	const filteredProviders = Object.fromEntries(
+		Object.entries(providerConfig).filter(([id]) =>
+			socialProviderList.includes(id as (typeof socialProviderList)[number])
+		)
+	);
 	const socialProviders = {
-		...socialProviderConfig.getProviders(),
-		...overrides.socialProviders,
+		...filteredProviders,
+		...(overrides.socialProviders ?? {}),
 	};
 
 	return betterAuth({
@@ -85,8 +93,9 @@ export function createAuth(
 		],
 		advanced: {
 			crossSubDomainCookies: authConfig.getCrossSubDomainCookies(),
+			trustHost: true,
 		},
-		trustedProxyHeaders: authConfig.getTrustedProxies().length > 0,
+		trustedProxyHeaders: true,
 		ipAddressHeaders: ['cf-connecting-ip', 'x-forwarded-for'],
 		cookieCache: {
 			enabled: EnvironmentUtils.isProduction(authEnv.environment),
@@ -159,6 +168,7 @@ export function createAuth(
 		session: {},
 		database: dbService.getHandler(),
 		plugins: [
+			blueskyPlugin(),
 			oAuthProxy({
 				productionURL: env.FRONTEND_ORIGIN,
 			}),

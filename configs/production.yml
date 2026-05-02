@@ -28,6 +28,7 @@ bluesky:
   redirectUris:
     - 'com.karasu256.id://oauth/'
     - 'com.karasu256.id://oauth'
+    - 'https://karasu256.com/api/auth/callback/bluesky'
 
 rateLimit:
   enabled: true

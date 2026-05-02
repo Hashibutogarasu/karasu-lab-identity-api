@@ -1,4 +1,5 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Req } from '@nestjs/common';
+import express from 'express';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AllowAnonymous } from '@thallesp/nestjs-better-auth';
 import { BlueskyService } from './bluesky.service.js';
@@ -17,7 +18,10 @@ export class BlueskyController {
   })
   @ApiResponse({ status: 200, description: 'Client metadata JSON document.' })
   @Get('client-metadata.json')
-  getClientMetadata() {
-    return this.blueskyService.getClientMetadata();
+  getClientMetadata(@Req() req: express.Request) {
+    const protocol = (req.headers['x-forwarded-proto'] as string) || req.protocol;
+    const host = (req.headers['x-forwarded-host'] as string) || req.get('host');
+    const baseUrl = `${protocol}://${host}`;
+    return this.blueskyService.getClientMetadata(baseUrl);
   }
 }

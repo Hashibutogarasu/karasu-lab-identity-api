@@ -3,6 +3,7 @@ auth:
     - http://localhost:3000
     - http://localhost:3001
     - http://192.168.0.5:3001
+    - https://dev.karasuniki.net
   cookieDomain: ''
   trustedProxies:
     - 127.0.0.1
@@ -27,7 +28,8 @@ bluesky:
   redirectUris:
     - 'com.karasu256.id://oauth/'
     - 'com.karasu256.id://oauth'
-
+    - 'http://localhost:3000/api/auth/callback/bluesky'
+    - 'https://dev.karasuniki.net/api/auth/callback/bluesky'
 rateLimit:
   enabled: true
   window: 60

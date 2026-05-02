@@ -94,6 +94,32 @@ class MicrosoftProvider extends AbstractSocialProvider {
 }
 
 /**
+ * Bluesky OAuth provider
+ */
+class BlueskyProvider extends AbstractSocialProvider {
+  readonly id = 'bluesky';
+
+  isEnabled(): boolean {
+    const env = this.configService.getAll();
+    return !!env.BETTER_AUTH_URL;
+  }
+
+  getCredentials(): { clientId: string; clientSecret: string } | null {
+    if (!this.isEnabled()) return null;
+
+    const env = this.configService.getAll();
+    return {
+      clientId: `${env.BETTER_AUTH_URL}/api/bluesky/oauth/client-metadata.json`,
+      clientSecret: '',
+    };
+  }
+
+  getScope(): string[] {
+    return ['atproto', 'transition:generic'];
+  }
+}
+
+/**
  * Social provider configuration service
  * Aggregates all social providers and provides their configurations
  */
@@ -105,6 +131,7 @@ export class SocialProviderConfigService implements ISocialProviderConfig {
       new DiscordProvider(configService),
       new GoogleProvider(configService),
       new MicrosoftProvider(configService),
+      new BlueskyProvider(configService),
     ];
   }
 
