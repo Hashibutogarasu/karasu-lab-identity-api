@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.3.1](https://github.com/Karasu-Lab/karasu-lab-api/compare/karasu-lab-api-v5.3.0...karasu-lab-api-v5.3.1) (2026-05-02)
+
+
+### Bug Fixes
+
+* fixed lockfile ([4b68608](https://github.com/Karasu-Lab/karasu-lab-api/commit/4b68608ff856ccad677d50df8f4ed774e331a0d3))
+
 ## [5.3.0](https://github.com/Karasu-Lab/karasu-lab-api/compare/karasu-lab-api-v5.2.0...karasu-lab-api-v5.3.0) (2026-05-02)
 
 
