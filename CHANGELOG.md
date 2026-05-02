@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.3.5](https://github.com/Karasu-Lab/karasu-lab-api/compare/karasu-lab-api-v5.3.4...karasu-lab-api-v5.3.5) (2026-05-02)
+
+
+### Bug Fixes
+
+* fixed bluesky auth error ([2a42827](https://github.com/Karasu-Lab/karasu-lab-api/commit/2a42827df32bdceba1691060dc76b79468fb2d87))
+
 ## [5.3.4](https://github.com/Karasu-Lab/karasu-lab-api/compare/karasu-lab-api-v5.3.3...karasu-lab-api-v5.3.4) (2026-05-02)
 
 
