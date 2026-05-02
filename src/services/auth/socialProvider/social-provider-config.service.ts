@@ -1,9 +1,14 @@
+/* eslint-disable no-empty */
 import { IConfigService } from '../../../shared/config/config.service.interface.js';
 import {
   ISocialProvider,
   ISocialProviderConfig,
 } from './social-provider-config.interface.js';
-import { SocialProviderConfig } from './types/social-provider.js';
+import { OAuthTokenResponse, SocialProviderConfig, UnifiedProfile, oauthTokenResponseSchema } from './types/social-provider.js';
+import { discordProfileSchema } from './schemas/discord.schema.js';
+import { googleProfileSchema } from './schemas/google.schema.js';
+import { microsoftProfileSchema } from './schemas/microsoft.schema.js';
+import { blueskyProfileSchema } from './schemas/bluesky.schema.js';
 
 /**
  * Abstract base class for social provider
@@ -24,6 +29,36 @@ abstract class AbstractSocialProvider implements ISocialProvider {
     tokenEndpoint: string;
     userInfoEndpoint: string;
   };
+  abstract getProfile(accessToken: string): Promise<UnifiedProfile | null>;
+
+  async refreshTokens(refreshToken: string): Promise<OAuthTokenResponse | null> {
+    const endpoints = this.getEndpoints?.();
+    const tokenEndpoint = endpoints?.tokenEndpoint;
+    if (!tokenEndpoint) return null;
+
+    const credentials = this.getCredentials();
+    if (!credentials) return null;
+
+    const response = await fetch(tokenEndpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        grant_type: 'refresh_token',
+        refresh_token: refreshToken,
+        client_id: credentials.clientId,
+        client_secret: credentials.clientSecret,
+      }),
+    });
+
+    if (!response.ok) return null;
+    const json = await response.json();
+    const data = oauthTokenResponseSchema.parse(json);
+    return {
+      accessToken: data.access_token,
+      refreshToken: data.refresh_token,
+      expiresIn: data.expires_in,
+    };
+  }
 }
 
 /**
@@ -48,6 +83,29 @@ class DiscordProvider extends AbstractSocialProvider {
       clientSecret: env.DISCORD_CLIENT_SECRET,
     };
   }
+
+  async getProfile(accessToken: string): Promise<UnifiedProfile | null> {
+    const response = await fetch('https://discord.com/api/users/@me', {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+    if (!response.ok) return null;
+    const json = await response.json();
+    const data = discordProfileSchema.parse(json);
+    return {
+      id: data.id,
+      name: data.username,
+      email: data.email,
+      image: data.avatar ? `https://cdn.discordapp.com/avatars/${data.id}/${data.avatar}.png` : undefined,
+    };
+  }
+
+  getEndpoints() {
+    return {
+      authorizationEndpoint: 'https://discord.com/api/oauth2/authorize',
+      tokenEndpoint: 'https://discord.com/api/oauth2/token',
+      userInfoEndpoint: 'https://discord.com/api/users/@me',
+    };
+  }
 }
 
 /**
@@ -70,6 +128,21 @@ class GoogleProvider extends AbstractSocialProvider {
     return {
       clientId: env.GOOGLE_CLIENT_ID,
       clientSecret: env.GOOGLE_CLIENT_SECRET,
+    };
+  }
+
+  async getProfile(accessToken: string): Promise<UnifiedProfile | null> {
+    const response = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+    if (!response.ok) return null;
+    const json = await response.json();
+    const data = googleProfileSchema.parse(json);
+    return {
+      id: data.sub,
+      name: data.name,
+      email: data.email,
+      image: data.picture,
     };
   }
 }
@@ -104,6 +177,46 @@ class MicrosoftProvider extends AbstractSocialProvider {
 
   getScope(): string[] {
     return ['openid', 'profile', 'email', 'offline_access'];
+  }
+
+  async getProfile(accessToken: string): Promise<UnifiedProfile | null> {
+    const response = await fetch('https://graph.microsoft.com/v1.0/me', {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+    if (!response.ok) return null;
+    const json = await response.json();
+    const data = microsoftProfileSchema.parse(json);
+
+    let image: string | undefined;
+    try {
+      const photoResponse = await fetch('https://graph.microsoft.com/v1.0/me/photo/$value', {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+      if (photoResponse.ok) {
+        const buffer = await photoResponse.arrayBuffer();
+        const contentType = photoResponse.headers.get('content-type') || 'image/jpeg';
+        const base64 = Buffer.from(buffer).toString('base64');
+        image = `data:${contentType};base64,${base64}`;
+      }
+    } catch {
+    }
+
+    return {
+      id: data.id,
+      name: data.displayName,
+      email: data.mail || data.userPrincipalName,
+      image,
+    };
+  }
+
+  getEndpoints() {
+    const credentials = this.getCredentials();
+    const tenantId = credentials?.tenantId || 'common';
+    return {
+      authorizationEndpoint: `https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/authorize`,
+      tokenEndpoint: `https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/token`,
+      userInfoEndpoint: 'https://graph.microsoft.com/v1.0/me',
+    };
   }
 }
 
@@ -143,6 +256,21 @@ class BlueskyProvider extends AbstractSocialProvider {
       authorizationEndpoint: 'https://bsky.social/oauth/authorize',
       tokenEndpoint: 'https://bsky.social/oauth/token',
       userInfoEndpoint: 'https://bsky.social/oauth/userinfo',
+    };
+  }
+
+  async getProfile(accessToken: string): Promise<UnifiedProfile | null> {
+    const response = await fetch('https://bsky.social/oauth/userinfo', {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+    if (!response.ok) return null;
+    const json = await response.json();
+    const data = blueskyProfileSchema.parse(json);
+    return {
+      id: data.sub,
+      name: data.name,
+      handle: data.preferred_username,
+      image: data.picture,
     };
   }
 }
@@ -225,6 +353,10 @@ export class SocialProviderConfigService implements ISocialProviderConfig {
   isProviderEnabled(providerId: string): boolean {
     const provider = this.providers.find((p) => p.id === providerId);
     return provider ? provider.isEnabled() : false;
+  }
+
+  getProvider(providerId: string): ISocialProvider | undefined {
+    return this.providers.find((p) => p.id === providerId);
   }
 }
 

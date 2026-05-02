@@ -1,4 +1,4 @@
-import { SocialProviderConfig } from './types/social-provider.js';
+import { OAuthTokenResponse, SocialProviderConfig, UnifiedProfile } from './types/social-provider.js';
 
 /**
  * Social provider configuration interface
@@ -27,6 +27,12 @@ export interface ISocialProviderConfig {
    * @returns True if provider has valid credentials configured
    */
   isProviderEnabled(providerId: string): boolean;
+
+  /**
+   * Get a specific provider by ID
+   * @param providerId Provider identifier
+   */
+  getProvider(providerId: string): ISocialProvider | undefined;
 }
 
 /**
@@ -85,4 +91,16 @@ export interface ISocialProvider {
     tokenEndpoint: string;
     userInfoEndpoint: string;
   };
+
+  /**
+   * Get unified profile using access token
+   * @param accessToken OAuth access token
+   */
+  getProfile(accessToken: string): Promise<UnifiedProfile | null>;
+
+  /**
+   * Refresh OAuth tokens using refresh token
+   * @param refreshToken OAuth refresh token
+   */
+  refreshTokens(refreshToken: string): Promise<OAuthTokenResponse | null>;
 }

@@ -6,6 +6,7 @@ import {
   HttpCode,
   HttpStatus,
   Put,
+  Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
@@ -41,6 +42,15 @@ export class UserController {
   })
   @Get('profile')
   async getProfile(@Req() req: Request) {
+    return this.userService.getProfile(req);
+  }
+
+  @ApiOperation({ summary: 'Get unified profile info from social provider' })
+  @Get('me')
+  async getMe(@Req() req: Request, @Query('p') providerId?: string) {
+    if (providerId) {
+      return this.userService.getSocialProfile(req, providerId);
+    }
     return this.userService.getProfile(req);
   }
 
