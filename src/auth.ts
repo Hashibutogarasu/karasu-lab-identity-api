@@ -45,7 +45,6 @@ import { IRateLimitConfig } from './services/auth/rateLimit/rate-limit-config.in
 import { dash } from '@better-auth/infra';
 import { createFirebaseCustomToken } from './firebase/index.js';
 import { apiKey } from '@better-auth/api-key';
-import { socialProviderList } from 'better-auth/social-providers';
 
 export function createAuth(
 	configService: IConfigService,
@@ -71,14 +70,8 @@ export function createAuth(
 		});
 	}
 
-	const providerConfig = socialProviderConfig.getProviders();
-	const filteredProviders = Object.fromEntries(
-		Object.entries(providerConfig).filter(([id]) =>
-			socialProviderList.includes(id as (typeof socialProviderList)[number])
-		)
-	);
 	const socialProviders = {
-		...filteredProviders,
+		...socialProviderConfig.getProviders(),
 		...(overrides.socialProviders ?? {}),
 	};
 

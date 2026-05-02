@@ -16,6 +16,11 @@ abstract class AbstractSocialProvider implements ISocialProvider {
   abstract getCredentials(): { clientId: string; clientSecret: string } | null;
   getScope?(): string[];
   getAuthorizationQuery?(): Record<string, string>;
+  getEndpoints?(): {
+    authorizationEndpoint: string;
+    tokenEndpoint: string;
+    userInfoEndpoint: string;
+  };
 }
 
 /**
@@ -117,6 +122,18 @@ class BlueskyProvider extends AbstractSocialProvider {
   getScope(): string[] {
     return ['atproto', 'transition:generic'];
   }
+
+  getEndpoints(): {
+    authorizationEndpoint: string;
+    tokenEndpoint: string;
+    userInfoEndpoint: string;
+  } {
+    return {
+      authorizationEndpoint: 'https://bsky.social/oauth/authorize',
+      tokenEndpoint: 'https://bsky.social/oauth/token',
+      userInfoEndpoint: 'https://bsky.social/oauth/userinfo',
+    };
+  }
 }
 
 /**
@@ -163,6 +180,7 @@ export class SocialProviderConfigService implements ISocialProviderConfig {
           ...credentials,
           scope: provider.getScope?.(),
           authorizationQuery: provider.getAuthorizationQuery?.(),
+          ...provider.getEndpoints?.(),
         };
       }
     }

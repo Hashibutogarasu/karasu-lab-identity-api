@@ -15,6 +15,9 @@ export interface ISocialProviderConfig {
       tenantId?: string;
       scope?: string[];
       authorizationQuery?: Record<string, string>;
+      authorizationEndpoint?: string;
+      tokenEndpoint?: string;
+      userInfoEndpoint?: string;
     }
   >;
 
@@ -62,4 +65,14 @@ export interface ISocialProvider {
    * @returns Record of query parameters or undefined
    */
   getAuthorizationQuery?(): Record<string, string>;
+
+  /**
+   * Get provider OAuth2 endpoints (for custom providers)
+   * @returns Provider endpoints or undefined if using default
+   */
+  getEndpoints?(): {
+    authorizationEndpoint: string;
+    tokenEndpoint: string;
+    userInfoEndpoint: string;
+  };
 }
