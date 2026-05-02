@@ -1,8 +1,14 @@
+/* eslint-disable @typescript-eslint/only-throw-error */
 import type { OAuthProvider } from 'better-auth';
 import { BetterAuthPlugin } from 'better-auth';
 import { createAuthMiddleware, getOAuthState } from 'better-auth/api';
 import { parseEnvelope, symmetricEncrypt } from 'better-auth/crypto';
-import { createAuthorizationURL, validateAuthorizationCode } from '@better-auth/core/oauth2';
+import {
+  createAuthorizationURL,
+  authorizationCodeRequest,
+  getOAuth2Tokens,
+} from '@better-auth/core/oauth2';
+import type { OAuth2Tokens } from '@better-auth/core/oauth2';
 import { SecretConfig } from '@better-auth/core';
 import { exportJWK, generateKeyPair, calculateJwkThumbprint, SignJWT } from 'jose';
 import type { JWK, CryptoKey as JoseCryptoKey } from 'jose';
@@ -59,16 +65,64 @@ async function getDpopState(): Promise<{ privateKey: JoseCryptoKey; publicKeyJwk
     _dpopPublicKeyJwk = await exportJWK(publicKey);
     _dpopJkt = await calculateJwkThumbprint(_dpopPublicKeyJwk);
   }
-  return { privateKey: _dpopPrivateKey, publicKeyJwk: _dpopPublicKeyJwk!, jkt: _dpopJkt! };
+  return { privateKey: _dpopPrivateKey, publicKeyJwk: _dpopPublicKeyJwk, jkt: _dpopJkt };
 }
 
-async function createDpopProof(htm: string, htu: string): Promise<string> {
+async function createDpopProof(htm: string, htu: string, nonce?: string): Promise<string> {
   const { privateKey, publicKeyJwk } = await getDpopState();
-  return new SignJWT({ htm, htu })
+  const payload: Record<string, string> = { htm, htu };
+  if (nonce) payload.nonce = nonce;
+  return new SignJWT(payload)
     .setProtectedHeader({ alg: 'ES256', typ: 'dpop+jwt', jwk: publicKeyJwk })
     .setJti(crypto.randomUUID())
     .setIssuedAt()
     .sign(privateKey);
+}
+
+async function exchangeCodeWithDpop(params: {
+  code: string;
+  codeVerifier?: string;
+  redirectURI: string;
+  deviceId?: string;
+  tokenEndpoint: string;
+  authentication?: 'basic' | 'post';
+  clientId: string;
+  clientSecret?: string;
+}): Promise<OAuth2Tokens> {
+  const { body, headers: reqHeaders } = await authorizationCodeRequest({
+    code: params.code,
+    codeVerifier: params.codeVerifier,
+    redirectURI: params.redirectURI,
+    deviceId: params.deviceId,
+    authentication: params.authentication,
+    options: {
+      clientId: params.clientId,
+      ...(params.clientSecret ? { clientSecret: params.clientSecret } : {}),
+    },
+  });
+
+  const doRequest = async (nonce?: string) => {
+    const dpopProof = await createDpopProof('POST', params.tokenEndpoint, nonce);
+    const res = await fetch(params.tokenEndpoint, {
+      method: 'POST',
+      body,
+      headers: { ...reqHeaders, DPoP: dpopProof },
+    });
+    const data = (await res.json()) as Record<string, unknown>;
+    return { ok: res.ok, data, dpopNonce: res.headers.get('DPoP-Nonce') };
+  };
+
+  let result = await doRequest();
+
+  if (!result.ok && result.data.error === 'use_dpop_nonce' && result.dpopNonce) {
+    result = await doRequest(result.dpopNonce);
+  }
+
+  if (!result.ok) {
+    throw result.data;
+  }
+
+  return getOAuth2Tokens(result.data);
 }
 
 const mapBlueskyUserProfile = (profile: Record<string, unknown>) => {
@@ -153,24 +207,15 @@ export const blueskyPlugin = (
         async validateAuthorizationCode(data) {
           const url = new URL(data.redirectURI);
           const dynamicBaseUrl = `${url.protocol}//${url.host}`;
-          const oauthOptions = {
-            clientId: `${dynamicBaseUrl}/api/bluesky/oauth/client-metadata.json`,
-            ...(oauth.clientSecret
-              ? { clientSecret: oauth.clientSecret }
-              : {}),
-          };
-          const dpopProof = await createDpopProof('POST', oauth.tokenEndpoint);
-          return validateAuthorizationCode({
+          return exchangeCodeWithDpop({
             code: data.code,
             codeVerifier: data.codeVerifier,
             redirectURI: data.redirectURI,
             deviceId: data.deviceId,
             tokenEndpoint: oauth.tokenEndpoint,
             authentication: oauth.authentication,
-            options: {
-              ...oauthOptions,
-            },
-            headers: { DPoP: dpopProof },
+            clientId: `${dynamicBaseUrl}/api/bluesky/oauth/client-metadata.json`,
+            clientSecret: oauth.clientSecret,
           });
         },
         async getUserInfo(tokens: OAuthTokens) {
