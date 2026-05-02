@@ -68,10 +68,19 @@ async function getDpopState(): Promise<{ privateKey: JoseCryptoKey; publicKeyJwk
   return { privateKey: _dpopPrivateKey, publicKeyJwk: _dpopPublicKeyJwk, jkt: _dpopJkt };
 }
 
-async function createDpopProof(htm: string, htu: string, nonce?: string): Promise<string> {
+async function createDpopProof(
+  htm: string,
+  htu: string,
+  nonce?: string,
+  accessToken?: string,
+): Promise<string> {
   const { privateKey, publicKeyJwk } = await getDpopState();
   const payload: Record<string, string> = { htm, htu };
   if (nonce) payload.nonce = nonce;
+  if (accessToken) {
+    const hash = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(accessToken));
+    payload.ath = Buffer.from(hash).toString('base64url');
+  }
   return new SignJWT(payload)
     .setProtectedHeader({ alg: 'ES256', typ: 'dpop+jwt', jwk: publicKeyJwk })
     .setJti(crypto.randomUUID())
@@ -221,19 +230,35 @@ export const blueskyPlugin = (
         async getUserInfo(tokens: OAuthTokens) {
           if (!tokens.accessToken) return null;
 
-          const response = await fetch(oauth.userInfoEndpoint, {
-            headers: {
-              Authorization: `Bearer ${tokens.accessToken}`,
-            },
-          });
+          const doRequest = async (nonce?: string) => {
+            const dpopProof = await createDpopProof(
+              'GET',
+              oauth.userInfoEndpoint,
+              nonce,
+              tokens.accessToken,
+            );
+            const res = await fetch(oauth.userInfoEndpoint, {
+              headers: {
+                Authorization: `DPoP ${tokens.accessToken}`,
+                DPoP: dpopProof,
+              },
+            });
+            const data = (await res.json()) as Record<string, unknown>;
+            return { ok: res.ok, data, dpopNonce: res.headers.get('DPoP-Nonce') };
+          };
 
-          if (!response.ok) return null;
+          let result = await doRequest();
 
-          const data = (await response.json()) as Record<string, unknown>;
-          const user = mapBlueskyUserProfile(data);
+          if (!result.ok && result.data.error === 'use_dpop_nonce' && result.dpopNonce) {
+            result = await doRequest(result.dpopNonce);
+          }
+
+          if (!result.ok) return null;
+
+          const user = mapBlueskyUserProfile(result.data);
           if (!user) return null;
 
-          return { user, data };
+          return { user, data: result.data };
         },
       };
 
