@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.3.0](https://github.com/Karasu-Lab/karasu-lab-api/compare/karasu-lab-api-v5.2.0...karasu-lab-api-v5.3.0) (2026-05-02)
+
+
+### Features
+
+* added bluesky auth ([8e708d0](https://github.com/Karasu-Lab/karasu-lab-api/commit/8e708d0932b768a64c50990dc7923a476d26b797))
+
 ## [5.2.0](https://github.com/Karasu-Lab/karasu-lab-api/compare/karasu-lab-api-v5.1.1...karasu-lab-api-v5.2.0) (2026-05-01)
 
 ### Features
