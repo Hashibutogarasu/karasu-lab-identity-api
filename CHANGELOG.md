@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.4.0](https://github.com/Karasu-Lab/karasu-lab-api/compare/karasu-lab-api-v5.3.11...karasu-lab-api-v5.4.0) (2026-05-02)
+
+
+### Features
+
+* added me endpoint ([9d16b62](https://github.com/Karasu-Lab/karasu-lab-api/commit/9d16b62202fd168488da848bde13de1f245db75b))
+
 ## [5.3.11](https://github.com/Karasu-Lab/karasu-lab-api/compare/karasu-lab-api-v5.3.10...karasu-lab-api-v5.3.11) (2026-05-02)
 
 
