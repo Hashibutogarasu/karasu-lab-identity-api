@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.3.7](https://github.com/Karasu-Lab/karasu-lab-api/compare/karasu-lab-api-v5.3.6...karasu-lab-api-v5.3.7) (2026-05-02)
+
+
+### Bug Fixes
+
+* fixed bluesky get profile error ([59d55f2](https://github.com/Karasu-Lab/karasu-lab-api/commit/59d55f2200dd32a168b43d6fd6f83141c7a79b9f))
+
 ## [5.3.6](https://github.com/Karasu-Lab/karasu-lab-api/compare/karasu-lab-api-v5.3.5...karasu-lab-api-v5.3.6) (2026-05-02)
 
 
