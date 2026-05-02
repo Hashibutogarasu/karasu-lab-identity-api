@@ -12,6 +12,16 @@ export interface ISocialProviderConfig {
   getProviders(): Record<string, SocialProviderConfig>;
 
   /**
+   * Get built-in social providers
+   */
+  getBuiltinProviders(): Record<string, SocialProviderConfig>;
+
+  /**
+   * Get custom social providers
+   */
+  getCustomProviders(): Record<string, SocialProviderConfig>;
+
+  /**
    * Check if a specific provider is configured
    * @param providerId Provider identifier (e.g., 'discord', 'google', 'x')
    * @returns True if provider has valid credentials configured
@@ -33,6 +43,11 @@ export interface ISocialProvider {
    * Provider display name
    */
   readonly name: string;
+
+  /**
+   * Whether the provider is built-in to better-auth
+   */
+  readonly isBuiltin: boolean;
 
   /**
    * Check if this provider is enabled (has valid credentials)

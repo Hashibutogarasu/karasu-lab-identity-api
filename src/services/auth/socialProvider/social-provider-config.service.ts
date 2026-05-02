@@ -11,6 +11,7 @@ import { SocialProviderConfig } from './types/social-provider.js';
 abstract class AbstractSocialProvider implements ISocialProvider {
   abstract readonly id: string;
   abstract readonly name: string;
+  abstract readonly isBuiltin: boolean;
 
   constructor(protected configService: IConfigService) {}
 
@@ -31,6 +32,7 @@ abstract class AbstractSocialProvider implements ISocialProvider {
 class DiscordProvider extends AbstractSocialProvider {
   readonly id = 'discord';
   readonly name = 'Discord';
+  readonly isBuiltin = true;
 
   isEnabled(): boolean {
     const env = this.configService.getAll();
@@ -54,6 +56,7 @@ class DiscordProvider extends AbstractSocialProvider {
 class GoogleProvider extends AbstractSocialProvider {
   readonly id = 'google';
   readonly name = 'Google';
+  readonly isBuiltin = true;
 
   isEnabled(): boolean {
     const env = this.configService.getAll();
@@ -77,6 +80,7 @@ class GoogleProvider extends AbstractSocialProvider {
 class MicrosoftProvider extends AbstractSocialProvider {
   readonly id = 'microsoft';
   readonly name = 'Microsoft';
+  readonly isBuiltin = true;
 
   isEnabled(): boolean {
     const env = this.configService.getAll();
@@ -109,6 +113,7 @@ class MicrosoftProvider extends AbstractSocialProvider {
 class BlueskyProvider extends AbstractSocialProvider {
   readonly id = 'bluesky';
   readonly name = 'Bluesky';
+  readonly isBuiltin = false;
 
   isEnabled(): boolean {
     const env = this.configService.getAll();
@@ -162,20 +167,59 @@ export class SocialProviderConfigService implements ISocialProviderConfig {
     const result: Record<string, SocialProviderConfig> = {};
 
     for (const provider of this.providers) {
-      const credentials = provider.getCredentials();
-      if (credentials) {
-        result[provider.id] = {
-          id: provider.id,
-          name: provider.name,
-          ...credentials,
-          scope: provider.getScope?.(),
-          authorizationQuery: provider.getAuthorizationQuery?.(),
-          ...provider.getEndpoints?.(),
-        };
+      const config = this.getProviderConfig(provider);
+      if (config) {
+        result[provider.id] = config;
       }
     }
 
     return result;
+  }
+
+  getBuiltinProviders(): Record<string, SocialProviderConfig> {
+    const result: Record<string, SocialProviderConfig> = {};
+
+    for (const provider of this.providers) {
+      if (provider.isBuiltin) {
+        const config = this.getProviderConfig(provider);
+        if (config) {
+          result[provider.id] = config;
+        }
+      }
+    }
+
+    return result;
+  }
+
+  getCustomProviders(): Record<string, SocialProviderConfig> {
+    const result: Record<string, SocialProviderConfig> = {};
+
+    for (const provider of this.providers) {
+      if (!provider.isBuiltin) {
+        const config = this.getProviderConfig(provider);
+        if (config) {
+          result[provider.id] = config;
+        }
+      }
+    }
+
+    return result;
+  }
+
+  private getProviderConfig(
+    provider: ISocialProvider,
+  ): SocialProviderConfig | null {
+    const credentials = provider.getCredentials();
+    if (!credentials) return null;
+
+    return {
+      id: provider.id,
+      name: provider.name,
+      ...credentials,
+      scope: provider.getScope?.(),
+      authorizationQuery: provider.getAuthorizationQuery?.(),
+      ...provider.getEndpoints?.(),
+    };
   }
 
   isProviderEnabled(providerId: string): boolean {
