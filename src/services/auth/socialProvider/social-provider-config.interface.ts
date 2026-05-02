@@ -10,6 +10,8 @@ export interface ISocialProviderConfig {
   getProviders(): Record<
     string,
     {
+      id: string;
+      name: string;
       clientId: string;
       clientSecret: string;
       tenantId?: string;
@@ -38,6 +40,11 @@ export interface ISocialProvider {
    * Provider identifier (e.g., 'discord', 'google', 'x')
    */
   readonly id: string;
+
+  /**
+   * Provider display name
+   */
+  readonly name: string;
 
   /**
    * Check if this provider is enabled (has valid credentials)

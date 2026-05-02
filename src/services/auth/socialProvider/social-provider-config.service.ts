@@ -9,6 +9,7 @@ import {
  */
 abstract class AbstractSocialProvider implements ISocialProvider {
   abstract readonly id: string;
+  abstract readonly name: string;
 
   constructor(protected configService: IConfigService) {}
 
@@ -28,6 +29,7 @@ abstract class AbstractSocialProvider implements ISocialProvider {
  */
 class DiscordProvider extends AbstractSocialProvider {
   readonly id = 'discord';
+  readonly name = 'Discord';
 
   isEnabled(): boolean {
     const env = this.configService.getAll();
@@ -50,6 +52,7 @@ class DiscordProvider extends AbstractSocialProvider {
  */
 class GoogleProvider extends AbstractSocialProvider {
   readonly id = 'google';
+  readonly name = 'Google';
 
   isEnabled(): boolean {
     const env = this.configService.getAll();
@@ -72,6 +75,7 @@ class GoogleProvider extends AbstractSocialProvider {
  */
 class MicrosoftProvider extends AbstractSocialProvider {
   readonly id = 'microsoft';
+  readonly name = 'Microsoft';
 
   isEnabled(): boolean {
     const env = this.configService.getAll();
@@ -103,6 +107,7 @@ class MicrosoftProvider extends AbstractSocialProvider {
  */
 class BlueskyProvider extends AbstractSocialProvider {
   readonly id = 'bluesky';
+  readonly name = 'Bluesky';
 
   isEnabled(): boolean {
     const env = this.configService.getAll();
@@ -155,21 +160,31 @@ export class SocialProviderConfigService implements ISocialProviderConfig {
   getProviders(): Record<
     string,
     {
+      id: string;
+      name: string;
       clientId: string;
       clientSecret: string;
       tenantId?: string;
       scope?: string[];
       authorizationQuery?: Record<string, string>;
+      authorizationEndpoint?: string;
+      tokenEndpoint?: string;
+      userInfoEndpoint?: string;
     }
   > {
     const result: Record<
       string,
       {
+        id: string;
+        name: string;
         clientId: string;
         clientSecret: string;
         tenantId?: string;
         scope?: string[];
         authorizationQuery?: Record<string, string>;
+        authorizationEndpoint?: string;
+        tokenEndpoint?: string;
+        userInfoEndpoint?: string;
       }
     > = {};
 
@@ -177,6 +192,8 @@ export class SocialProviderConfigService implements ISocialProviderConfig {
       const credentials = provider.getCredentials();
       if (credentials) {
         result[provider.id] = {
+          id: provider.id,
+          name: provider.name,
           ...credentials,
           scope: provider.getScope?.(),
           authorizationQuery: provider.getAuthorizationQuery?.(),
