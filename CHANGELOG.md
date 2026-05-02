@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.3.9](https://github.com/Karasu-Lab/karasu-lab-api/compare/karasu-lab-api-v5.3.8...karasu-lab-api-v5.3.9) (2026-05-02)
+
+
+### Bug Fixes
+
+* fixed runtime error ([5e13f66](https://github.com/Karasu-Lab/karasu-lab-api/commit/5e13f663c5d65bdebb26233c3646f90eee8d630d))
+
 ## [5.3.8](https://github.com/Karasu-Lab/karasu-lab-api/compare/karasu-lab-api-v5.3.7...karasu-lab-api-v5.3.8) (2026-05-02)
 
 
