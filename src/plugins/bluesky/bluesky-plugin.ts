@@ -1,3 +1,4 @@
+/* eslint-disable no-empty */
 /* eslint-disable @typescript-eslint/only-throw-error */
 import type { OAuthProvider } from 'better-auth';
 import { BetterAuthPlugin } from 'better-auth';
@@ -230,35 +231,37 @@ export const blueskyPlugin = (
         async getUserInfo(tokens: OAuthTokens) {
           if (!tokens.accessToken) return null;
 
-          const doRequest = async (nonce?: string) => {
-            const dpopProof = await createDpopProof(
-              'GET',
-              oauth.userInfoEndpoint,
-              nonce,
-              tokens.accessToken,
-            );
-            const res = await fetch(oauth.userInfoEndpoint, {
-              headers: {
-                Authorization: `DPoP ${tokens.accessToken}`,
-                DPoP: dpopProof,
-              },
-            });
-            const data = (await res.json()) as Record<string, unknown>;
-            return { ok: res.ok, data, dpopNonce: res.headers.get('DPoP-Nonce') };
-          };
+          let did: string | null = null;
+          try {
+            const parts = tokens.accessToken.split('.');
+            if (parts.length === 3) {
+              const decoded = JSON.parse(
+                Buffer.from(parts[1], 'base64url').toString(),
+              ) as Record<string, unknown>;
+              if (typeof decoded.sub === 'string') did = decoded.sub;
+            }
+          } catch {
+            return null;
+          }
+          if (!did) return null;
 
-          let result = await doRequest();
+          const profile: Record<string, unknown> = { sub: did, did };
 
-          if (!result.ok && result.data.error === 'use_dpop_nonce' && result.dpopNonce) {
-            result = await doRequest(result.dpopNonce);
+          try {
+            const profileUrl = `https://public.api.bsky.app/xrpc/app.bsky.actor.getProfile?actor=${encodeURIComponent(did)}`;
+            const res = await fetch(profileUrl);
+            if (res.ok) {
+              const bskyProfile = (await res.json()) as Record<string, unknown>;
+              if (typeof bskyProfile.handle === 'string') profile.handle = bskyProfile.handle;
+              if (typeof bskyProfile.displayName === 'string') profile.name = bskyProfile.displayName;
+              if (typeof bskyProfile.avatar === 'string') profile.avatar = bskyProfile.avatar;
+            }
+          } catch {
           }
 
-          if (!result.ok) return null;
-
-          const user = mapBlueskyUserProfile(result.data);
+          const user = mapBlueskyUserProfile(profile);
           if (!user) return null;
-
-          return { user, data: result.data };
+          return { user, data: profile };
         },
       };
 
