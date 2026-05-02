@@ -70,8 +70,13 @@ export function createAuth(
 		});
 	}
 
+	const builtinProviders = ['discord', 'google', 'microsoft', 'apple', 'github'] as const;
 	const socialProviders = {
-		...socialProviderConfig.getProviders(),
+		...Object.fromEntries(
+			Object.entries(socialProviderConfig.getProviders()).filter(([key]) =>
+				builtinProviders.includes(key as (typeof builtinProviders)[number])
+			)
+		),
 		...(overrides.socialProviders ?? {}),
 	};
 
