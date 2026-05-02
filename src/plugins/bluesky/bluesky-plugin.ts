@@ -4,6 +4,8 @@ import { createAuthMiddleware, getOAuthState } from 'better-auth/api';
 import { parseEnvelope, symmetricEncrypt } from 'better-auth/crypto';
 import { createAuthorizationURL, validateAuthorizationCode } from '@better-auth/core/oauth2';
 import { SecretConfig } from '@better-auth/core';
+import { exportJWK, generateKeyPair, calculateJwkThumbprint, SignJWT } from 'jose';
+import type { JWK, CryptoKey as JoseCryptoKey } from 'jose';
 
 export type BlueskyOAuthConfig = {
   clientId: string;
@@ -45,6 +47,29 @@ const buildDefaultOAuthConfig = (): BlueskyOAuthConfig | null => {
 type OAuthTokens = {
   accessToken?: string | null;
 };
+
+let _dpopPrivateKey: JoseCryptoKey | null = null;
+let _dpopPublicKeyJwk: JWK | null = null;
+let _dpopJkt: string | null = null;
+
+async function getDpopState(): Promise<{ privateKey: JoseCryptoKey; publicKeyJwk: JWK; jkt: string }> {
+  if (!_dpopPrivateKey) {
+    const { privateKey, publicKey } = await generateKeyPair('ES256');
+    _dpopPrivateKey = privateKey;
+    _dpopPublicKeyJwk = await exportJWK(publicKey);
+    _dpopJkt = await calculateJwkThumbprint(_dpopPublicKeyJwk);
+  }
+  return { privateKey: _dpopPrivateKey, publicKeyJwk: _dpopPublicKeyJwk!, jkt: _dpopJkt! };
+}
+
+async function createDpopProof(htm: string, htu: string): Promise<string> {
+  const { privateKey, publicKeyJwk } = await getDpopState();
+  return new SignJWT({ htm, htu })
+    .setProtectedHeader({ alg: 'ES256', typ: 'dpop+jwt', jwk: publicKeyJwk })
+    .setJti(crypto.randomUUID())
+    .setIssuedAt()
+    .sign(privateKey);
+}
 
 const mapBlueskyUserProfile = (profile: Record<string, unknown>) => {
   const idCandidate = profile.sub ?? profile.id ?? profile.did ?? profile.handle;
@@ -97,6 +122,7 @@ export const blueskyPlugin = (
         id: 'bluesky',
         name: 'Bluesky',
         async createAuthorizationURL(data): Promise<URL> {
+          const { jkt } = await getDpopState();
           const url = new URL(data.redirectURI);
           const dynamicBaseUrl = `${url.protocol}//${url.host}`;
           const oauthOptions = {
@@ -121,9 +147,10 @@ export const blueskyPlugin = (
             options: {
               ...oauthOptions,
             },
+            additionalParams: { dpop_jkt: jkt },
           });
         },
-        validateAuthorizationCode(data) {
+        async validateAuthorizationCode(data) {
           const url = new URL(data.redirectURI);
           const dynamicBaseUrl = `${url.protocol}//${url.host}`;
           const oauthOptions = {
@@ -132,6 +159,7 @@ export const blueskyPlugin = (
               ? { clientSecret: oauth.clientSecret }
               : {}),
           };
+          const dpopProof = await createDpopProof('POST', oauth.tokenEndpoint);
           return validateAuthorizationCode({
             code: data.code,
             codeVerifier: data.codeVerifier,
@@ -142,6 +170,7 @@ export const blueskyPlugin = (
             options: {
               ...oauthOptions,
             },
+            headers: { DPoP: dpopProof },
           });
         },
         async getUserInfo(tokens: OAuthTokens) {
