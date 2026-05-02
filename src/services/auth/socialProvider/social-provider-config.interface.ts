@@ -1,3 +1,5 @@
+import { SocialProviderConfig } from './types/social-provider.js';
+
 /**
  * Social provider configuration interface
  * Defines OAuth provider credentials
@@ -7,21 +9,7 @@ export interface ISocialProviderConfig {
    * Get all configured social providers
    * @returns Record of provider IDs to their credentials
    */
-  getProviders(): Record<
-    string,
-    {
-      id: string;
-      name: string;
-      clientId: string;
-      clientSecret: string;
-      tenantId?: string;
-      scope?: string[];
-      authorizationQuery?: Record<string, string>;
-      authorizationEndpoint?: string;
-      tokenEndpoint?: string;
-      userInfoEndpoint?: string;
-    }
-  >;
+  getProviders(): Record<string, SocialProviderConfig>;
 
   /**
    * Check if a specific provider is configured

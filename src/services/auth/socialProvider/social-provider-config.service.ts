@@ -3,6 +3,7 @@ import {
   ISocialProvider,
   ISocialProviderConfig,
 } from './social-provider-config.interface.js';
+import { SocialProviderConfig } from './types/social-provider.js';
 
 /**
  * Abstract base class for social provider
@@ -157,36 +158,8 @@ export class SocialProviderConfigService implements ISocialProviderConfig {
     ];
   }
 
-  getProviders(): Record<
-    string,
-    {
-      id: string;
-      name: string;
-      clientId: string;
-      clientSecret: string;
-      tenantId?: string;
-      scope?: string[];
-      authorizationQuery?: Record<string, string>;
-      authorizationEndpoint?: string;
-      tokenEndpoint?: string;
-      userInfoEndpoint?: string;
-    }
-  > {
-    const result: Record<
-      string,
-      {
-        id: string;
-        name: string;
-        clientId: string;
-        clientSecret: string;
-        tenantId?: string;
-        scope?: string[];
-        authorizationQuery?: Record<string, string>;
-        authorizationEndpoint?: string;
-        tokenEndpoint?: string;
-        userInfoEndpoint?: string;
-      }
-    > = {};
+  getProviders(): Record<string, SocialProviderConfig> {
+    const result: Record<string, SocialProviderConfig> = {};
 
     for (const provider of this.providers) {
       const credentials = provider.getCredentials();
