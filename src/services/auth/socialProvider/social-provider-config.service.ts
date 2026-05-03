@@ -8,7 +8,8 @@ import { OAuthTokenResponse, SocialProviderConfig, UnifiedProfile, oauthTokenRes
 import { discordProfileSchema } from './schemas/discord.schema.js';
 import { googleProfileSchema } from './schemas/google.schema.js';
 import { microsoftProfileSchema } from './schemas/microsoft.schema.js';
-import { blueskyProfileSchema } from './schemas/bluesky.schema.js';
+import { parseEnvelope, symmetricDecrypt, symmetricEncrypt } from 'better-auth/crypto';
+import { buildSecretConfig, createDpopProof } from '../../../plugins/bluesky/dpop.js';
 
 /**
  * Abstract base class for social provider
@@ -260,17 +261,92 @@ class BlueskyProvider extends AbstractSocialProvider {
   }
 
   async getProfile(accessToken: string): Promise<UnifiedProfile | null> {
-    const response = await fetch('https://bsky.social/oauth/userinfo', {
-      headers: { Authorization: `Bearer ${accessToken}` },
-    });
-    if (!response.ok) return null;
-    const json = await response.json();
-    const data = blueskyProfileSchema.parse(json);
+    let did: string | null = null;
+    try {
+      const parts = accessToken.split('.');
+      if (parts.length === 3) {
+        const decoded = JSON.parse(
+          Buffer.from(parts[1], 'base64url').toString(),
+        ) as Record<string, unknown>;
+        if (typeof decoded.sub === 'string') did = decoded.sub;
+      }
+    } catch {
+      return null;
+    }
+    if (!did) return null;
+
+    try {
+      const res = await fetch(
+        `https://public.api.bsky.app/xrpc/app.bsky.actor.getProfile?actor=${encodeURIComponent(did)}`,
+      );
+      if (!res.ok) return { id: did };
+      const profile = (await res.json()) as Record<string, unknown>;
+      return {
+        id: did,
+        name: typeof profile.displayName === 'string' ? profile.displayName : undefined,
+        handle: typeof profile.handle === 'string' ? profile.handle : undefined,
+        image: typeof profile.avatar === 'string' ? profile.avatar : undefined,
+      };
+    } catch {
+      return { id: did };
+    }
+  }
+
+  override async refreshTokens(refreshToken: string): Promise<OAuthTokenResponse | null> {
+    const secret = this.configService.get('BLUESKY_REFRESH_TOKEN_SECRET');
+    const endpoints = this.getEndpoints();
+    const credentials = this.getCredentials();
+    if (!credentials) return null;
+
+    let plainToken = refreshToken;
+    if (secret && parseEnvelope(refreshToken)) {
+      try {
+        plainToken = await symmetricDecrypt({
+          key: buildSecretConfig(secret),
+          data: refreshToken,
+        });
+      } catch {
+        return null;
+      }
+    }
+
+    const doRequest = async (nonce?: string) => {
+      const dpopProof = await createDpopProof('POST', endpoints.tokenEndpoint, nonce);
+      const body = new URLSearchParams({
+        grant_type: 'refresh_token',
+        refresh_token: plainToken,
+        client_id: credentials.clientId,
+      });
+      const res = await fetch(endpoints.tokenEndpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded', DPoP: dpopProof },
+        body,
+      });
+      const data = (await res.json()) as Record<string, unknown>;
+      return { ok: res.ok, data, dpopNonce: res.headers.get('DPoP-Nonce') };
+    };
+
+    let result = await doRequest();
+    if (!result.ok && result.data.error === 'use_dpop_nonce' && result.dpopNonce) {
+      result = await doRequest(result.dpopNonce);
+    }
+    if (!result.ok) return null;
+
+    const newAccessToken = typeof result.data.access_token === 'string' ? result.data.access_token : null;
+    if (!newAccessToken) return null;
+
+    let newRefreshToken = typeof result.data.refresh_token === 'string' ? result.data.refresh_token : undefined;
+    if (secret && newRefreshToken) {
+      newRefreshToken = await symmetricEncrypt({
+        key: buildSecretConfig(secret),
+        data: newRefreshToken,
+      });
+    }
+
     return {
-      id: data.sub,
-      name: data.name,
-      handle: data.preferred_username,
-      image: data.picture,
+      accessToken: newAccessToken,
+      refreshToken: newRefreshToken,
+      expiresIn: typeof result.data.expires_in === 'number' ? result.data.expires_in : undefined,
     };
   }
 }

@@ -10,9 +10,7 @@ import {
   getOAuth2Tokens,
 } from '@better-auth/core/oauth2';
 import type { OAuth2Tokens } from '@better-auth/core/oauth2';
-import { SecretConfig } from '@better-auth/core';
-import { exportJWK, generateKeyPair, calculateJwkThumbprint, SignJWT } from 'jose';
-import type { JWK, CryptoKey as JoseCryptoKey } from 'jose';
+import { buildSecretConfig, getDpopState, createDpopProof } from './dpop.js';
 
 export type BlueskyOAuthConfig = {
   clientId: string;
@@ -28,11 +26,6 @@ type BlueskyPluginOptions = {
   oauth?: BlueskyOAuthConfig | null;
   refreshTokenSecret?: string | null;
 };
-
-const buildSecretConfig = (secret: string): SecretConfig => ({
-  keys: new Map([[1, secret]]),
-  currentVersion: 1,
-});
 
 const buildDefaultOAuthConfig = (): BlueskyOAuthConfig | null => {
   const baseUrl = process.env.BETTER_AUTH_URL;
@@ -54,40 +47,6 @@ const buildDefaultOAuthConfig = (): BlueskyOAuthConfig | null => {
 type OAuthTokens = {
   accessToken?: string | null;
 };
-
-let _dpopPrivateKey: JoseCryptoKey | null = null;
-let _dpopPublicKeyJwk: JWK | null = null;
-let _dpopJkt: string | null = null;
-
-async function getDpopState(): Promise<{ privateKey: JoseCryptoKey; publicKeyJwk: JWK; jkt: string }> {
-  if (!_dpopPrivateKey) {
-    const { privateKey, publicKey } = await generateKeyPair('ES256');
-    _dpopPrivateKey = privateKey;
-    _dpopPublicKeyJwk = await exportJWK(publicKey);
-    _dpopJkt = await calculateJwkThumbprint(_dpopPublicKeyJwk);
-  }
-  return { privateKey: _dpopPrivateKey, publicKeyJwk: _dpopPublicKeyJwk, jkt: _dpopJkt };
-}
-
-async function createDpopProof(
-  htm: string,
-  htu: string,
-  nonce?: string,
-  accessToken?: string,
-): Promise<string> {
-  const { privateKey, publicKeyJwk } = await getDpopState();
-  const payload: Record<string, string> = { htm, htu };
-  if (nonce) payload.nonce = nonce;
-  if (accessToken) {
-    const hash = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(accessToken));
-    payload.ath = Buffer.from(hash).toString('base64url');
-  }
-  return new SignJWT(payload)
-    .setProtectedHeader({ alg: 'ES256', typ: 'dpop+jwt', jwk: publicKeyJwk })
-    .setJti(crypto.randomUUID())
-    .setIssuedAt()
-    .sign(privateKey);
-}
 
 async function exchangeCodeWithDpop(params: {
   code: string;
