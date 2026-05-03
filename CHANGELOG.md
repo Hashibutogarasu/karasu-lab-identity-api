@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.4.1](https://github.com/Karasu-Lab/karasu-lab-api/compare/karasu-lab-api-v5.4.0...karasu-lab-api-v5.4.1) (2026-05-03)
+
+
+### Bug Fixes
+
+* fixed bluesky profile api logics ([3d2e246](https://github.com/Karasu-Lab/karasu-lab-api/commit/3d2e246da3187fa4187ed2cd2ee6774407e77aa1))
+
 ## [5.4.0](https://github.com/Karasu-Lab/karasu-lab-api/compare/karasu-lab-api-v5.3.11...karasu-lab-api-v5.4.0) (2026-05-02)
 
 
