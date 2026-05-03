@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.4.2](https://github.com/Karasu-Lab/karasu-lab-api/compare/karasu-lab-api-v5.4.1...karasu-lab-api-v5.4.2) (2026-05-03)
+
+
+### Bug Fixes
+
+* fixed google token refresh error ([c44c17c](https://github.com/Karasu-Lab/karasu-lab-api/commit/c44c17cea0cb5ee68c71ac21dc2db22f6468cbe2))
+
 ## [5.4.1](https://github.com/Karasu-Lab/karasu-lab-api/compare/karasu-lab-api-v5.4.0...karasu-lab-api-v5.4.1) (2026-05-03)
 
 
